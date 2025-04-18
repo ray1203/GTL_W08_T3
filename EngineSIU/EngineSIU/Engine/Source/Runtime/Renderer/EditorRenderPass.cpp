@@ -1,15 +1,15 @@
 #include "EditorRenderPass.h"
 
 #include "EngineLoop.h" // GEngineLoop
-#include "Engine/Source/Runtime/Engine/Classes/Engine/Engine.h" // GEngine
-#include "Engine/Source/Runtime/CoreUObject/UObject/Casts.h"
-#include "Engine/Source/Runtime/Engine/Classes/Engine/EditorEngine.h"
+#include "Runtime/Engine/Classes/Engine/Engine.h" // GEngine
+#include "Runtime/CoreUObject/UObject/Casts.h"
+#include "Runtime/Engine/Classes/Engine/EditorEngine.h"
 #include <D3D11RHI/DXDShaderManager.h>
 
 #include <d3dcompiler.h>
 
 #include "UnrealClient.h"
-#include "Engine/Source/Runtime/Engine/World/World.h"
+#include "Runtime/Engine/World/World.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectIterator.h"
 #include "BaseGizmos/GizmoBaseComponent.h"
