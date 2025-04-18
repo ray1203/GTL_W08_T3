@@ -1,5 +1,6 @@
 #include "Core/HAL/PlatformType.h"
 #include "EngineLoop.h"
+#include "Developer/HotReload/HotReload.h"
 
 FEngineLoop GEngineLoop;
 
@@ -11,9 +12,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     UNREFERENCED_PARAMETER(lpCmdLine);
     UNREFERENCED_PARAMETER(nShowCmd);
 
+    FHotReload::Initialize();
+
     GEngineLoop.Init(hInstance);
     GEngineLoop.Tick();
     GEngineLoop.Exit();
+
+    FHotReload::Shutdown();
 
     return 0;
 }
