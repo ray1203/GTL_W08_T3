@@ -165,9 +165,6 @@
       <AdditionalLibraryDirectories>$(ProjectDir)Engine\Source\ThirdParty\DirectXTK\Lib\$(PlatformTarget)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <FxCompile>
-      <ShaderModel>5.0</ShaderModel>
-    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\AmbientLightActor.cpp" />
