@@ -2,8 +2,6 @@
 #include "ImGuiManager.h"
 #include "UnrealClient.h"
 #include "D3D11RHI/GraphicDevice.h"
-#include "Developer/HotReload/HotReload.h"
-#include "Developer/HotReload/HotReloadMainInterface.h"
 #include "Engine/EditorEngine.h"
 #include "LevelEditor/SLevelEditor.h"
 #include "PropertyEditor/ViewportTypePanel.h"
@@ -111,9 +109,6 @@ void FEngineLoop::Tick()
     {
         QueryPerformanceCounter(&startTime);
         float DeltaTime = elapsedTime / 1000.f;
-
-        FHotReload::Update(DeltaTime);
-        FHotReload::GetSystemTable().MainLoop->MainLoop();
 
         MSG msg;
         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
