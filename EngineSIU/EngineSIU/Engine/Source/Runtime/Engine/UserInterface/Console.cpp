@@ -188,7 +188,8 @@ void Console::Draw() {
     ImGui::Separator();
     // 로그 출력 (필터 적용)
     ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetTextLineHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
-    for (const auto& entry : items) {
+    TArray CopyItems = items;
+    for (const auto& entry : CopyItems) {
         if (!filter.PassFilter(*entry.message)) continue;
 
         // 로그 수준에 맞는 필터링
