@@ -167,6 +167,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineSIU\Engine\Source\Developer\HotReload\HotReload.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\AmbientLightActor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Editor\LevelEditor\SlateAppMessageHandler.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Editor\LevelEditor\SLevelEditor.cpp" />
@@ -289,6 +290,7 @@
     <ClCompile Include="EngineSIU\LightGridGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EngineSIU\Engine\Source\Developer\HotReload\HotReload.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\AmbientLightActor.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\LevelEditor\SlateAppMessageHandler.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\LevelEditor\SLevelEditor.h" />
@@ -572,8 +574,6 @@
   <ItemGroup>
     <Content Include="EngineSIU\.editorconfig" />
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
-  </ItemGroup>
-  <ItemGroup>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
