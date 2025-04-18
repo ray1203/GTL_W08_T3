@@ -19,33 +19,33 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RuntimeSourceDependency.h" />
-    <ClInclude Include="RuntimeProtector.h" />
-    <ClInclude Include="IObject.h" />
-    <ClInclude Include="IObjectFactorySystem.h" />
-    <ClInclude Include="IRuntimeObjectSystem.h" />
-    <ClInclude Include="ISimpleSerializer.h" />
-    <ClInclude Include="ObjectFactorySystem\ObjectFactorySystem.h" />
-    <ClInclude Include="ObjectInterface.h" />
-    <ClInclude Include="ObjectInterfacePerModule.h" />
-    <ClInclude Include="RuntimeInclude.h" />
-    <ClInclude Include="RuntimeLinkLibrary.h" />
-    <ClInclude Include="RuntimeObjectSystem.h" />
-    <ClInclude Include="RuntimeTracking.h" />
-    <ClInclude Include="SimpleSerializer\SimpleSerializer.h" />
+    <ClInclude Include="RuntimeObjectSystem\RuntimeSourceDependency.h" />
+    <ClInclude Include="RuntimeObjectSystem\RuntimeProtector.h" />
+    <ClInclude Include="RuntimeObjectSystem\IObject.h" />
+    <ClInclude Include="RuntimeObjectSystem\IObjectFactorySystem.h" />
+    <ClInclude Include="RuntimeObjectSystem\IRuntimeObjectSystem.h" />
+    <ClInclude Include="RuntimeObjectSystem\ISimpleSerializer.h" />
+    <ClInclude Include="RuntimeObjectSystem\ObjectFactorySystem\ObjectFactorySystem.h" />
+    <ClInclude Include="RuntimeObjectSystem\ObjectInterface.h" />
+    <ClInclude Include="RuntimeObjectSystem\ObjectInterfacePerModule.h" />
+    <ClInclude Include="RuntimeObjectSystem\RuntimeInclude.h" />
+    <ClInclude Include="RuntimeObjectSystem\RuntimeLinkLibrary.h" />
+    <ClInclude Include="RuntimeObjectSystem\RuntimeObjectSystem.h" />
+    <ClInclude Include="RuntimeObjectSystem\RuntimeTracking.h" />
+    <ClInclude Include="RuntimeObjectSystem\SimpleSerializer\SimpleSerializer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ObjectFactorySystem\ObjectFactorySystem.cpp" />
-    <ClCompile Include="ObjectInterfacePerModuleSource.cpp" />
-    <ClCompile Include="RuntimeObjectSystem.cpp" />
-    <ClCompile Include="RuntimeObjectSystem_PlatformPosix.cpp">
+    <ClCompile Include="RuntimeObjectSystem\ObjectFactorySystem\ObjectFactorySystem.cpp" />
+    <ClCompile Include="RuntimeObjectSystem\ObjectInterfacePerModuleSource.cpp" />
+    <ClCompile Include="RuntimeObjectSystem\RuntimeObjectSystem.cpp" />
+    <ClCompile Include="RuntimeObjectSystem\RuntimeObjectSystem_PlatformPosix.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="RuntimeObjectSystem_PlatformWindows.cpp" />
-    <ClCompile Include="SimpleSerializer\SimpleSerializer.cpp" />
+    <ClCompile Include="RuntimeObjectSystem\RuntimeObjectSystem_PlatformWindows.cpp" />
+    <ClCompile Include="RuntimeObjectSystem\SimpleSerializer\SimpleSerializer.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FA4E24F1-885C-406B-89A8-436F28D090B2}</ProjectGuid>
