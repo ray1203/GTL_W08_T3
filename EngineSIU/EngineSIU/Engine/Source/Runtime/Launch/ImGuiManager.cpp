@@ -2,9 +2,6 @@
 #include "ImGUI/imgui_impl_dx11.h"
 #include "ImGUI/imgui_impl_win32.h"
 #include "ImGuiManager.h"
-
-#include "ObjectInterfacePerModule.h"
-#include "Developer/HotReload/HotReloadSystemTable.h"
 #include "Font/RawFonts.h"
 #include "Font/IconDefs.h"
 
@@ -16,8 +13,6 @@ void UImGuiManager::Initialize(HWND hWnd, ID3D11Device* device, ID3D11DeviceCont
     ImGui_ImplWin32_Init(hWnd);
     ImGui_ImplDX11_Init(device, deviceContext);
     io.Fonts->AddFontFromFileTTF(R"(C:\Windows\Fonts\malgun.ttf)", 24.0f, nullptr, io.Fonts->GetGlyphRangesKorean());
-
-    PerModuleInterface::GetInstance()->GetSystemTable()->ImGuiContext = ImGui::GetCurrentContext();
 
     ImFontConfig FeatherFontConfig;
     FeatherFontConfig.PixelSnapH = true;

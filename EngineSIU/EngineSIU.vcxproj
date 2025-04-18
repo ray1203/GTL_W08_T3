@@ -167,8 +167,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="EngineSIU\Engine\Source\Developer\HotReload\HotReload.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Developer\HotReload\HotReloadLogger.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\AmbientLightActor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Editor\LevelEditor\SlateAppMessageHandler.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Editor\LevelEditor\SLevelEditor.cpp" />
@@ -258,7 +256,6 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Launch\EngineLoop.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Launch\ImGuiManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Launch\Launch.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Launch\LaunchWithHotReload.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\BillboardRenderPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\CompositingPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorBillboardRenderPass.cpp" />
@@ -292,10 +289,6 @@
     <ClCompile Include="EngineSIU\LightGridGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EngineSIU\Engine\Source\Developer\HotReload\HotReload.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Developer\HotReload\HotReloadLogger.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Developer\HotReload\HotReloadMainInterface.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Developer\HotReload\HotReloadSystemTable.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\AmbientLightActor.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\LevelEditor\SlateAppMessageHandler.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\LevelEditor\SLevelEditor.h" />
