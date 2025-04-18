@@ -10,7 +10,7 @@
 #include "Components/SphereComp.h"
 #include "Components/BillboardComponent.h"
 #include "Engine/Engine.h"
-#include "JSON/json.hpp"
+#include "Json/json.hpp"
 #include "UObject/Casts.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectFactory.h"

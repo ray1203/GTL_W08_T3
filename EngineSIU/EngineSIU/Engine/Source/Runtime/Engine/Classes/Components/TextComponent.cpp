@@ -1,7 +1,7 @@
 #include "TextComponent.h"
 
 #include "World/World.h"
-#include "Engine/Source/Editor/PropertyEditor/ShowFlags.h"
+#include "Editor/PropertyEditor/ShowFlags.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "LevelEditor/SLevelEditor.h"
 #include "UObject/Casts.h"

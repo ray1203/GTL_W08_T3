@@ -113,12 +113,18 @@ void Console::Clear() {
 }
 
 // 로그 추가
-void Console::AddLog(LogLevel level, const char* fmt, ...) {
-    char buf[1024];
+void Console::AddLog(LogLevel level, const char* fmt, ...)
+{
     va_list args;
     va_start(args, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, args);
+    AddLog(level, fmt, args);
     va_end(args);
+}
+
+void Console::AddLog(LogLevel level, const char* fmt, va_list args)
+{
+    char buf[1024];
+    vsnprintf(buf, sizeof(buf), fmt, args);
 
     items.Add({ level, std::string(buf) });
     scrollToBottom = true;
@@ -182,7 +188,8 @@ void Console::Draw() {
     ImGui::Separator();
     // 로그 출력 (필터 적용)
     ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetTextLineHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
-    for (const auto& entry : items) {
+    TArray CopyItems = items;
+    for (const auto& entry : CopyItems) {
         if (!filter.PassFilter(*entry.message)) continue;
 
         // 로그 수준에 맞는 필터링
