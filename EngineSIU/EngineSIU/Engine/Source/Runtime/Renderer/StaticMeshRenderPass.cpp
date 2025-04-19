@@ -56,6 +56,7 @@ void FStaticMeshRenderPass::CreateShader()
     }
     // End Debug Shaders
 
+
 #pragma region UberShader
     D3D_SHADER_MACRO DefinesGouraud[] =
     {

@@ -26,7 +26,7 @@
 #include "GameFrameWork/Actor.h"
 
 #include "PropertyEditor/ShowFlags.h"
-
+#include "Shadow/CascadeShadowMap.h"
 //------------------------------------------------------------------------------
 // 초기화 및 해제 관련 함수
 //------------------------------------------------------------------------------
@@ -51,7 +51,6 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
-
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     WorldBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     EditorBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -265,8 +264,8 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     
     if (ShowFlag & EEngineShowFlags::SF_Primitives)
     {
-        UpdateLightBufferPass->Render(Viewport);
         StaticMeshRenderPass->Render(Viewport);
+        UpdateLightBufferPass->Render(Viewport);
     }
     
     // Render World Billboard

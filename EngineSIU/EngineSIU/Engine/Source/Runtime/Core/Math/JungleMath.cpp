@@ -84,6 +84,24 @@ FMatrix JungleMath::CreateOrthoProjectionMatrix(float width, float height, float
     return Projection;
 }
 
+FMatrix JungleMath::CreateOrthoOffCenterProjectionMatrix(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+{
+    float invWidth = 2.0f / (right - left);
+    float invHeight = 2.0f / (top - bottom);
+    float invDepth = 1.0f / (farPlane - nearPlane);
+
+    FMatrix M = {};
+    M.M[0][0] = invWidth;                            // 2/(r-l)
+    M.M[1][1] = invHeight;                           // 2/(t-b)
+    M.M[2][2] = invDepth;                            // 1/(f-n)
+    M.M[3][0] = (left + right) / (left - right);     // (l+r)/(l-r)
+    M.M[3][1] = (top + bottom) / (bottom - top);     // (t+b)/(b-t)
+    M.M[3][2] = -nearPlane * invDepth;               // -n/(f-n)
+    M.M[3][3] = 1.0f;
+    return M;
+}
+
+
 FVector JungleMath::FVectorRotate(FVector& origin, const FVector& InRotation)
 {
     FQuat quaternion = JungleMath::EulerToQuaternion(InRotation);

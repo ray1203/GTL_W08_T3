@@ -39,6 +39,7 @@ class FFogRenderPass;
 class FCompositingPass;
 class FSlateRenderPass;
 class FEditorRenderPass;
+class FCascadeShadowMap;
 
 class FRenderer
 {

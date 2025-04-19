@@ -39,10 +39,10 @@ void FEditorViewportClient::Draw(FViewport* Viewport)
 void FEditorViewportClient::Initialize(EViewScreenLocation InViewportIndex, const FRect& InRect)
 {
     ViewportIndex = static_cast<int32>(InViewportIndex);
-    
+
     PerspectiveCamera.SetLocation(FVector(8.0f, 8.0f, 8.f));
     PerspectiveCamera.SetRotation(FVector(0.0f, 45.0f, -135.0f));
-    
+
     Viewport = new FViewport(InViewportIndex);
     Viewport->Initialize(InRect);
 
@@ -313,8 +313,8 @@ void FEditorViewportClient::DeprojectFVector2D(const FVector2D& ScreenPos, FVect
         1.0f - ((ScreenPos.Y - TopLeftY) / Height * 2.0f)
     };
 
-    FVector RayOrigin = {NDC_Pos.X, NDC_Pos.Y, 0.0f};
-    FVector RayEnd = {NDC_Pos.X, NDC_Pos.Y, 1.0f};
+    FVector RayOrigin = { NDC_Pos.X, NDC_Pos.Y, 0.0f };
+    FVector RayEnd = { NDC_Pos.X, NDC_Pos.Y, 1.0f };
 
     // 스크린 좌표계에서 월드 좌표계로 변환
     const FMatrix InvProjView = FMatrix::Inverse(Projection) * FMatrix::Inverse(View);
@@ -323,6 +323,35 @@ void FEditorViewportClient::DeprojectFVector2D(const FVector2D& ScreenPos, FVect
 
     OutWorldOrigin = RayOrigin;
     OutWorldDir = (RayEnd - RayOrigin).GetSafeNormal();
+}
+
+TArray<FVector> FEditorViewportClient::GetFrustumCorners()
+{
+
+    TArray<FVector> FrustumCorners;
+    FrustumCorners.Empty();
+    FrustumCorners.Reserve(8);
+
+    // 2) ViewProj 순서를 확인해서 역행렬 계산
+    // world → view → proj 이면 ViewProj = View * Projection
+    const FMatrix InvViewProj = FMatrix::Inverse(View * Projection);
+
+    // 3) NDC 8코너를 homogeneous 4D로 만든 뒤 변환·분할
+    for (int ix = -1; ix <= 1; ix += 2)
+    {
+        for (int iy = -1; iy <= 1; iy += 2)
+        {
+            for (int iz = 0; iz <= 1; ++iz)
+            {
+                float zNDC = iz ? 1.0f : 0.0f;
+                FVector ndc((float)ix, (float)iy, zNDC);
+                FVector world = InvViewProj.TransformPosition(ndc);
+
+                FrustumCorners.Add(world);
+            }
+        }
+    }
+    return FrustumCorners;
 }
 
 
@@ -385,7 +414,7 @@ void FEditorViewportClient::CameraMoveUp(float InValue)
 void FEditorViewportClient::CameraRotateYaw(float InValue)
 {
     FVector CurCameraRot = PerspectiveCamera.GetRotation();
-    CurCameraRot.Z += InValue ;
+    CurCameraRot.Z += InValue;
     PerspectiveCamera.SetRotation(CurCameraRot);
 }
 
@@ -415,7 +444,7 @@ void FEditorViewportClient::UpdateViewMatrix()
             FVector{ 0.0f,0.0f, 1.0f }
         );
     }
-    else 
+    else
     {
         UpdateOrthoCameraLoc();
         if (ViewportType == LVT_OrthoXY || ViewportType == LVT_OrthoNegativeXY)
@@ -552,7 +581,7 @@ void FEditorViewportClient::LoadConfig(const TMap<FString, FString>& config)
     FString ViewportNum = std::to_string(ViewportIndex);
     CameraSpeedSetting = GetValueFromConfig(config, "CameraSpeedSetting" + ViewportNum, 1);
     CameraSpeed = GetValueFromConfig(config, "CameraSpeedScalar" + ViewportNum, 1.0f);
-    GridSize = GetValueFromConfig(config, "GridSize"+ ViewportNum, 10.0f);
+    GridSize = GetValueFromConfig(config, "GridSize" + ViewportNum, 10.0f);
     PerspectiveCamera.ViewLocation.X = GetValueFromConfig(config, "PerspectiveCameraLocX" + ViewportNum, 0.0f);
     PerspectiveCamera.ViewLocation.Y = GetValueFromConfig(config, "PerspectiveCameraLocY" + ViewportNum, 0.0f);
     PerspectiveCamera.ViewLocation.Z = GetValueFromConfig(config, "PerspectiveCameraLocZ" + ViewportNum, 0.0f);
@@ -567,16 +596,16 @@ void FEditorViewportClient::LoadConfig(const TMap<FString, FString>& config)
 void FEditorViewportClient::SaveConfig(TMap<FString, FString>& config) const
 {
     FString ViewportNum = std::to_string(ViewportIndex);
-    config["CameraSpeedSetting"+ ViewportNum] = std::to_string(CameraSpeedSetting);
-    config["CameraSpeedScalar"+ ViewportNum] = std::to_string(CameraSpeed);
-    config["GridSize"+ ViewportNum] = std::to_string(GridSize);
+    config["CameraSpeedSetting" + ViewportNum] = std::to_string(CameraSpeedSetting);
+    config["CameraSpeedScalar" + ViewportNum] = std::to_string(CameraSpeed);
+    config["GridSize" + ViewportNum] = std::to_string(GridSize);
     config["PerspectiveCameraLocX" + ViewportNum] = std::to_string(PerspectiveCamera.GetLocation().X);
     config["PerspectiveCameraLocY" + ViewportNum] = std::to_string(PerspectiveCamera.GetLocation().Y);
     config["PerspectiveCameraLocZ" + ViewportNum] = std::to_string(PerspectiveCamera.GetLocation().Z);
     config["PerspectiveCameraRotX" + ViewportNum] = std::to_string(PerspectiveCamera.GetRotation().X);
     config["PerspectiveCameraRotY" + ViewportNum] = std::to_string(PerspectiveCamera.GetRotation().Y);
     config["PerspectiveCameraRotZ" + ViewportNum] = std::to_string(PerspectiveCamera.GetRotation().Z);
-    config["ShowFlag"+ ViewportNum] = std::to_string(ShowFlag);
+    config["ShowFlag" + ViewportNum] = std::to_string(ShowFlag);
     config["ViewMode" + ViewportNum] = std::to_string(int32(ViewMode));
     config["ViewportType" + ViewportNum] = std::to_string(int32(ViewportType));
 }
@@ -621,8 +650,8 @@ FVector FViewportCamera::GetForwardVector() const
 FVector FViewportCamera::GetRightVector() const
 {
     FVector Right = FVector(0.f, 1.f, 0.0f);
-	Right = JungleMath::FVectorRotate(Right, ViewRotation);
-	return Right;
+    Right = JungleMath::FVectorRotate(Right, ViewRotation);
+    return Right;
 }
 
 FVector FViewportCamera::GetUpVector() const
