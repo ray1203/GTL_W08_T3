@@ -108,6 +108,7 @@ void FEngineLoop::Tick()
     while (bIsExit == false)
     {
         QueryPerformanceCounter(&startTime);
+        float DeltaTime = elapsedTime / 1000.f;
 
         MSG msg;
         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -121,8 +122,6 @@ void FEngineLoop::Tick()
                 break;
             }
         }
-
-        float DeltaTime = elapsedTime / 1000.f;
 
         GEngine->Tick(DeltaTime);
         LevelEditor->Tick(DeltaTime);

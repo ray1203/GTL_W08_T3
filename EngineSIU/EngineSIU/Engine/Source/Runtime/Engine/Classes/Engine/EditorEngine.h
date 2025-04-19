@@ -32,22 +32,20 @@ public:
     FWorldContext* GetPIEWorldContext(/*int32 WorldPIEInstance = 0*/);
 
 public:
-    void SelectActor(AActor* InActor);
-    void DeselectActor(AActor* InActor);
+    void SelectActor(AActor* InActor) const;
     bool CanSelectActor(const AActor* InActor) const;
     AActor* GetSelectedActor() const;
 
-    void HoverActor(AActor* InActor);
+    void HoverActor(AActor* InActor) const;
 
     
     void NewWorld();
 
     void SelectComponent(USceneComponent* InComponent) const;
-    void DeselectComponent(USceneComponent* InComponent);
     bool CanSelectComponent(const USceneComponent* InComponent) const;
     USceneComponent* GetSelectedComponent() const;
 
-    void HoverComponent(USceneComponent* InComponent);
+    void HoverComponent(USceneComponent* InComponent) const;
 
 public:
     AEditorPlayer* GetEditorPlayer() const;

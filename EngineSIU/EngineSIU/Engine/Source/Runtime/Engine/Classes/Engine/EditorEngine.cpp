@@ -160,17 +160,13 @@ FWorldContext* UEditorEngine::GetPIEWorldContext(/*int32 WorldPIEInstance*/)
     return nullptr;
 }
 
-void UEditorEngine::SelectActor(AActor* InActor)
+void UEditorEngine::SelectActor(AActor* InActor) const
 {
     if (InActor && CanSelectActor(InActor))
     {
         PrivateEditorSelection::GActorSelected = InActor;
     }
-}
-
-void UEditorEngine::DeselectActor(AActor* InActor)
-{
-    if (InActor)
+    else if (InActor == nullptr)
     {
         PrivateEditorSelection::GActorSelected = nullptr;
     }
@@ -186,11 +182,15 @@ AActor* UEditorEngine::GetSelectedActor() const
     return PrivateEditorSelection::GActorSelected;
 }
 
-void UEditorEngine::HoverActor(AActor* InActor)
+void UEditorEngine::HoverActor(AActor* InActor) const
 {
     if (InActor)
     {
         PrivateEditorSelection::GActorHovered = InActor;
+    }
+    else if (InActor == nullptr)
+    {
+        PrivateEditorSelection::GActorHovered = nullptr;
     }
 }
 
@@ -211,11 +211,7 @@ void UEditorEngine::SelectComponent(USceneComponent* InComponent) const
     {
         PrivateEditorSelection::GComponentSelected = InComponent;
     }
-}
-
-void UEditorEngine::DeselectComponent(USceneComponent* InComponent)
-{
-    if (InComponent == nullptr)
+    else if (InComponent == nullptr)
     {
         PrivateEditorSelection::GComponentSelected = nullptr;
     }
@@ -231,11 +227,15 @@ USceneComponent* UEditorEngine::GetSelectedComponent() const
     return PrivateEditorSelection::GComponentSelected;
 }
 
-void UEditorEngine::HoverComponent(USceneComponent* InComponent)
+void UEditorEngine::HoverComponent(USceneComponent* InComponent) const
 {
     if (InComponent)
     {
         PrivateEditorSelection::GComponentHovered = InComponent;
+    }
+    else if (InComponent == nullptr)
+    {
+        PrivateEditorSelection::GComponentHovered = nullptr;
     }
 }
 

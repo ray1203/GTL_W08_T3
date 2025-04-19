@@ -10,6 +10,7 @@
 #include "Slate/Widgets/Layout/SSplitter.h"
 #include "SlateCore/Widgets/SWindow.h"
 #include "UnrealEd/EditorViewportClient.h"
+#include "World/World.h"
 
 extern FEngineLoop GEngineLoop;
 
@@ -87,9 +88,9 @@ void SLevelEditor::Initialize(uint32 InEditorWidth, uint32 InEditorHeight)
         {
         case EKeys::LeftMouseButton:
         {
-            if (const UEditorEngine* EdEngine = Cast<UEditorEngine>(GEngine))
+            if (UEditorEngine* EdEngine = Cast<UEditorEngine>(GEngine))
             {
-                if (const AActor* SelectedActor = EdEngine->GetSelectedActor())
+                if (AActor* SelectedActor = EdEngine->GetSelectedActor())
                 {
                     // 초기 Actor와 Cursor의 거리차를 저장
                     const FViewportCamera* ViewTransform = ActiveViewportClient->GetViewportType() == LVT_Perspective
@@ -103,6 +104,13 @@ void SLevelEditor::Initialize(uint32 InEditorWidth, uint32 InEditorHeight)
                     const float TargetDist = FVector::Distance(ViewTransform->GetLocation(), TargetLocation);
                     const FVector TargetRayEnd = RayOrigin + RayDir * TargetDist;
                     TargetDiff = TargetLocation - TargetRayEnd;
+
+                    // Alt 눌러서 복제
+                    if (!bIsDuplicating && (GetKeyState(VK_LMENU) & 0x8000))
+                    {
+                        EdEngine->SelectActor(EdEngine->GetEditorWorldContext().World()->DuplicateActor(SelectedActor));
+                        bIsDuplicating = true;
+                    }
                 }
             }
             break;
@@ -195,6 +203,8 @@ void SLevelEditor::Initialize(uint32 InEditorWidth, uint32 InEditorHeight)
 
     Handler->OnMouseUpDelegate.AddLambda([this](const FPointerEvent& InMouseEvent)
     {
+        if (ImGui::GetIO().WantCaptureMouse) return;
+
         switch (InMouseEvent.GetEffectingButton())  // NOLINT(clang-diagnostic-switch-enum)
         {
         case EKeys::RightMouseButton:
@@ -212,6 +222,11 @@ void SLevelEditor::Initialize(uint32 InEditorWidth, uint32 InEditorHeight)
         {
             VSplitter->OnReleased();
             HSplitter->OnReleased();
+
+            if (bIsDuplicating)
+            {
+                bIsDuplicating = false;
+            }
             return;
         }
 
@@ -311,6 +326,8 @@ void SLevelEditor::Initialize(uint32 InEditorWidth, uint32 InEditorHeight)
                                 }
                             }
                         }
+
+                        
                     }
                 }
             }
