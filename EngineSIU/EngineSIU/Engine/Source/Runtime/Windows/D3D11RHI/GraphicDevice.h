@@ -77,6 +77,6 @@ private:
     ID3D11RasterizerState* CurrentRasterizer = nullptr;
 
     const DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
-    const DXGI_FORMAT BackBufferRTVFormat = DXGI_FORMAT_R32_TYPELESS;
+    const DXGI_FORMAT BackBufferRTVFormat = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
 };
 

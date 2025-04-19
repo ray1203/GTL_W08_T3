@@ -56,8 +56,8 @@ void FCascadeShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphics
     Graphics->Device->CreateSamplerState(&sampDesc, &ShadowSampler);
 
     // 5) 셰이더 로드
-    ShaderManager->AddVertexShader(L"DepthBufferVertexShader", L"Shaders/DepthBufferVertexShader.hlsl", "mainVS");
-    ShaderManager->AddPixelShader(L"DepthBufferPixelShader", L"Shaders/DepthBufferPixelShader.hlsl", "mainPS");
+  /*  ShaderManager->AddVertexShader(L"DepthBufferVertexShader", L"Shaders/DepthBufferVertexShader.hlsl", "mainVS");
+    ShaderManager->AddPixelShader(L"DepthBufferPixelShader", L"Shaders/DepthBufferPixelShader.hlsl", "mainPS");*/
 }
 
 void FCascadeShadowMap::UpdateCascadeViewProjMatrices(
@@ -96,85 +96,85 @@ void FCascadeShadowMap::UpdateCascadeViewProjMatrices(
 
 void FCascadeShadowMap::Render(FEditorViewportClient* Viewport)
 {
-    // === 1) Depth Pass: 오직 DSV에 그림자 깊이만 기록 ===
+    //// === 1) Depth Pass: 오직 DSV에 그림자 깊이만 기록 ===
 
-    // 1-1) 그림자 깊이용 DSV 바인딩, 컬러 타겟은 언바인딩
-    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, ShadowDSV);
+    //// 1-1) 그림자 깊이용 DSV 바인딩, 컬러 타겟은 언바인딩
+    //Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, ShadowDSV);
 
-    // 1-2) 깊이 버퍼 초기화 (클리어)
-    Graphics->DeviceContext->ClearDepthStencilView(
-        ShadowDSV,
-        D3D11_CLEAR_DEPTH,
-        1.0f,
-        0
-    );
+    //// 1-2) 깊이 버퍼 초기화 (클리어)
+    //Graphics->DeviceContext->ClearDepthStencilView(
+    //    ShadowDSV,
+    //    D3D11_CLEAR_DEPTH,
+    //    1.0f,
+    //    0
+    //);
 
-    // 1-3) 깊이 쓰기용 스텐실 상태 생성 및 바인딩
-    D3D11_DEPTH_STENCIL_DESC dsWriteDesc{};
-    dsWriteDesc.DepthEnable = TRUE;
-    dsWriteDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    dsWriteDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-    ID3D11DepthStencilState* dsWriteState = nullptr;
-    Graphics->Device->CreateDepthStencilState(&dsWriteDesc, &dsWriteState);
-    Graphics->DeviceContext->OMSetDepthStencilState(dsWriteState, 0);
+    //// 1-3) 깊이 쓰기용 스텐실 상태 생성 및 바인딩
+    //D3D11_DEPTH_STENCIL_DESC dsWriteDesc{};
+    //dsWriteDesc.DepthEnable = TRUE;
+    //dsWriteDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    //dsWriteDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    //ID3D11DepthStencilState* dsWriteState = nullptr;
+    //Graphics->Device->CreateDepthStencilState(&dsWriteDesc, &dsWriteState);
+    //Graphics->DeviceContext->OMSetDepthStencilState(dsWriteState, 0);
 
-    // 1-4) 그림자용 셰이더 바인딩
-    Graphics->DeviceContext->VSSetShader(
-        ShaderManager->GetVertexShaderByKey(L"DepthBufferVertexShader"),
-        nullptr, 0
-    );
-    Graphics->DeviceContext->PSSetShader(
-        ShaderManager->GetPixelShaderByKey(L"DepthBufferPixelShader"),
-        nullptr, 0
-    );
+    //// 1-4) 그림자용 셰이더 바인딩
+    //Graphics->DeviceContext->VSSetShader(
+    //    ShaderManager->GetVertexShaderByKey(L"DepthBufferVertexShader"),
+    //    nullptr, 0
+    //);
+    //Graphics->DeviceContext->PSSetShader(
+    //    ShaderManager->GetPixelShaderByKey(L"DepthBufferPixelShader"),
+    //    nullptr, 0
+    //);
 
-    // 1-5) 드로우 설정 및 호출 (풀스크린 쿼드 또는 씬 지오메트리)
-    Graphics->DeviceContext->IASetPrimitiveTopology(
-        D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
-    );
-    Graphics->DeviceContext->Draw(6, 0);
+    //// 1-5) 드로우 설정 및 호출 (풀스크린 쿼드 또는 씬 지오메트리)
+    //Graphics->DeviceContext->IASetPrimitiveTopology(
+    //    D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+    //);
+    //Graphics->DeviceContext->Draw(6, 0);
 
-    // 1-6) 상태 해제
-    Graphics->DeviceContext->OMSetDepthStencilState(nullptr, 0);
-    if (dsWriteState) { dsWriteState->Release(); }
+    //// 1-6) 상태 해제
+    //Graphics->DeviceContext->OMSetDepthStencilState(nullptr, 0);
+    //if (dsWriteState) { dsWriteState->Release(); }
 
 
-    // === 2) Debug Pass: 백버퍼에 깊이맵 시각화 ===
+    //// === 2) Debug Pass: 백버퍼에 깊이맵 시각화 ===
 
-    // 2-1) DSV 언바인딩
-    ID3D11DepthStencilView* nullDSV = nullptr;
-    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullDSV);
+    //// 2-1) DSV 언바인딩
+    //ID3D11DepthStencilView* nullDSV = nullptr;
+    //Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullDSV);
 
-    // 2-2) 백버퍼(RTV) 바인딩
-    const EResourceType ResourceType = EResourceType::ERT_Scene;
-    FViewportResource* ViewportResource = Viewport->GetViewportResource();
-    FRenderTargetRHI* RT = ViewportResource->GetRenderTarget(ResourceType);
-    Graphics->DeviceContext->OMSetRenderTargets(1, &RT->RTV, nullptr);
+    //// 2-2) 백버퍼(RTV) 바인딩
+    //const EResourceType ResourceType = EResourceType::ERT_Scene;
+    //FViewportResource* ViewportResource = Viewport->GetViewportResource();
+    //FRenderTargetRHI* RT = ViewportResource->GetRenderTarget(ResourceType);
+    //Graphics->DeviceContext->OMSetRenderTargets(1, &RT->RTV, nullptr);
 
-       Graphics->DeviceContext->VSSetShader(
-        ShaderManager->GetVertexShaderByKey(L"DepthBufferVertexShader"),
-        nullptr, 0
-    );
-    //     PS: DebugDepthPixelShader (깊이값→흑백 컬러)
-    Graphics->DeviceContext->PSSetShader(
-        ShaderManager->GetPixelShaderByKey(L"DebugDepthPixelShader"),
-        nullptr, 0
-    );
+    //   Graphics->DeviceContext->VSSetShader(
+    //    ShaderManager->GetVertexShaderByKey(L"DepthBufferVertexShader"),
+    //    nullptr, 0
+    //);
+    ////     PS: DebugDepthPixelShader (깊이값→흑백 컬러)
+    //Graphics->DeviceContext->PSSetShader(
+    //    ShaderManager->GetPixelShaderByKey(L"DebugDepthPixelShader"),
+    //    nullptr, 0
+    //);
 
-    // 2-4) SRV와 샘플러 바인딩
-    Graphics->DeviceContext->PSSetShaderResources(0, 1, &ShadowSRV);
-    Graphics->DeviceContext->PSSetSamplers(0, 1, &ShadowSampler);
-    Graphics->DeviceContext->IASetInputLayout(nullptr);
+    //// 2-4) SRV와 샘플러 바인딩
+    //Graphics->DeviceContext->PSSetShaderResources(0, 1, &ShadowSRV);
+    //Graphics->DeviceContext->PSSetSamplers(0, 1, &ShadowSampler);
+    //Graphics->DeviceContext->IASetInputLayout(nullptr);
 
-    // 2-5) 풀스크린 쿼드 드로우 (삼각형 2개나 3개)
-    Graphics->DeviceContext->IASetPrimitiveTopology(
-        D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
-    );
-    Graphics->DeviceContext->Draw(6, 0);
+    //// 2-5) 풀스크린 쿼드 드로우 (삼각형 2개나 3개)
+    //Graphics->DeviceContext->IASetPrimitiveTopology(
+    //    D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+    //);
+    //Graphics->DeviceContext->Draw(6, 0);
 
-    // 2-6) SRV 바인딩 해제
-    ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
-    Graphics->DeviceContext->PSSetShaderResources(0, 1, nullSRV);
+    //// 2-6) SRV 바인딩 해제
+    //ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
+    //Graphics->DeviceContext->PSSetShaderResources(0, 1, nullSRV);
 }
 
 
