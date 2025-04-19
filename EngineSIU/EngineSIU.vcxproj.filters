@@ -1344,6 +1344,9 @@
     <ClInclude Include="EngineSIU\Font\RawFonts.h">
       <Filter>EngineSIU\Font</Filter>
     </ClInclude>
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\PointLightShadowMap.cpp">
+      <Filter>EngineSIU\Engine\Source\Runtime\Renderer\Shadow</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1388,5 +1391,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EngineSIU\Engine\Source\ThirdParty\DirectXTK\Include\DirectXTK\SimpleMath.inl" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\PointLightShadowMap.h">
+      <Filter>EngineSIU\Engine\Source\Runtime\Renderer\Shadow</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

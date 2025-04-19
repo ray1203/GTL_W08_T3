@@ -19,6 +19,7 @@
 #include "UserInterface/Console.h"
 #include <Math/Color.h>
 #include "LightDefine.h"
+#include "ShadowDefine.h"
 
 #define GOURAUD "LIGHTING_MODEL_GOURAUD"
 #define LAMBERT "LIGHTING_MODEL_LAMBERT"

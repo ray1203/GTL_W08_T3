@@ -27,6 +27,7 @@
 
 #include "PropertyEditor/ShowFlags.h"
 #include "Shadow/CascadeShadowMap.h"
+#include "Shadow/PointLightShadowMap.h"
 //------------------------------------------------------------------------------
 // 초기화 및 해제 관련 함수
 //------------------------------------------------------------------------------
@@ -39,6 +40,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
 
     CreateConstantBuffers();
     CreateCommonShader();
+    CreateDepthOnlyShader();
     
     StaticMeshRenderPass = new FStaticMeshRenderPass();
     WorldBillboardRenderPass = new FWorldBillboardRenderPass();
@@ -51,6 +53,8 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
+    PointLightShadowMapPass = new FPointLightShadowMap();
+
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     WorldBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     EditorBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -64,6 +68,8 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     PostProcessCompositingPass->Initialize(BufferManager, Graphics, ShaderManager);
     
     SlateRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+
+    PointLightShadowMapPass->Initialize(BufferManager, Graphics, ShaderManager);
 }
 
 void FRenderer::Release()
@@ -80,6 +86,16 @@ void FRenderer::Release()
     delete CompositingPass;
     delete PostProcessCompositingPass;
     delete SlateRenderPass;
+
+    delete PointLightShadowMapPass;
+}
+
+void FRenderer::RenderShadowMap()
+{
+    // TODO: Point Light 여러 개인 것에 대응
+    // 현재는 1개로 간단화 해서 실행
+    PointLightShadowMapPass->PrepareRender();
+    PointLightShadowMapPass->RenderShadowMap();
 }
 
 //------------------------------------------------------------------------------
@@ -120,6 +136,11 @@ void FRenderer::CreateConstantBuffers()
     UINT LightInfoBufferSize = sizeof(FLightInfoBuffer);
     BufferManager->CreateBufferGeneric<FLightInfoBuffer>("FLightInfoBuffer", nullptr, LightInfoBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
+    UINT ShadowViewProjSize = sizeof(FShadowViewProj);
+    BufferManager->CreateBufferGeneric<FShadowViewProj>("FShadowViewProj", nullptr, ShadowViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
+    UINT ShadowObjWorld = sizeof(FShadowObjWorld);
+    BufferManager->CreateBufferGeneric<FShadowObjWorld>("FShadowObjWorld", nullptr, ShadowObjWorld, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     // TODO: 함수로 분리
     ID3D11Buffer* ObjectBuffer = BufferManager->GetConstantBuffer(TEXT("FObjectConstantBuffer"));
@@ -166,6 +187,29 @@ void FRenderer::CreateCommonShader()
 #pragma endregion UberShader
 }
 
+void FRenderer::CreateDepthOnlyShader()
+{
+    // Position만 사용하는 단순 레이아웃
+    D3D11_INPUT_ELEMENT_DESC DepthLayoutDesc[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
+          0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+    };
+    UINT LayoutCount = ARRAYSIZE(DepthLayoutDesc);
+
+    // 셰이더와 레이아웃 등록
+    HRESULT hr = ShaderManager->AddVertexShaderAndInputLayout(
+        L"DepthOnlyVS",                                   // 키
+        L"Shaders/DepthOnlyVertexShader.hlsl",            // 파일 경로
+        "mainVS",                                         // 엔트리 포인트
+        DepthLayoutDesc,                                   // 레이아웃
+        LayoutCount                                       // 요소 개수
+    );
+    if (FAILED(hr))
+    {
+        return;
+    }
+}
+
 void FRenderer::PrepareRender(FViewportResource* ViewportResource)
 {
     // Setup Viewport
@@ -196,6 +240,7 @@ void FRenderer::ClearRenderArr()
     UpdateLightBufferPass->ClearRenderArr();
     FogRenderPass->ClearRenderArr();
     EditorRenderPass->ClearRenderArr();
+    PointLightShadowMapPass->ClearRenderArr();
 }
 
 void FRenderer::UpdateCommonBuffer(const std::shared_ptr<FEditorViewportClient>& Viewport)
@@ -264,8 +309,8 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     
     if (ShowFlag & EEngineShowFlags::SF_Primitives)
     {
-        StaticMeshRenderPass->Render(Viewport);
         UpdateLightBufferPass->Render(Viewport);
+        StaticMeshRenderPass->Render(Viewport);
     }
     
     // Render World Billboard

@@ -41,6 +41,8 @@ class FSlateRenderPass;
 class FEditorRenderPass;
 class FCascadeShadowMap;
 
+class FPointLightShadowMap;
+
 class FRenderer
 {
 public:
@@ -49,6 +51,12 @@ public:
     //==========================================================================
     void Initialize(FGraphicsDevice* graphics, FDXDBufferManager* bufferManager);
     void Release();
+
+    //==========================================================================
+    // 그림자 패스 관련 함수
+    //==========================================================================
+    void RenderShadowMap();
+
 
     //==========================================================================
     // 렌더 패스 관련 함수
@@ -82,6 +90,7 @@ public:
     void ReleaseConstantBuffer();
 
     void CreateCommonShader();
+    void CreateDepthOnlyShader();
 
 public:
     FGraphicsDevice* Graphics;
@@ -101,6 +110,8 @@ public:
     FPostProcessCompositingPass* PostProcessCompositingPass = nullptr;
     
     FSlateRenderPass* SlateRenderPass = nullptr;
+
+    FPointLightShadowMap* PointLightShadowMapPass = nullptr;
 };
 
 template<typename T>

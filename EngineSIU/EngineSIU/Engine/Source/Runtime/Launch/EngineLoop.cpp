@@ -69,6 +69,10 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 void FEngineLoop::Render() const
 {
     GraphicDevice.Prepare();
+
+    // ShadowMap Render 시키기
+    Renderer.RenderShadowMap();
+
     
     if (LevelEditor->IsMultiViewport())
     {
