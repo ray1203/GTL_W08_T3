@@ -176,7 +176,7 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
     }
     else
     {
-        Cast<UEditorEngine>(GEngine)->DeselectActor(Cast<UEditorEngine>(GEngine)->GetSelectedActor());
+        Cast<UEditorEngine>(GEngine)->SelectActor(nullptr);
     }
 }
 
