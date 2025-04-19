@@ -60,3 +60,9 @@ struct FLightInfoBuffer
     int SpotLightsCount;
     int AmbientLightsCount;
 };
+
+struct  FLightViewProj
+{
+    FMatrix LightViewProj;
+};
+

@@ -1385,6 +1385,10 @@
     <FxCompile Include="EngineSIU\Shaders\VertexBillboardShader.hlsl">
       <Filter>EngineSIU\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="EngineSIU\Shaders\LightDepthOnlyVS.hlsl">
+      <Filter>EngineSIU\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="EngineSIU\Shaders\ShaderRegisters.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EngineSIU\Engine\Source\ThirdParty\DirectXTK\Include\DirectXTK\SimpleMath.inl" />

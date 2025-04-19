@@ -51,6 +51,9 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
+    CascadeShadowMap = new FCascadeShadowMap();
+
+
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     WorldBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     EditorBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -62,7 +65,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     
     CompositingPass->Initialize(BufferManager, Graphics, ShaderManager);
     PostProcessCompositingPass->Initialize(BufferManager, Graphics, ShaderManager);
-    
+    CascadeShadowMap->Initialize(BufferManager, Graphics, ShaderManager);
     SlateRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
 }
 
@@ -120,6 +123,9 @@ void FRenderer::CreateConstantBuffers()
     UINT LightInfoBufferSize = sizeof(FLightInfoBuffer);
     BufferManager->CreateBufferGeneric<FLightInfoBuffer>("FLightInfoBuffer", nullptr, LightInfoBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
+  UINT FLightViewProjSize = sizeof(FLightViewProj);
+    BufferManager->CreateBufferGeneric<FLightViewProj>("FLightViewProj", nullptr, FLightViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
 
     // TODO: 함수로 분리
     ID3D11Buffer* ObjectBuffer = BufferManager->GetConstantBuffer(TEXT("FObjectConstantBuffer"));
@@ -151,7 +157,11 @@ void FRenderer::CreateCommonShader()
     {
         return;
     }
-    
+    D3D11_INPUT_ELEMENT_DESC LightDepthLayoutDesc[] = {
+       {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+    };
+    hr = ShaderManager->AddVertexShaderAndInputLayout(L"LightDepthOnlyVS", L"Shaders/LightDepthOnlyVS.hlsl", "mainVS", LightDepthLayoutDesc, ARRAYSIZE(LightDepthLayoutDesc));
+
 #pragma region UberShader
     D3D_SHADER_MACRO DefinesGouraud[] =
     {
@@ -264,8 +274,9 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     
     if (ShowFlag & EEngineShowFlags::SF_Primitives)
     {
-        StaticMeshRenderPass->Render(Viewport);
         UpdateLightBufferPass->Render(Viewport);
+        StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, true);
+        StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, false);
     }
     
     // Render World Billboard

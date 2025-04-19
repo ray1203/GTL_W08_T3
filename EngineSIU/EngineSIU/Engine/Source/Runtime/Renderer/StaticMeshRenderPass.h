@@ -10,8 +10,8 @@ class UWorld;
 class UMaterial;
 class FEditorViewportClient;
 class UStaticMeshComponent;
+class FCascadeShadowMap;
 struct FStaticMaterial;
-
 class FStaticMeshRenderPass : public IRenderPass
 {
 public:
@@ -23,7 +23,8 @@ public:
     
     virtual void PrepareRender() override;
 
-    virtual void Render(const std::shared_ptr<FEditorViewportClient>& Viewport) override;
+    virtual void Render(const std::shared_ptr<FEditorViewportClient>& Viewport) override {};
+    void Render(const std::shared_ptr<FEditorViewportClient>& Viewport, FCascadeShadowMap* CascadeShadowMap, bool IsShadow);
 
     virtual void ClearRenderArr() override;
 
@@ -49,7 +50,9 @@ private:
     TArray<UStaticMeshComponent*> StaticMeshComponents;
 
     ID3D11VertexShader* VertexShader;
+    ID3D11VertexShader* LightDepthOnlyVS;
     ID3D11InputLayout* InputLayout;
+    ID3D11InputLayout* InputLayoutLightDepthOnly;
     
     ID3D11PixelShader* PixelShader;
     ID3D11PixelShader* DebugDepthShader;
@@ -58,4 +61,6 @@ private:
     FDXDBufferManager* BufferManager;
     FGraphicsDevice* Graphics;
     FDXDShaderManager* ShaderManager;
+
+    bool bIsShadowPass;
 };

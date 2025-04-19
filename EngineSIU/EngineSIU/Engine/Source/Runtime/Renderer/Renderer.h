@@ -101,6 +101,7 @@ public:
     FPostProcessCompositingPass* PostProcessCompositingPass = nullptr;
     
     FSlateRenderPass* SlateRenderPass = nullptr;
+    FCascadeShadowMap* CascadeShadowMap = nullptr;
 };
 
 template<typename T>

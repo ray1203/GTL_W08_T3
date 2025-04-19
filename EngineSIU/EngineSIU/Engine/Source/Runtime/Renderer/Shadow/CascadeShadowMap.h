@@ -33,18 +33,24 @@ class FCascadeShadowMap
 public:
     void Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphic, FDXDShaderManager* InShaderManager);
     void UpdateCascadeViewProjMatrices(FEditorViewportClient& ViewCamera, const FVector& LightDir);
+    void PrepareRender();
+    void PrepareRender(FEditorViewportClient* Viewport);
     void Render(FEditorViewportClient* Viewport);
     const TArray<FCascade>& GetCascades() const;
-
-private:
-    FDXDBufferManager* BufferManager = nullptr;
-    FGraphicsDevice* Graphics = nullptr;
-    FDXDShaderManager* ShaderManager = nullptr;
 
     ID3D11Texture2D* DepthStencilBuffer;
     ID3D11DepthStencilView* ShadowDSV = nullptr;
     ID3D11ShaderResourceView* ShadowSRV = nullptr;
     ID3D11SamplerState* ShadowSampler = nullptr;
+
+private:
+
+    TArray<UDirectionalLightComponent*> DirectionalLights;
+
+
+    FDXDBufferManager* BufferManager = nullptr;
+    FGraphicsDevice* Graphics = nullptr;
+    FDXDShaderManager* ShaderManager = nullptr;
 
     FMatrix CascadeViewProjMatrix;
     TArray<FCascade> Cascades;

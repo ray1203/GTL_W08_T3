@@ -24,6 +24,7 @@
 #include "PropertyEditor/ShowFlags.h"
 
 #include "UnrealEd/EditorViewportClient.h"
+#include "Shadow/CascadeShadowMap.h"
 
 
 FStaticMeshRenderPass::FStaticMeshRenderPass()
@@ -68,7 +69,7 @@ void FStaticMeshRenderPass::CreateShader()
     {
         return;
     }
-    
+
     D3D_SHADER_MACRO DefinesLambert[] =
     {
         { LAMBERT, "1" },
@@ -79,7 +80,7 @@ void FStaticMeshRenderPass::CreateShader()
     {
         return;
     }
-    
+
     D3D_SHADER_MACRO DefinesBlinnPhong[] =
     {
         { PHONG, "1" },
@@ -90,12 +91,14 @@ void FStaticMeshRenderPass::CreateShader()
     {
         return;
     }
-    
+
 #pragma endregion UberShader
-    
+
     VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
+    LightDepthOnlyVS = ShaderManager->GetVertexShaderByKey(L"LightDepthOnlyVS");
     InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
-    
+    InputLayoutLightDepthOnly = ShaderManager->GetInputLayoutByKey(L"LightDepthOnlyVS");
+
     PixelShader = ShaderManager->GetPixelShaderByKey(L"PHONG_StaticMeshPixelShader");
     DebugDepthShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderDepth");
     DebugWorldNormalShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderWorldNormal");
@@ -103,7 +106,7 @@ void FStaticMeshRenderPass::CreateShader()
 
 void FStaticMeshRenderPass::ReleaseShader()
 {
-    
+
 }
 
 void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex ViewModeIndex)
@@ -158,27 +161,41 @@ void FStaticMeshRenderPass::PrepareRender()
     }
 }
 
-void FStaticMeshRenderPass::PrepareRenderState(const std::shared_ptr<FEditorViewportClient>& Viewport) 
+void FStaticMeshRenderPass::PrepareRenderState(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
     const EViewModeIndex ViewMode = Viewport->GetViewMode();
-    
-    Graphics->DeviceContext->VSSetShader(VertexShader, nullptr, 0);
-    Graphics->DeviceContext->IASetInputLayout(InputLayout);
 
-    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    if (bIsShadowPass)
+    {
+        Graphics->DeviceContext->VSSetShader(LightDepthOnlyVS, nullptr, 0);
+        Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
+        Graphics->DeviceContext->IASetInputLayout(InputLayoutLightDepthOnly);
+        Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    TArray<FString> PSBufferKeys = {
-        TEXT("FLightInfoBuffer"),
-        TEXT("FMaterialConstants"),
-        TEXT("FLitUnlitConstants"),
-        TEXT("FSubMeshConstants"),
-        TEXT("FTextureConstants")
-    };
 
-    BufferManager->BindConstantBuffers(PSBufferKeys, 0, EShaderStage::Pixel);
+    }
+    else
+    {
 
-    BufferManager->BindConstantBuffer(TEXT("FLightInfoBuffer"), 0, EShaderStage::Vertex);
-    BufferManager->BindConstantBuffer(TEXT("FMaterialConstants"), 1, EShaderStage::Vertex);
+        Graphics->DeviceContext->VSSetShader(VertexShader, nullptr, 0);
+        Graphics->DeviceContext->IASetInputLayout(InputLayout);
+
+        Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+        TArray<FString> PSBufferKeys = {
+            TEXT("FLightInfoBuffer"),
+            TEXT("FMaterialConstants"),
+            TEXT("FLitUnlitConstants"),
+            TEXT("FSubMeshConstants"),
+            TEXT("FTextureConstants")
+        };
+
+        BufferManager->BindConstantBuffers(PSBufferKeys, 0, EShaderStage::Pixel);
+
+        BufferManager->BindConstantBuffer(TEXT("FLightInfoBuffer"), 0, EShaderStage::Vertex);
+        BufferManager->BindConstantBuffer(TEXT("FMaterialConstants"), 1, EShaderStage::Vertex);
+
+    }
 
     ChangeViewMode(ViewMode);
 
@@ -214,7 +231,7 @@ void FStaticMeshRenderPass::UpdateObjectConstant(const FMatrix& WorldMatrix, con
     ObjectData.InverseTransposedWorld = FMatrix::Transpose(FMatrix::Inverse(WorldMatrix));
     ObjectData.UUIDColor = UUIDColor;
     ObjectData.bIsSelected = bIsSelected;
-    
+
     BufferManager->UpdateConstantBuffer(TEXT("FObjectConstantBuffer"), ObjectData);
 }
 
@@ -229,7 +246,7 @@ void FStaticMeshRenderPass::RenderPrimitive(OBJ::FStaticMeshRenderData* RenderDa
 {
     UINT Stride = sizeof(FStaticMeshVertex);
     UINT Offset = 0;
-    
+
     Graphics->DeviceContext->IASetVertexBuffers(0, 1, &RenderData->VertexBuffer, &Stride, &Offset);
 
     if (RenderData->IndexBuffer)
@@ -283,17 +300,69 @@ void FStaticMeshRenderPass::RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT nu
     Graphics->DeviceContext->DrawIndexed(numIndices, 0, 0);
 }
 
-void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
+void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport, FCascadeShadowMap* CascadeShadowMap, bool IsShadow)
 {
+    bIsShadowPass = IsShadow;
     const EResourceType ResourceType = EResourceType::ERT_Scene;
     FViewportResource* ViewportResource = Viewport->GetViewportResource();
     FRenderTargetRHI* RenderTargetRHI = ViewportResource->GetRenderTarget(ResourceType);
-    
-    Graphics->DeviceContext->OMSetRenderTargets(1, &RenderTargetRHI->RTV, ViewportResource->GetDepthStencilView());
-    ViewportResource->ClearRenderTarget(Graphics->DeviceContext, ResourceType);
-    Graphics->DeviceContext->ClearDepthStencilView(ViewportResource->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-    
-    PrepareRenderState(Viewport);
+
+    if (bIsShadowPass)
+    {
+        // 1) 그림자 맵 해상도에 맞춰 뷰포트 설정
+        UINT ShadowSize = 2048; // 필요 시 BufferManager 에서 꺼내오기
+      /*  D3D11_VIEWPORT vp{};
+        vp.TopLeftX = 0;
+        vp.TopLeftY = 0;
+        vp.Width = static_cast<FLOAT>(ShadowSize);
+        vp.Height = static_cast<FLOAT>(ShadowSize);
+        vp.MinDepth = 0.0f;
+        vp.MaxDepth = 1.0f;
+        Graphics->DeviceContext->RSSetViewports(1, &vp);*/
+
+        // 2) 깊이 쓰기 전용 DepthStencilState 세팅
+        D3D11_DEPTH_STENCIL_DESC dsDesc{};
+        dsDesc.DepthEnable = TRUE;
+        dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+        ID3D11DepthStencilState* dsState = nullptr;
+        Graphics->Device->CreateDepthStencilState(&dsDesc, &dsState);
+        Graphics->DeviceContext->OMSetDepthStencilState(dsState, 0);
+
+        // 3) DSV만 바인딩 (RTV 언바인드) 후 클리어
+        Graphics->DeviceContext->OMSetRenderTargets(
+            0, nullptr,
+            CascadeShadowMap->ShadowDSV  // 뎁스-스텐실 뷰만 바인딩 :contentReference[oaicite:0]{index=0}
+        );
+        Graphics->DeviceContext->ClearDepthStencilView(
+            CascadeShadowMap->ShadowDSV,
+            D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+            1.0f, 0                     // 깊이 최댓값(1.0), 스텐실 0 :contentReference[oaicite:1]{index=1}
+        );
+
+        // 4) 씬 지오메트리 렌더링 (쉐이더, 버퍼 바인딩 등)
+        PrepareRenderState(Viewport);
+        CascadeShadowMap->PrepareRender(Viewport.get());
+        // → StaticMeshComponents 루프 돌면서 RenderPrimitive 호출
+
+        // 5) 렌더 타겟 언바인드 (DSV도 언바인드)
+        Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+        dsState->Release();
+        ImGui::Begin("Text");
+        ImGui::Image((ImTextureID)CascadeShadowMap->ShadowSRV, ImVec2(512, 512));
+        ImGui::End();
+        // 6) 그림자 맵을 풀스크린 쿼드에 그리기
+       // CascadeShadowMap->Render(Viewport.get());
+    }
+
+    else
+    {
+        Graphics->DeviceContext->OMSetRenderTargets(1, &RenderTargetRHI->RTV, ViewportResource->GetDepthStencilView());
+        ViewportResource->ClearRenderTarget(Graphics->DeviceContext, ResourceType);
+        Graphics->DeviceContext->ClearDepthStencilView(ViewportResource->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+        PrepareRenderState(Viewport);
+    }
+
 
     for (UStaticMeshComponent* Comp : StaticMeshComponents)
     {
@@ -307,15 +376,15 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
         {
             continue;
         }
-        
+
         UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-        
+
         FMatrix WorldMatrix = Comp->GetWorldMatrix();
         FVector4 UUIDColor = Comp->EncodeUUID() / 255.0f;
         const bool bIsSelected = (Engine && Engine->GetSelectedActor() == Comp->GetOwner());
-        
+
         UpdateObjectConstant(WorldMatrix, UUIDColor, bIsSelected);
-        
+
         RenderPrimitive(RenderData, Comp->GetStaticMesh()->GetMaterials(), Comp->GetOverrideMaterials(), Comp->GetselectedSubMeshIndex());
 
         if (Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_AABB))
@@ -323,7 +392,7 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
             FEngineLoop::PrimitiveDrawBatch.AddAABBToBatch(Comp->GetBoundingBox(), Comp->GetWorldLocation(), WorldMatrix);
         }
     }
-
+  
     // 렌더 타겟 해제
     Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 }
