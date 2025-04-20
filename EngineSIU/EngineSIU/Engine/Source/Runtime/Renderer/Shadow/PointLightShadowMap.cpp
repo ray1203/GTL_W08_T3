@@ -143,7 +143,7 @@ void FPointLightShadowMap::PrepareRender()
 
 void FPointLightShadowMap::UpdatePointLightViewProjMatrices(const FVector& pointLightPos, const float lightRadius)
 {   
-    FMatrix Projection = JungleMath::CreateProjectionMatrix(90.0f, 1.0f, 0.1f, lightRadius);
+    FMatrix Projection = JungleMath::CreateProjectionMatrix(FMath::DegreesToRadians(90.0f), 1.0f, 0.1f, lightRadius);
 
     for (int face = 0; face < 6; ++face)
     {
