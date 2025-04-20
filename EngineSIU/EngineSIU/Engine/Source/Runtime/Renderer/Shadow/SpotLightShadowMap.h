@@ -22,8 +22,6 @@ public:
     void SetShadowSampler(int sStart);
 
     ID3D11ShaderResourceView* GetShadowSRV();
-    FVector GetDirection();
-    FVector GetUp();
 
 private:
     FDXDBufferManager* BufferManager = nullptr;
@@ -41,8 +39,6 @@ private:
     ID3D11SamplerState* ShadowSampler = nullptr;
 
     uint32 ShadowMapSize = 1024;
-    FMatrix SpotLightViewProjMatrix;
+    FMatrix SpotLightViewProjMatrix = {};
 
-    //const FVector Direction;
-    //const FVector Up;
 };

@@ -67,13 +67,13 @@ cbuffer Lighting : register(b0)
 };
 
 // 6개의 페이스별로 개별 바인딩(t10~t15)
-Texture2D<float> ShadowMap[6] : register(t10);
+Texture2D ShadowMap : register(t10);
 SamplerComparisonState ShadowSampler : register(s10);
 
 // Point Light 의 6개 face 뷰·프로젝션 행렬과 바이어스
 cbuffer ShadowData : register(b6)
 {
-    matrix PointLightViewProj[6];
+    matrix SpotLightViewProj;
     float ShadowBias; // 깊이 비교 시 바이어스
     float3 _padding; // 16바이트 정렬용
 };
@@ -117,20 +117,10 @@ float CalculateSpecular(float3 WorldNormal, float3 ToLightDir, float3 ViewDir, f
     return Spec * SpecularStrength;
 }
 
-// ——— 그림자 샘플링 헬퍼 ———
 float SamplePointShadow(float3 ToLight, float3 worldPos)
 {
-    int faceIdx = 0;
-    float3 absToL = abs(ToLight);
-    if (absToL.x > absToL.y && absToL.x > absToL.z)
-        faceIdx = (ToLight.x > 0) ? 0 : 1;
-    else if (absToL.y > absToL.z)
-        faceIdx = (ToLight.y > 0) ? 2 : 3;
-    else
-        faceIdx = (ToLight.z > 0) ? 4 : 5;
-    
     // 뷰·프로젝션 변환
-    float4 proj = mul(float4(worldPos, 1), PointLightViewProj[faceIdx]);
+    float4 proj = mul(float4(worldPos, 1), SpotLightViewProj);
     proj.xyz /= proj.w; // NDC 공간
     float2 uv = proj.xy * 0.5 + 0.5; // [0,1] 로 변환
     uv.x = proj.x * 0.5 + 0.5;
@@ -142,32 +132,66 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
     if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
         return 1.0;
     
-    if (faceIdx == 0)
-    {
-        return ShadowMap[0].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else if (faceIdx == 1)
-    {
-        return ShadowMap[1].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else if (faceIdx == 2)
-    {
-        return ShadowMap[2].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else if (faceIdx == 3)
-    {
-        return ShadowMap[3].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else if (faceIdx == 4)
-    {
-        return ShadowMap[4].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else
-    {
-        return ShadowMap[5].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
+    return ShadowMap.SampleCmpLevelZero(ShadowSampler, uv, depth).r;
 }
 
+float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir, float spotOuterAngle)
+{
+    float3 toFragment = worldPos - spotLightPos;
+    float distToFragment = length(toFragment);
+    toFragment = normalize(toFragment);
+    
+    float cosAngle = dot(toFragment, normalize(spotLightDir));
+    float cosOuterCone = cos(spotOuterAngle);
+    
+    if (cosAngle < cosOuterCone)
+        return 0.0f;
+    
+    float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLightViewProj);
+    
+    lightSpacePos.xyz /= lightSpacePos.w;
+    
+    float2 shadowTexCoord = float2(
+        0.5f * lightSpacePos.x + 0.5f,
+        -0.5f * lightSpacePos.y + 0.5f
+    );
+    
+    if (shadowTexCoord.x < 0.0f || shadowTexCoord.x > 1.0f ||
+        shadowTexCoord.y < 0.0f || shadowTexCoord.y > 1.0f)
+        return 1.0f;
+    
+    float currentDepth = lightSpacePos.z - ShadowBias;
+    
+    // PCF(Percentage Closer Filtering)로 부드러운 그림자 구현
+    float shadow = 0.0f;
+    float2 texelSize = 1.0f / float2(1024, 1024);
+    
+    // 3x3 커널로 주변 텍셀들을 샘플링하여 평균 내기
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            float2 offset = float2(x, y) * texelSize;
+            shadow += ShadowMap.SampleCmpLevelZero(
+                ShadowSampler,
+                shadowTexCoord + offset,
+                currentDepth - ShadowBias
+            ).r;
+        }
+    }
+    
+    shadow /= 9.0f; // 9개 샘플의 평균
+    return shadow;
+    //// 거리에 따른 그림자 감쇠 추가 (선택적)
+    //float maxShadowDistance = SpotLightRange * 0.9f;
+    //float shadowDistance = 1.0f - saturate(distToFragment / maxShadowDistance);
+    
+    // 원뿔 가장자리에서 그림자 페이드아웃 (선택적)
+    float coneFactor = smoothstep(cosOuterCone, lerp(cosOuterCone, 1.0f, 0.2f), cosAngle);
+    
+    //return lerp(1.0f, shadow, shadowDistance * coneFactor);
+    //return lerp(1.0f, shadow, coneFactor);
+}
 float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
 {
     FPointLightInfo LightInfo = PointLights[Index];
@@ -190,10 +214,8 @@ float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wo
     float SpecularFactor = CalculateSpecular(WorldNormal, LightDir, ViewDir, Material.SpecularScalar);
     float3 Lit = ((DiffuseFactor * DiffuseColor) + (SpecularFactor * Material.SpecularColor)) * LightInfo.LightColor.rgb;
 #endif
-
-    float shadow = SamplePointShadow(ToLight, WorldPosition);
     
-    return float4(Lit * Attenuation * LightInfo.Intensity * shadow, 1.0);
+    return float4(Lit * Attenuation * LightInfo.Intensity, 1.0);
 }
 
 float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
@@ -226,7 +248,11 @@ float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wor
     float3 Lit = ((DiffuseFactor * DiffuseColor) + (SpecularFactor * Material.SpecularColor)) * LightInfo.LightColor.rgb;
 #endif
     
-    return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity, 1.0);
+    //return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity, 1.0);
+    float shadow = SampleSpotShadow(WorldPosition, LightInfo.Position, ToLight, LightInfo.OuterRad);
+    
+    return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity * shadow, 1.0);
+    //return float4(shadow, shadow, shadow, 1.0);
 }
 
 float4 DirectionalLight(int nIndex, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)

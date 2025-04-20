@@ -97,7 +97,8 @@ void FSpotLightShadowMap::PrepareRender()
 
 void FSpotLightShadowMap::UpdateSpotLightViewProjMatrices(const FSpotLightInfo& Info)
 {
-    float fovY = Info.OuterRad * 2.0f; // 외부 원뿔 각도
+    float fovY = Info.OuterRad; // 외부 원뿔 각도
+    //float fovY = Info.OuterRad * 2.0f; // 외부 원뿔 각도
     float aspectRatio = 1.0f; // 정방형 섀도우 맵
     float nearZ = 0.1f;
     float farZ = Info.Radius;
@@ -105,12 +106,10 @@ void FSpotLightShadowMap::UpdateSpotLightViewProjMatrices(const FSpotLightInfo& 
     FMatrix Projection = JungleMath::CreateProjectionMatrix(fovY, aspectRatio, nearZ, farZ);
 
     FVector dir = Info.Direction;
-    // Begin Test
     FVector up = FVector(0, 0, 1);
-    // End Test
     FVector target = Info.Position + dir;
 
-    FMatrix View = JungleMath::CreateViewMatrix(Info.Direction, target, up);
+    FMatrix View = JungleMath::CreateViewMatrix(Info.Position, target, up);
 
     SpotLightViewProjMatrix = View * Projection;
 }
