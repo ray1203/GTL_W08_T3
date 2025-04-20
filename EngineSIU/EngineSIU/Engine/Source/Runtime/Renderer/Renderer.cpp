@@ -276,7 +276,7 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     {
         UpdateLightBufferPass->Render(Viewport);
         StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, true);
-        StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, false);
+        //StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, false);
     }
     
     // Render World Billboard

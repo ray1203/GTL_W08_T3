@@ -34,11 +34,13 @@ public:
     void Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphic, FDXDShaderManager* InShaderManager);
     void UpdateCascadeViewProjMatrices(FEditorViewportClient& ViewCamera, const FVector& LightDir);
     void PrepareRender();
+    void ResizeTexture(FEditorViewportClient* ViewCamera);
     void PrepareRender(FEditorViewportClient* Viewport);
     void Render(FEditorViewportClient* Viewport);
     const TArray<FCascade>& GetCascades() const;
 
-    ID3D11Texture2D* DepthStencilBuffer;
+    ID3D11Texture2D* DepthStencilTexture = nullptr;
+
     ID3D11DepthStencilView* ShadowDSV = nullptr;
     ID3D11ShaderResourceView* ShadowSRV = nullptr;
     ID3D11SamplerState* ShadowSampler = nullptr;
@@ -47,7 +49,7 @@ private:
 
     TArray<UDirectionalLightComponent*> DirectionalLights;
 
-
+    float Width, Height;
     FDXDBufferManager* BufferManager = nullptr;
     FGraphicsDevice* Graphics = nullptr;
     FDXDShaderManager* ShaderManager = nullptr;
