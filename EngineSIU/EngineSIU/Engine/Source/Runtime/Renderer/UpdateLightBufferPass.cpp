@@ -88,7 +88,7 @@ void FUpdateLightBufferPass::UpdateLightBuffer() const
     int PointLightsCount=0;
     int SpotLightsCount=0;
     int AmbientLightsCount=0;
-    
+
     for (auto Light : SpotLights)
     {
         if (SpotLightsCount < MAX_SPOT_LIGHT)

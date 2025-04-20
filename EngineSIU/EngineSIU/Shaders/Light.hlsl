@@ -66,6 +66,18 @@ cbuffer Lighting : register(b0)
     int AmbientLightsCount;
 };
 
+// 6개의 페이스별로 개별 바인딩(t10~t15)
+Texture2D<float> ShadowMap[6] : register(t10);
+SamplerComparisonState ShadowSampler : register(s10);
+
+// Point Light 의 6개 face 뷰·프로젝션 행렬과 바이어스
+cbuffer ShadowData : register(b6)
+{
+    matrix PointLightViewProj[6];
+    float ShadowBias; // 깊이 비교 시 바이어스
+    float3 _padding; // 16바이트 정렬용
+};
+
 float CalculateAttenuation(float Distance, float AttenuationFactor, float Radius)
 {
     if (Distance > Radius)
@@ -105,7 +117,55 @@ float CalculateSpecular(float3 WorldNormal, float3 ToLightDir, float3 ViewDir, f
     return Spec * SpecularStrength;
 }
 
-float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float WorldViewPosition, float3 DiffuseColor)
+// ——— 그림자 샘플링 헬퍼 ———
+float SamplePointShadow(float3 ToLight, float3 worldPos)
+{
+    int faceIdx = 0;
+    float3 absToL = abs(ToLight);
+    if (absToL.x > absToL.y && absToL.x > absToL.z)
+        faceIdx = (ToLight.x > 0) ? 0 : 1;
+    else if (absToL.y > absToL.z)
+        faceIdx = (ToLight.y > 0) ? 2 : 3;
+    else
+        faceIdx = (ToLight.z > 0) ? 4 : 5;
+    
+    // 뷰·프로젝션 변환
+    float4 proj = mul(float4(worldPos, 1), PointLightViewProj[faceIdx]);
+    proj.xyz /= proj.w; // NDC 공간
+    float2 uv = proj.xy * 0.5 + 0.5; // [0,1] 로 변환
+    float depth = proj.z - ShadowBias; // 바이어스 적용
+    
+    // 뷰포트 밖은 그림자 받지 않음
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
+        return 1.0;
+    
+    if (faceIdx == 0)
+    {
+        return ShadowMap[0].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
+    }
+    else if (faceIdx == 1)
+    {
+        return ShadowMap[1].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
+    }
+    else if (faceIdx == 2)
+    {
+        return ShadowMap[2].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
+    }
+    else if (faceIdx == 3)
+    {
+        return ShadowMap[3].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
+    }
+    else if (faceIdx == 4)
+    {
+        return ShadowMap[4].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
+    }
+    else
+    {
+        return ShadowMap[5].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
+    }
+}
+
+float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
 {
     FPointLightInfo LightInfo = PointLights[Index];
     
@@ -127,8 +187,10 @@ float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float Wor
     float SpecularFactor = CalculateSpecular(WorldNormal, LightDir, ViewDir, Material.SpecularScalar);
     float3 Lit = ((DiffuseFactor * DiffuseColor) + (SpecularFactor * Material.SpecularColor)) * LightInfo.LightColor.rgb;
 #endif
+
+    float shadow = SamplePointShadow(ToLight, WorldPosition);
     
-    return float4(Lit * Attenuation * LightInfo.Intensity, 1.0);
+    return float4(Lit * Attenuation * LightInfo.Intensity * shadow, 1.0);
 }
 
 float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
@@ -186,16 +248,21 @@ float4 Lighting(float3 WorldPosition, float3 WorldNormal, float3 WorldViewPositi
     float4 FinalColor = float4(0.0, 0.0, 0.0, 0.0);
     
     // 다소 비효율적일 수도 있음.
-    [unroll(MAX_POINT_LIGHT)]
-    for (int i = 0; i < PointLightsCount; i++)
+    [unroll]
+    for (int i = 0; i < MAX_POINT_LIGHT; i++)
     {
-        FinalColor += PointLight(i, WorldPosition, WorldNormal, WorldViewPosition, DiffuseColor);
-    }    
+        if (i < PointLightsCount)
+        {
+            FinalColor += PointLight(i, WorldPosition, WorldNormal, WorldViewPosition, DiffuseColor);
+        }
+    }
+    
     [unroll(MAX_SPOT_LIGHT)]
     for (int j = 0; j < SpotLightsCount; j++)
     {
-        FinalColor += SpotLight(j, WorldPosition, WorldNormal, WorldViewPosition, DiffuseColor);
+       FinalColor += SpotLight(j, WorldPosition, WorldNormal, WorldViewPosition, DiffuseColor);
     }
+    
     [unroll(MAX_DIRECTIONAL_LIGHT)]
     for (int k = 0; k < DirectionalLightsCount; k++)
     {

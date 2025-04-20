@@ -15,7 +15,11 @@ public:
     void UpdatePointLightViewProjMatrices(const FVector& pointLightPos, const float lightRadius);
     void PrepareRender();
     void RenderShadowMap();
+    void UpdateConstantBuffer();
     void ClearRenderArr();
+
+    void SetShadowResource(int tStart);
+    void SetShadowSampler(int sStart);
 
 private:
     FDXDBufferManager* BufferManager = nullptr;

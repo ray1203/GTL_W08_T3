@@ -10,3 +10,11 @@ struct FShadowObjWorld
 {
     FMatrix World;
 };
+
+struct FPointLightShadowData
+{
+    FMatrix PointLightViewProj[6];
+    float ShadowBias;
+    FVector _padding;
+};
+    

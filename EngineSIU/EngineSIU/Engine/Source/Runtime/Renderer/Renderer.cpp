@@ -70,6 +70,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     SlateRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
 
     PointLightShadowMapPass->Initialize(BufferManager, Graphics, ShaderManager);
+    StaticMeshRenderPass->SetPointLightShadowMap(PointLightShadowMapPass);
 }
 
 void FRenderer::Release()
@@ -141,6 +142,9 @@ void FRenderer::CreateConstantBuffers()
 
     UINT ShadowObjWorld = sizeof(FShadowObjWorld);
     BufferManager->CreateBufferGeneric<FShadowObjWorld>("FShadowObjWorld", nullptr, ShadowObjWorld, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
+    UINT PointlIghtShadowData = sizeof(struct FPointLightShadowData);
+    BufferManager->CreateBufferGeneric<struct FPointLightShadowData>("FPointLightShadowData", nullptr, PointlIghtShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     // TODO: 함수로 분리
     ID3D11Buffer* ObjectBuffer = BufferManager->GetConstantBuffer(TEXT("FObjectConstantBuffer"));

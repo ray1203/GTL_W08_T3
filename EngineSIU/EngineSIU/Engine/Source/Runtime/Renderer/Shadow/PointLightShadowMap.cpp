@@ -180,7 +180,30 @@ void FPointLightShadowMap::RenderShadowMap()
     }
 }
 
+void FPointLightShadowMap::UpdateConstantBuffer()
+{
+    FPointLightShadowData PointLightShadowData;
+    for (int face = 0; face < faceNum; face++) {
+        PointLightShadowData.PointLightViewProj[face] = PointLightViewProjMatrix[face];
+    }
+    PointLightShadowData.ShadowBias = 0.000f;
+    BufferManager->UpdateConstantBuffer(TEXT("FPointLightShadowData"), PointLightShadowData);
+    BufferManager->BindConstantBuffer(TEXT("FPointLightShadowData"), 6, EShaderStage::Pixel);
+}
+
 void FPointLightShadowMap::ClearRenderArr()
 {
     PointLights.Empty();
+}
+
+void FPointLightShadowMap::SetShadowResource(int tStart)
+{
+    for (int face = 0; face < faceNum; face++) {
+        Graphics->DeviceContext->PSSetShaderResources(tStart + face, 1, &ShadowSRV[face]);
+    }
+}
+
+void FPointLightShadowMap::SetShadowSampler(int sStart)
+{
+    Graphics->DeviceContext->PSSetSamplers(sStart, 1, &ShadowSampler);
 }
