@@ -133,6 +133,9 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
     float4 proj = mul(float4(worldPos, 1), PointLightViewProj[faceIdx]);
     proj.xyz /= proj.w; // NDC 공간
     float2 uv = proj.xy * 0.5 + 0.5; // [0,1] 로 변환
+    uv.x = proj.x * 0.5 + 0.5;
+    uv.y = 1.0f - (proj.y * 0.5 + 0.5);
+    
     float depth = proj.z - ShadowBias; // 바이어스 적용
     
     // 뷰포트 밖은 그림자 받지 않음
