@@ -21,6 +21,10 @@ public:
     void SetShadowResource(int tStart);
     void SetShadowSampler(int sStart);
 
+    TArray<ID3D11ShaderResourceView*> GetShadowSRVArray();
+    TArray<FVector> GetDirectionArray();
+    TArray<FVector> GetUpArray();
+
 private:
     FDXDBufferManager* BufferManager = nullptr;
     FGraphicsDevice* Graphics = nullptr;
@@ -50,8 +54,8 @@ private:
         FVector(0,0,1), FVector(0,0,-1)
     };
     const FVector Ups[6] = {
-        FVector(0,1,0), FVector(0,1,0),
-        FVector(0,0,1), FVector(0,0,-1),
+        FVector(0,0,1), FVector(0,0,1),
+        FVector(0,0,1), FVector(0,0,1),
         FVector(0,1,0), FVector(0,1,0)
     };
 };

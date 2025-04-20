@@ -207,3 +207,34 @@ void FPointLightShadowMap::SetShadowSampler(int sStart)
 {
     Graphics->DeviceContext->PSSetSamplers(sStart, 1, &ShadowSampler);
 }
+
+TArray<ID3D11ShaderResourceView*> FPointLightShadowMap::GetShadowSRVArray()
+{
+    TArray<ID3D11ShaderResourceView*> arr;
+    for (int i = 0; i < faceNum; ++i) 
+    {
+        arr.Add(ShadowSRV[i]);
+    }
+    return arr;
+}
+
+TArray<FVector> FPointLightShadowMap::GetDirectionArray()
+{
+    TArray<FVector> arr;
+    for (int i = 0; i < faceNum; ++i)
+    {
+        arr.Add(Directions[i]);
+    }
+    return arr;
+}
+
+TArray<FVector> FPointLightShadowMap::GetUpArray()
+{
+    TArray<FVector> arr;
+    for (int i = 0; i < faceNum; ++i)
+    {
+        arr.Add(Ups[i]);
+    }
+    return arr;
+}
+
