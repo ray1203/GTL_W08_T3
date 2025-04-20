@@ -31,6 +31,22 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
         HRESULT hr = Graphics->Device->CreateTexture2D(&texDesc, nullptr, &DepthStencilBuffer[face]);
         assert(SUCCEEDED(hr));
 
+        D3D11_TEXTURE2D_DESC linDesc = {};
+        linDesc.Width = ShadowMapSize;
+        linDesc.Height = ShadowMapSize;
+        linDesc.MipLevels = 1;
+        linDesc.ArraySize = 1;
+        linDesc.Format = DXGI_FORMAT_R32_TYPELESS;  // 또는 직접 R32_FLOAT 로 해도 무방
+        linDesc.SampleDesc = { 1,0 };
+        linDesc.Usage = D3D11_USAGE_DEFAULT;
+        // ▶ RTV 바인드를 추가해 줍니다
+        linDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        linDesc.CPUAccessFlags = 0;
+        linDesc.MiscFlags = 0;
+
+        hr = Graphics->Device->CreateTexture2D(&linDesc, nullptr, &DepthLinearBuffer[face]);
+        assert(SUCCEEDED(hr));
+
         // 2) DSV 생성 (뎁스 기록용)
         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
         dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
@@ -49,6 +65,19 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
 
         hr = Graphics->Device->CreateShaderResourceView(DepthStencilBuffer[face], &srvDesc, &ShadowSRV[face]);
         assert(SUCCEEDED(hr));
+
+        hr = Graphics->Device->CreateShaderResourceView(DepthLinearBuffer[face], &srvDesc, &ShadowViewSRV[face]);
+        assert(SUCCEEDED(hr));
+
+        D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+        rtvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        rtvDesc.Texture2D.MipSlice = 0;
+
+        hr = Graphics->Device->CreateRenderTargetView(
+            DepthLinearBuffer[face], &rtvDesc, &ShadowViewRTV[face]);
+        assert(SUCCEEDED(hr));
+
     }
 
     // 4) 비교 샘플러 생성 (쉐도우 비교 샘플링용)
@@ -68,9 +97,28 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
     HRESULT hr = Graphics->Device->CreateSamplerState(&sampDesc, &ShadowSampler);
     assert(SUCCEEDED(hr));
 
+    // 리니어 샘플러 생성
+    D3D11_SAMPLER_DESC sampLinearDesc = {};
+    sampLinearDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    sampLinearDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+    sampLinearDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+    sampLinearDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    sampLinearDesc.MipLODBias = 0.0f;
+    sampLinearDesc.MaxAnisotropy = 1;
+    sampLinearDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;      // 일반 샘플링용
+    sampLinearDesc.MinLOD = 0;
+    sampLinearDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+    hr = Graphics->Device->CreateSamplerState(&sampLinearDesc, &LinearSampler);
+    assert(SUCCEEDED(hr));
+
     // 깊이 전용 버텍스 셰이더 가져오기
     DepthVS = ShaderManager->GetVertexShaderByKey(L"DepthOnlyVS");
     DepthIL = ShaderManager->GetInputLayoutByKey(L"DepthOnlyVS");
+
+    FullscreenVS = ShaderManager->GetVertexShaderByKey(L"FullScreenVS");
+    FullscreenIL = ShaderManager->GetInputLayoutByKey(L"FullScreenVS");
+    DepthVisualizePS = ShaderManager->GetPixelShaderByKey(L"DepthVisualizePS");
 }
 
 void FPointLightShadowMap::PrepareRender()
@@ -85,7 +133,6 @@ void FPointLightShadowMap::PrepareRender()
             }
         }
     }
-
     
     if (PointLights.Num() > 0) 
     {
@@ -186,7 +233,7 @@ void FPointLightShadowMap::UpdateConstantBuffer()
     for (int face = 0; face < faceNum; face++) {
         PointLightShadowData.PointLightViewProj[face] = PointLightViewProjMatrix[face];
     }
-    PointLightShadowData.ShadowBias = 0.000f;
+    PointLightShadowData.ShadowBias = 0.005f;
     BufferManager->UpdateConstantBuffer(TEXT("FPointLightShadowData"), PointLightShadowData);
     BufferManager->BindConstantBuffer(TEXT("FPointLightShadowData"), 6, EShaderStage::Pixel);
 }
@@ -206,6 +253,81 @@ void FPointLightShadowMap::SetShadowResource(int tStart)
 void FPointLightShadowMap::SetShadowSampler(int sStart)
 {
     Graphics->DeviceContext->PSSetSamplers(sStart, 1, &ShadowSampler);
+}
+
+void FPointLightShadowMap::RenderLinearDepth()
+{
+    if (DepthStencilBuffer[0] == nullptr) return;
+
+    // ─── 0) 기존 RenderTargets, DepthStencilView, Viewports 백업 ───
+    ID3D11RenderTargetView* oldRTVs[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = {};
+    ID3D11DepthStencilView* oldDSV = nullptr;
+    Graphics->DeviceContext->OMGetRenderTargets(
+        D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT, oldRTVs, &oldDSV);
+
+    UINT numVP = D3D11_VIEWPORT_AND_SCISSORRECT_MAX_INDEX;
+    D3D11_VIEWPORT oldVPs[D3D11_VIEWPORT_AND_SCISSORRECT_MAX_INDEX];
+    Graphics->DeviceContext->RSGetViewports(&numVP, oldVPs);
+
+    BufferManager->BindConstantBuffer(TEXT("FDepthMapData"), 0, EShaderStage::Pixel);
+    
+    for (uint32 face = 0; face < faceNum; ++face)
+    {
+        // (A) RTV 세팅 & 클리어
+        ID3D11RenderTargetView* rtvs[] = { ShadowViewRTV[face] };
+        Graphics->DeviceContext->OMSetRenderTargets(1, rtvs, nullptr);
+        const float clearColor[4] = { 0, 0, 0, 0 };
+        Graphics->DeviceContext->ClearRenderTargetView(ShadowViewRTV[face], clearColor);
+
+        // (B) 뷰포트 설정
+        D3D11_VIEWPORT vp = { 0.f, 0.f, (float)ShadowMapSize, (float)ShadowMapSize, 0.f, 1.f };
+        Graphics->DeviceContext->RSSetViewports(1, &vp);
+
+        // (C) 풀스크린 파이프라인 바인딩
+        Graphics->DeviceContext->IASetInputLayout(FullscreenIL);
+        Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        Graphics->DeviceContext->VSSetShader(FullscreenVS, nullptr, 0);
+        Graphics->DeviceContext->PSSetShader(DepthVisualizePS, nullptr, 0);
+
+        // (D) 원본 Depth SRV 와 리니어 샘플러 바인딩
+        Graphics->DeviceContext->PSSetShaderResources(0, 1, &ShadowSRV[face]);
+        Graphics->DeviceContext->PSSetSamplers(0, 1, &LinearSampler);
+
+        // (E) 카메라(라이트) 매트릭스 및 Near/Far/Gamma 상수 업데이트
+        FDepthMapData depthMapData;
+        depthMapData.ViewProj = PointLightViewProjMatrix[face];           // light ViewProj
+        depthMapData.Params.X = 0.1f;                                     // Near plane
+        // TODO Light의 범위를 저장해 뒀다가 Far Plane 값에 적용 필요함
+        // 일단 임시로 20 값을 넣어 뒀음
+        depthMapData.Params.Y = 20.0f;                   // Far plane = Light Radius
+        depthMapData.Params.Z = 1.0f / 2.2f;                             // invGamma (예: gamma=2.2)
+        depthMapData.Params.W = 0;
+        BufferManager->UpdateConstantBuffer(TEXT("FDepthMapData"), depthMapData);
+
+        // (F) 풀스크린 삼각형 드로우
+        Graphics->DeviceContext->Draw(3, 0);
+    }
+
+    // ─── 3) 이전 RTV/DSV & Viewports 복구 ───────────────
+    Graphics->DeviceContext->RSSetViewports(numVP, oldVPs);
+    Graphics->DeviceContext->OMSetRenderTargets(
+        D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT,
+        oldRTVs, oldDSV);
+
+    // ─── 4) Release 참조 카운트 낮추기 ─────────────────
+    for (int i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+        if (oldRTVs[i]) oldRTVs[i]->Release();
+    if (oldDSV) oldDSV->Release();
+}
+
+TArray<ID3D11ShaderResourceView*> FPointLightShadowMap::GetShadowViewSRVArray()
+{
+    TArray<ID3D11ShaderResourceView*> arr;
+    for (int i = 0; i < faceNum; ++i)
+    {
+        arr.Add(ShadowViewSRV[i]);
+    }
+    return arr;
 }
 
 TArray<ID3D11ShaderResourceView*> FPointLightShadowMap::GetShadowSRVArray()

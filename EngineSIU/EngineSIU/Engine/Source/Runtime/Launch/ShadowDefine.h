@@ -17,4 +17,10 @@ struct FPointLightShadowData
     float ShadowBias;
     FVector _padding;
 };
-    
+
+
+struct FDepthMapData 
+{
+    FMatrix ViewProj;
+    FVector4 Params;
+};

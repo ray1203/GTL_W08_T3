@@ -41,7 +41,8 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CreateConstantBuffers();
     CreateCommonShader();
     CreateDepthOnlyShader();
-    
+    CreateDepthVisualShader();
+
     StaticMeshRenderPass = new FStaticMeshRenderPass();
     WorldBillboardRenderPass = new FWorldBillboardRenderPass();
     EditorBillboardRenderPass = new FEditorBillboardRenderPass();
@@ -146,6 +147,9 @@ void FRenderer::CreateConstantBuffers()
     UINT PointlIghtShadowData = sizeof(struct FPointLightShadowData);
     BufferManager->CreateBufferGeneric<struct FPointLightShadowData>("FPointLightShadowData", nullptr, PointlIghtShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
+    UINT DepthMapData = sizeof(struct FDepthMapData);
+    BufferManager->CreateBufferGeneric<struct FDepthMapData>("FDepthMapData", nullptr, DepthMapData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
     // TODO: 함수로 분리
     ID3D11Buffer* ObjectBuffer = BufferManager->GetConstantBuffer(TEXT("FObjectConstantBuffer"));
     ID3D11Buffer* CameraConstantBuffer = BufferManager->GetConstantBuffer(TEXT("FCameraConstantBuffer"));
@@ -208,6 +212,35 @@ void FRenderer::CreateDepthOnlyShader()
         DepthLayoutDesc,                                   // 레이아웃
         LayoutCount                                       // 요소 개수
     );
+    if (FAILED(hr))
+    {
+        return;
+    }
+}
+
+void FRenderer::CreateDepthVisualShader()
+{
+    D3D11_INPUT_ELEMENT_DESC DepthLayoutDesc[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
+          0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0},
+    };
+    UINT LayoutCount = ARRAYSIZE(DepthLayoutDesc);
+
+    // 셰이더와 레이아웃 등록
+    HRESULT hr = ShaderManager->AddVertexShaderAndInputLayout(
+        L"FullScreenVS",                                   // 키
+        L"Shaders/DepthVisualize.hlsl",            // 파일 경로
+        "VS_Fullscreen",                                         // 엔트리 포인트
+        DepthLayoutDesc,                                   // 레이아웃
+        LayoutCount                                       // 요소 개수
+    );
+    if (FAILED(hr))
+    {
+        return;
+    }
+
+    hr = ShaderManager->AddPixelShader(L"DepthVisualizePS", L"Shaders/DepthVisualize.hlsl", "PS_DepthVisualize");
     if (FAILED(hr))
     {
         return;

@@ -21,6 +21,10 @@ public:
     void SetShadowResource(int tStart);
     void SetShadowSampler(int sStart);
 
+    void RenderLinearDepth();
+
+    TArray<ID3D11ShaderResourceView*> GetShadowViewSRVArray();
+
     TArray<ID3D11ShaderResourceView*> GetShadowSRVArray();
     TArray<FVector> GetDirectionArray();
     TArray<FVector> GetUpArray();
@@ -42,6 +46,18 @@ private:
     ID3D11DepthStencilView* ShadowDSV[6] = { nullptr };
     ID3D11ShaderResourceView* ShadowSRV[6] = { nullptr };
     ID3D11SamplerState* ShadowSampler = nullptr;
+
+    // 시각화 하는 용의 Buffer PointLight가 여러개 이더라도
+    // 6개만 있어도 됨
+    ID3D11Texture2D* DepthLinearBuffer[6] = { nullptr };
+    ID3D11ShaderResourceView* ShadowViewSRV[6] = { nullptr };
+    ID3D11RenderTargetView* ShadowViewRTV[6] = { nullptr };
+    ID3D11SamplerState* LinearSampler = nullptr;
+
+    ID3D11VertexShader* FullscreenVS = nullptr;
+    ID3D11InputLayout* FullscreenIL = nullptr;
+
+    ID3D11PixelShader* DepthVisualizePS = nullptr;
 
     uint32 ShadowMapSize = 1024;
     const uint32 faceNum = 6;
