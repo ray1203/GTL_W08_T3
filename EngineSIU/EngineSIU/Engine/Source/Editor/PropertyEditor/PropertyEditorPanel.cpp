@@ -20,7 +20,7 @@
 #include "GameFramework/Actor.h"
 #include "Engine/AssetManager.h"
 #include "UObject/UObjectIterator.h"
-#include "Engine/Source/Runtime/Renderer/Shadow/PointLightShadowMap.h"
+#include "Engine/Source/Runtime/Renderer/Shadow/SpotLightShadowMap.h"
 
 void PropertyEditorPanel::Render()
 {
@@ -48,8 +48,6 @@ void PropertyEditorPanel::Render()
 
     /* Render Start */
     ImGui::Begin("Detail", nullptr, PanelFlags);
-
-
 
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
     if (!Engine)
@@ -153,10 +151,6 @@ void PropertyEditorPanel::Render()
     if(PickedActor)
         if (UPointLightComponent* pointlightObj = PickedActor->GetComponentByClass<UPointLightComponent>())
         {
-            // Shadow Depth Map 시각화
-            TArray<ID3D11ShaderResourceView*> shaderSRVs = GEngineLoop.Renderer.PointLightShadowMapPass->GetShadowSRVArray();
-            TArray<FVector> directions = GEngineLoop.Renderer.PointLightShadowMapPass->GetDirectionArray();
-            TArray<FVector> ups = GEngineLoop.Renderer.PointLightShadowMapPass->GetUpArray();
 
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
@@ -175,22 +169,6 @@ void PropertyEditorPanel::Render()
                     pointlightObj->SetRadius(Radius);
                 }
 
-                // ─ Shadow Map 미리보기 (1열) ─
-                ImGui::Separator();
-                ImGui::Text("Shadow Maps (6 faces):");
-
-                const int   mapsCount = shaderSRVs.Num();
-                const float imgSize = 256.0f; // 원하는 크기로 조정
-
-                for (int i = 0; i < mapsCount; ++i)
-                {
-                    ImGui::Text("Direction %1.f %1.f %1.f", directions[i].X, directions[i].Y, directions[i].Z);
-                    ImGui::Text("Up %1.f %1.f %1.f", ups[i].X, ups[i].Y, ups[i].Z);
-                    ImTextureID texID = (ImTextureID)shaderSRVs[i];
-                    ImGui::Image(texID, ImVec2(imgSize, imgSize));
-                    ImGui::Spacing();    // 이미지 사이에 약간의 여백
-                }
-
                 ImGui::TreePop();
             }
 
@@ -200,6 +178,11 @@ void PropertyEditorPanel::Render()
     if(PickedActor)
         if (USpotLightComponent* spotlightObj = PickedActor->GetComponentByClass<USpotLightComponent>())
         {
+            // Shadow Depth Map 시각화
+            ID3D11ShaderResourceView* shaderSRV = GEngineLoop.Renderer.SpotLightShadowMapPass->GetShadowSRV();
+            //FVector direction = GEngineLoop.Renderer.PointLightShadowMapPass->GetDirection();
+            //FVector up = GEngineLoop.Renderer.PointLightShadowMapPass->GetUp();
+
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
             if (ImGui::TreeNodeEx("SpotLight Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
@@ -229,6 +212,17 @@ void PropertyEditorPanel::Render()
                 if (ImGui::SliderFloat("OuterDegree", &OuterDegree, 0.01f, 180.f, "%.1f")) {
                     spotlightObj->SetOuterDegree(OuterDegree);
                 }
+
+                // ─ Shadow Map 미리보기 (1열) ─
+                ImGui::Separator();
+                ImGui::Text("Testing SpotLight:");
+
+                const float imgSize = 256.0f; // 원하는 크기로 조정
+
+                ImGui::Text("Direction %.01f %.01f %.01f", LightDirection.X, LightDirection.Y, LightDirection.Z);
+                ImTextureID texID = (ImTextureID)shaderSRV;
+                ImGui::Image(texID, ImVec2(imgSize, imgSize));
+                ImGui::Spacing();    // 이미지 사이에 약간의 여백
 
                 ImGui::TreePop();
             }

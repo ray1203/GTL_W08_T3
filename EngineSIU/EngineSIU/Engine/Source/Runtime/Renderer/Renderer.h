@@ -41,7 +41,8 @@ class FSlateRenderPass;
 class FEditorRenderPass;
 class FCascadeShadowMap;
 
-class FPointLightShadowMap;
+
+class FSpotLightShadowMap;
 
 class FRenderer
 {
@@ -111,7 +112,7 @@ public:
     
     FSlateRenderPass* SlateRenderPass = nullptr;
 
-    FPointLightShadowMap* PointLightShadowMapPass = nullptr;
+    FSpotLightShadowMap* SpotLightShadowMapPass = nullptr;
 };
 
 template<typename T>
