@@ -7,6 +7,7 @@
 class FDXDBufferManager;
 class FGraphicsDevice;
 class FDXDShaderManager;
+class UStaticMeshComponent;
 
 struct FCascade
 {
@@ -28,7 +29,7 @@ namespace
     }
 };
 
-class FCascadeShadowMap
+class FDirectionalShadowMap
 {
 public:
     void Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphic, FDXDShaderManager* InShaderManager);
@@ -48,6 +49,7 @@ public:
 private:
 
     TArray<UDirectionalLightComponent*> DirectionalLights;
+    TArray<UStaticMeshComponent*> StaticMeshComponents;
 
     float Width, Height;
     FDXDBufferManager* BufferManager = nullptr;

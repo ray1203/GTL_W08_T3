@@ -39,7 +39,7 @@ class FFogRenderPass;
 class FCompositingPass;
 class FSlateRenderPass;
 class FEditorRenderPass;
-class FCascadeShadowMap;
+class FDirectionalShadowMap;
 
 class FRenderer
 {
@@ -101,7 +101,7 @@ public:
     FPostProcessCompositingPass* PostProcessCompositingPass = nullptr;
     
     FSlateRenderPass* SlateRenderPass = nullptr;
-    FCascadeShadowMap* CascadeShadowMap = nullptr;
+    FDirectionalShadowMap* CascadeShadowMap = nullptr;
 };
 
 template<typename T>

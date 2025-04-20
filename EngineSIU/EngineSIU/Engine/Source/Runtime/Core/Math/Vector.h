@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <cassert>
 #include "MathUtility.h"
 #include "Serialization/Archive.h"
@@ -161,7 +161,10 @@ public:
     float& operator[](int Index);
     const float& operator[](int Index) const;
 
-    
+    static inline FVector GetAbs(const FVector& v)
+    {
+         return FVector(abs(v.X), abs(v.Y), abs(v.Z));
+    }
 public:
     bool Equals(const FVector& V, float Tolerance = KINDA_SMALL_NUMBER) const;
     bool AllComponentsEqual(float Tolerance = KINDA_SMALL_NUMBER) const;

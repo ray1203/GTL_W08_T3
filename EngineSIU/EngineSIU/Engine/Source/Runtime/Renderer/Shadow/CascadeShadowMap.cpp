@@ -14,7 +14,7 @@
 #include "UObject/UObjectIterator.h"
 
 
-void FCascadeShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphic, FDXDShaderManager* InShaderManager)
+void FDirectionalShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphic, FDXDShaderManager* InShaderManager)
 {
     BufferManager = InBufferManager;
     Graphics = InGraphic;
@@ -32,57 +32,45 @@ void FCascadeShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphics
 
 
 }
-
-void FCascadeShadowMap::UpdateCascadeViewProjMatrices(FEditorViewportClient& ViewCamera, const FVector& LightDir)
+void FDirectionalShadowMap::UpdateCascadeViewProjMatrices(FEditorViewportClient& ViewCamera, const FVector& LightDir)
 {
     // 1) 카메라 프러스텀 코너 획득
-    TArray<FVector> corners = ViewCamera.GetFrustumCorners();
+    auto corners = ViewCamera.GetFrustumCorners();
     FVector center = ComputeFrustumCenter(corners);
 
-    // 2) 라이트 뷰 매트릭스
-    float distance = ViewCamera.FarClip ;
-    FVector lightPos = center - LightDir * distance;
-    FMatrix lightView = JungleMath::CreateViewMatrix(lightPos, center, FVector(0, 0, 1));
+    // 카메라 FarClip 거리 사용
+    float dist = ViewCamera.FarClip;
 
-    // 3) 라이트 공간에서 익스트림 계산
-    float minX = FLT_MAX, maxX = -FLT_MAX;
-    float minY = FLT_MAX, maxY = -FLT_MAX;
+    // lightView, lightProj 생성
+    FMatrix lightView = JungleMath::CreateLightViewMatrix(center, LightDir, dist);
+  
+    // light-space extents 계산
+    float minX = FLT_MAX, maxX = -FLT_MAX, minY = FLT_MAX, maxY = -FLT_MAX;
     float minZ = FLT_MAX, maxZ = -FLT_MAX;
     for (auto& c : corners)
     {
         FVector lp = lightView.TransformPosition(c);
-        minX = FMath::Min(minX, lp.X); maxX = FMath::Max(maxX, lp.X);
-        minY = FMath::Min(minY, lp.Y); maxY = FMath::Max(maxY, lp.Y);
-        minZ = FMath::Min(minZ, lp.Z); maxZ = FMath::Max(maxZ, lp.Z);
+        minX = FMath::Min(minX, lp.X);  maxX = FMath::Max(maxX, lp.X);
+        minY = FMath::Min(minY, lp.Y);  maxY = FMath::Max(maxY, lp.Y);
+        minZ = FMath::Min(minZ, lp.Z);  maxZ = FMath::Max(maxZ, lp.Z);
     }
 
-    // 4) 오프센터 정투영
+    float nearPlane = FMath::Max(minZ, 0.0001f);
+
     FMatrix lightProj = JungleMath::CreateOrthoOffCenterProjectionMatrix(
-        minX, maxX, minY, maxY, FMath::Max(0.f, minZ), maxZ);
+        minX, maxX, minY, maxY, nearPlane, maxZ);
 
     CascadeViewProjMatrix = lightView * lightProj;
 
-    //TODO: Camera View, Proj로 srv 확인시 이상없음 -> CascadeViewProjMatrix가 문제.
-    // CascadeViewProjMatrix 계산 수정 필요함.
 
-    FCameraConstantBuffer CameraConstantBuffer;
-    CameraConstantBuffer.ViewMatrix = ViewCamera.GetViewMatrix();
-    CameraConstantBuffer.InvViewMatrix = FMatrix::Inverse(CameraConstantBuffer.ViewMatrix);
-    CameraConstantBuffer.ProjectionMatrix = ViewCamera.GetProjectionMatrix();
-    CameraConstantBuffer.InvProjectionMatrix = FMatrix::Inverse(CameraConstantBuffer.ProjectionMatrix);
-    CameraConstantBuffer.ViewLocation = ViewCamera.GetCameraLocation();
-    CameraConstantBuffer.NearClip = ViewCamera.GetCameraLearClip();
-    CameraConstantBuffer.FarClip = ViewCamera.GetCameraFarClip();
-    BufferManager->UpdateConstantBuffer("FCameraConstantBuffer", CameraConstantBuffer);
-
-    /*ID3D11Buffer* LightViewProj = BufferManager->GetConstantBuffer(TEXT("FLightViewProj"));
+    ID3D11Buffer* LightViewProj = BufferManager->GetConstantBuffer(TEXT("FLightViewProj"));
     Graphics->DeviceContext->VSSetConstantBuffers(1, 1, &LightViewProj);
+    Graphics->DeviceContext->PSSetConstantBuffers(5, 1, &LightViewProj);
     FLightViewProj LightViewProjData = { CascadeViewProjMatrix };
-    BufferManager->UpdateConstantBuffer(TEXT("FLightViewProj"), LightViewProjData);*/
+    BufferManager->UpdateConstantBuffer(TEXT("FLightViewProj"), LightViewProjData);
 
 }
-
-void FCascadeShadowMap::Render(FEditorViewportClient* Viewport)
+void FDirectionalShadowMap::Render(FEditorViewportClient* Viewport)
 {
  
     //// 2-2) 백버퍼(RTV) 바인딩
@@ -117,12 +105,12 @@ void FCascadeShadowMap::Render(FEditorViewportClient* Viewport)
     //Graphics->DeviceContext->PSSetShaderResources(0, 1, nullSRV);
 }
 
-void FCascadeShadowMap::PrepareRender()
+void FDirectionalShadowMap::PrepareRender()
 {
 
 }
 
-void FCascadeShadowMap::ResizeTexture(FEditorViewportClient* ViewCamera)
+void FDirectionalShadowMap::ResizeTexture(FEditorViewportClient* ViewCamera)
 {
     uint32 newW = 2048;
     uint32 newH = 2048;
@@ -172,7 +160,7 @@ void FCascadeShadowMap::ResizeTexture(FEditorViewportClient* ViewCamera)
     }
 }
 
-void FCascadeShadowMap::PrepareRender(FEditorViewportClient* Viewport)
+void FDirectionalShadowMap::PrepareRender(FEditorViewportClient* Viewport)
 {
     DirectionalLights.Empty();
     for (const auto iter : TObjectRange<ULightComponentBase>())
@@ -191,7 +179,8 @@ void FCascadeShadowMap::PrepareRender(FEditorViewportClient* Viewport)
     {
         if (DirectionalLightsCount < MAX_DIRECTIONAL_LIGHT)
         {
-            UpdateCascadeViewProjMatrices(*Viewport, Light->GetDirectionalLightInfo().Direction);
+            Light->GetDirectionalLightInfo().Direction;
+            UpdateCascadeViewProjMatrices(*Viewport, Light->GetDirection());
             DirectionalLightsCount++;
         }
     }
@@ -200,7 +189,7 @@ void FCascadeShadowMap::PrepareRender(FEditorViewportClient* Viewport)
 
 
 
-const TArray<FCascade>& FCascadeShadowMap::GetCascades() const
+const TArray<FCascade>& FDirectionalShadowMap::GetCascades() const
 {
     return Cascades;
 }

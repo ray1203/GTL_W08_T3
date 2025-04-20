@@ -51,7 +51,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
-    CascadeShadowMap = new FCascadeShadowMap();
+    CascadeShadowMap = new FDirectionalShadowMap();
 
 
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -276,7 +276,7 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     {
         UpdateLightBufferPass->Render(Viewport);
         StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, true);
-        //StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, false);
+        StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, false);
     }
     
     // Render World Billboard

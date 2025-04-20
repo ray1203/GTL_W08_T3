@@ -10,7 +10,7 @@ class UWorld;
 class UMaterial;
 class FEditorViewportClient;
 class UStaticMeshComponent;
-class FCascadeShadowMap;
+class FDirectionalShadowMap;
 struct FStaticMaterial;
 class FStaticMeshRenderPass : public IRenderPass
 {
@@ -24,7 +24,7 @@ public:
     virtual void PrepareRender() override;
 
     virtual void Render(const std::shared_ptr<FEditorViewportClient>& Viewport) override {};
-    void Render(const std::shared_ptr<FEditorViewportClient>& Viewport, FCascadeShadowMap* CascadeShadowMap, bool IsShadow);
+    void Render(const std::shared_ptr<FEditorViewportClient>& Viewport, FDirectionalShadowMap* CascadeShadowMap, bool IsShadow);
 
     virtual void ClearRenderArr() override;
 

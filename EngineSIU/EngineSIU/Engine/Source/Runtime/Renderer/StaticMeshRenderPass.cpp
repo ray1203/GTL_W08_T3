@@ -168,7 +168,7 @@ void FStaticMeshRenderPass::PrepareRenderState(const std::shared_ptr<FEditorView
     if (bIsShadowPass)
     {
         Graphics->DeviceContext->VSSetShader(LightDepthOnlyVS, nullptr, 0);
-        Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
+        //Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
         Graphics->DeviceContext->IASetInputLayout(InputLayoutLightDepthOnly);
         Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -304,7 +304,7 @@ void FStaticMeshRenderPass::RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT nu
 
 void FStaticMeshRenderPass::Render(
     const std::shared_ptr<FEditorViewportClient>& Viewport,
-    FCascadeShadowMap* CascadeShadowMap,
+    FDirectionalShadowMap* CascadeShadowMap,
     bool IsShadow)
 {
     bIsShadowPass = IsShadow;
@@ -319,7 +319,19 @@ void FStaticMeshRenderPass::Render(
 
         // 1) 그림자 맵 크기에 맞춰 리사이즈 & 뷰포트 설정
         CascadeShadowMap->ResizeTexture(Viewport.get());
-    
+
+
+        D3D11_VIEWPORT vp{};
+        vp.TopLeftX = 0;
+        vp.TopLeftY = 0;
+        vp.Width = 2048;
+        vp.Height = 2048;
+        vp.MinDepth = 0.0f;
+        vp.MaxDepth = 1.0f;
+
+        // 그림자 맵을 타겟으로 바인딩한 후
+        Graphics->DeviceContext->RSSetViewports(1, &vp);
+
         //// 2) Depth-only 스텐실 상태 생성/바인딩
         //D3D11_DEPTH_STENCIL_DESC dsDesc{};
         //dsDesc.DepthEnable = TRUE;
@@ -338,6 +350,18 @@ void FStaticMeshRenderPass::Render(
             CascadeShadowMap->ShadowDSV,
             D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
             1.0f, 0);
+
+        D3D11_RASTERIZER_DESC desc = {};
+        desc.FillMode = D3D11_FILL_SOLID;
+        desc.CullMode = D3D11_CULL_BACK;            // 백페이스 컬링
+        desc.DepthClipEnable = TRUE;
+        desc.DepthBias = 5;                        // 상수 바이어스
+        desc.SlopeScaledDepthBias = 1.5f;                       // 기울기 스케일 바이어스
+        desc.DepthBiasClamp = 0.0f;
+        ID3D11RasterizerState* pRS;
+        Graphics->Device->CreateRasterizerState(&desc, &pRS);
+        Graphics->DeviceContext->RSSetState(pRS);
+
 
         // 4) Shadow-pass 전용 셰이더 및 상수/버퍼 설정
         PrepareRenderState(Viewport);
@@ -362,14 +386,29 @@ void FStaticMeshRenderPass::Render(
 
         // 6) DSV 언바인드 및 상태 해제
         Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
-        //dsState->Release();
+        // dsState->Release();
 
-        // 7) ImGui로 Depth SRV 시각화
+         // 7) ImGui로 Depth SRV 시각화
         ImGui::Image((ImTextureID)CascadeShadowMap->ShadowSRV,
             ImVec2((float)512, (float)512));
+
+        Graphics->DeviceContext->PSSetShaderResources(5, 1, &CascadeShadowMap->ShadowSRV);
+        Graphics->DeviceContext->PSSetSamplers(5, 1, &CascadeShadowMap->ShadowSampler);
     }
     else
     {
+
+        D3D11_VIEWPORT vp{};
+        vp.TopLeftX = 0;
+        vp.TopLeftY = 0;
+        vp.Width = ViewportResource->GetD3DViewport().Width;
+        vp.Height = ViewportResource->GetD3DViewport().Height;
+        vp.MinDepth = 0.0f;
+        vp.MaxDepth = 1.0f;
+
+        // 그림자 맵을 타겟으로 바인딩한 후
+        Graphics->DeviceContext->RSSetViewports(1, &vp);
+
         // --- 기존 메인 패스 로직 유지 ---
         Graphics->DeviceContext->OMSetRenderTargets(
             1, &RenderTargetRHI->RTV,
@@ -405,8 +444,8 @@ void FStaticMeshRenderPass::Render(
             }
         }
 
-    }
         Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+    }
 }
 
 void FStaticMeshRenderPass::ClearRenderArr()

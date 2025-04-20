@@ -4,7 +4,7 @@
 
 cbuffer LightViewProjCB : register(b1)
 {
-   row_major matrix LightViewProj;
+    row_major matrix LightViewProj;
 };
 
 
@@ -26,9 +26,7 @@ VS_OUT mainVS(VS_IN input)
 
     float4 worldPos = mul(float4(input.Position, 1.0f), WorldMatrix);
 
-    // 2) 라이트 뷰·프로젝션 공간으로 변환
-   float4 projPos = mul(worldPos, ViewMatrix);
-    output.Position = mul(projPos, ProjectionMatrix);
+    output.Position = mul(worldPos, LightViewProj);
 
     return output;
 }
