@@ -144,8 +144,9 @@ float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir
     float cosAngle = dot(toFragment, normalize(spotLightDir));
     float cosOuterCone = cos(spotOuterAngle);
     
-    if (cosAngle < cosOuterCone)
-        return 0.0f;
+    
+    //if (cosAngle < cosOuterCone)
+    //    return 0.0f;
     
     float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLightViewProj);
     
@@ -180,18 +181,10 @@ float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir
         }
     }
     
-    shadow /= 9.0f; // 9개 샘플의 평균
+    shadow /= 9.0f;
     return shadow;
-    //// 거리에 따른 그림자 감쇠 추가 (선택적)
-    //float maxShadowDistance = SpotLightRange * 0.9f;
-    //float shadowDistance = 1.0f - saturate(distToFragment / maxShadowDistance);
-    
-    // 원뿔 가장자리에서 그림자 페이드아웃 (선택적)
-    float coneFactor = smoothstep(cosOuterCone, lerp(cosOuterCone, 1.0f, 0.2f), cosAngle);
-    
-    //return lerp(1.0f, shadow, shadowDistance * coneFactor);
-    //return lerp(1.0f, shadow, coneFactor);
 }
+
 float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
 {
     FPointLightInfo LightInfo = PointLights[Index];
