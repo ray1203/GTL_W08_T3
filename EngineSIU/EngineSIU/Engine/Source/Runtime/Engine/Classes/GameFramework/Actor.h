@@ -53,8 +53,8 @@ public:
      */
     template <typename T>
         requires std::derived_from<T, UActorComponent>
-    T* AddComponent(FName InName = NAME_None);
-    UActorComponent* AddComponent(UClass* InClass, FName InName = NAME_None, bool bTryRootComponent = true);
+    T* AddComponent(FName InName);
+    UActorComponent* AddComponent(UClass* InClass, FName InName, bool bTryRootComponent = true);
 
 
     /** Actor가 가지고 있는 Component를 제거합니다. */

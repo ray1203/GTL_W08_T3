@@ -28,7 +28,7 @@ class AEditorPlayer : public AActor
 
 private:
     int RayIntersectsObject(const FVector& PickPosition, USceneComponent* Component, float& HitDistance, int& IntersectCount);
-    void ScreenToViewSpace(int32 ScreenX, int32 ScreenY, std::shared_ptr<FEditorViewportClient> ActiveViewport, FVector& RayOrigin);
+    void ScreenToViewSpace(int32 ScreenX, int32 ScreenY, const std::shared_ptr<FEditorViewportClient>& ActiveViewport, FVector& RayOrigin);
     void PickedObjControl();
     void ControlRotation(USceneComponent* Component, UGizmoBaseComponent* Gizmo, float DeltaX, float DeltaY);
     void ControlScale(USceneComponent* Component, UGizmoBaseComponent* Gizmo, float DeltaX, float DeltaY);

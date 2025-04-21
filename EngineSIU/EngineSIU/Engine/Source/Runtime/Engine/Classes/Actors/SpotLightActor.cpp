@@ -1,10 +1,11 @@
 #include "SpotLightActor.h"
-#include "Components/Light/SpotLightComponent.h"
 #include "Components/BillboardComponent.h"
+#include "Components/Light/SpotLightComponent.h"
+
 ASpotLight::ASpotLight()
 {
-    SpotLightComponent = AddComponent<USpotLightComponent>();
-    BillboardComponent = AddComponent<UBillboardComponent>();
+    SpotLightComponent = AddComponent<USpotLightComponent>(TEXT("SpotLightComponent"));
+    BillboardComponent = AddComponent<UBillboardComponent>(TEXT("BillboardComponent"));
 
     RootComponent = BillboardComponent;
 
@@ -12,8 +13,4 @@ ASpotLight::ASpotLight()
     BillboardComponent->bIsEditorBillboard = true;
 
     SpotLightComponent->AttachToComponent(RootComponent);
-}
-
-ASpotLight::~ASpotLight()
-{
 }

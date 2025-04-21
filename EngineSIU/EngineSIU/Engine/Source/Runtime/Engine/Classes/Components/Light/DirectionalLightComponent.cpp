@@ -2,26 +2,57 @@
 #include "Components/SceneComponent.h"
 #include "Math/Rotator.h"
 #include "Math/Quat.h"
+#include "UObject/Casts.h"
 
 UDirectionalLightComponent::UDirectionalLightComponent()
 {
-
-    DirectionalLightInfo.Direction = -GetUpVector();
+    DirectionalLightInfo.Direction = -USceneComponent::GetUpVector();
     DirectionalLightInfo.Intensity = 10.0f;
 
     DirectionalLightInfo.LightColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-UDirectionalLightComponent::~UDirectionalLightComponent()
+UObject* UDirectionalLightComponent::Duplicate(UObject* InOuter)
 {
+    ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
+    if (NewComponent)
+    {
+        NewComponent->DirectionalLightInfo = DirectionalLightInfo;
+    }
+    
+    return NewComponent;
 }
 
+void UDirectionalLightComponent::GetProperties(TMap<FString, FString>& OutProperties) const
+{
+    Super::GetProperties(OutProperties);
+    OutProperties.Add(TEXT("LightColor"), *DirectionalLightInfo.LightColor.ToString());
+    OutProperties.Add(TEXT("Intensity"), FString::Printf(TEXT("%f"), DirectionalLightInfo.Intensity));
+    OutProperties.Add(TEXT("Direction"), *DirectionalLightInfo.Direction.ToString());
+}
+
+void UDirectionalLightComponent::SetProperties(const TMap<FString, FString>& InProperties)
+{
+    Super::SetProperties(InProperties);
+
+    auto SetPropertyHelper = [&InProperties] <typename T, typename Fn>(const FString& Key, T& MemberVariable, const Fn& ConversionFunc)
+    {
+        if (const FString* TempStr = InProperties.Find(Key))
+        {
+            MemberVariable = ConversionFunc(*TempStr);
+        }
+    };
+
+    SetPropertyHelper(TEXT("LightColor"), DirectionalLightInfo.LightColor, [](const FString& Str) { FLinearColor Color; Color.InitFromString(Str); return Color; });
+    SetPropertyHelper(TEXT("Intensity"),  DirectionalLightInfo.Intensity,  [](const FString& Str) { return FString::ToFloat(Str); });
+    SetPropertyHelper(TEXT("Direction"),  DirectionalLightInfo.Direction,  [](const FString& Str) { FVector Dir; Dir.InitFromString(Str); return Dir; });
+}
 
 FVector UDirectionalLightComponent::GetDirection()  
 {
-    FRotator rotator = GetWorldRotation();
-    FVector WorldDown= rotator.ToQuaternion().RotateVector(-GetUpVector());
-    return WorldDown;  
+    return GetWorldRotation()
+           .ToQuaternion()
+           .RotateVector(-GetUpVector());
 }
 
 const FDirectionalLightInfo& UDirectionalLightComponent::GetDirectionalLightInfo() const

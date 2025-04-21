@@ -83,10 +83,9 @@ struct FVector
 
     FVector() : X(0), Y(0), Z(0) {}
     FVector(float X, float Y, float Z) : X(X), Y(Y), Z(Z) {}
-    FVector(float Scalar) : X(Scalar), Y(Scalar), Z(Scalar) {}
+    explicit FVector(float Scalar) : X(Scalar), Y(Scalar), Z(Scalar) {}
 
-    
-    FVector(const FRotator& InRotator);
+    explicit FVector(const FRotator& InRotator);
 
     // Vector(0, 0, 0)
     static const FVector ZeroVector;
@@ -294,12 +293,12 @@ inline FVector FVector::operator-() const
 
 inline bool FVector::operator==(const FVector& Other) const
 {
-    return X == Other.X && Y == Other.Y && Z == Other.Z;
+    return X == Other.X && Y == Other.Y && Z == Other.Z;  // NOLINT(clang-diagnostic-float-equal)
 }
 
 inline bool FVector::operator!=(const FVector& Other) const
 {
-    return X != Other.X || Y != Other.Y || Z != Other.Z;
+    return X != Other.X || Y != Other.Y || Z != Other.Z;  // NOLINT(clang-diagnostic-float-equal)
 }
 
 inline float& FVector::operator[](int Index)

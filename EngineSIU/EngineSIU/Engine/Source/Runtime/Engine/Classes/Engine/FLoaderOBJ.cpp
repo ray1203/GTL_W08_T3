@@ -776,7 +776,7 @@ bool FManagerOBJ::LoadStaticMeshFromBinary(const FWString& FilePath, OBJ::FStati
     return true;
 }
 
-UMaterial* FManagerOBJ::CreateMaterial(FObjMaterialInfo materialInfo)
+UMaterial* FManagerOBJ::CreateMaterial(const FObjMaterialInfo& materialInfo)
 {
     if (materialMap[materialInfo.MaterialName] != nullptr)
         return materialMap[materialInfo.MaterialName];
@@ -787,7 +787,7 @@ UMaterial* FManagerOBJ::CreateMaterial(FObjMaterialInfo materialInfo)
     return newMaterial;
 }
 
-UMaterial* FManagerOBJ::GetMaterial(FString name)
+UMaterial* FManagerOBJ::GetMaterial(const FString& name)
 {
     return materialMap[name];
 }
@@ -811,7 +811,7 @@ UStaticMesh* FManagerOBJ::CreateStaticMesh(const FString& filePath)
     return StaticMesh;
 }
 
-UStaticMesh* FManagerOBJ::GetStaticMesh(FWString name)
+UStaticMesh* FManagerOBJ::GetStaticMesh(const FWString& name)
 {
     return StaticMeshMap[name];
 }
