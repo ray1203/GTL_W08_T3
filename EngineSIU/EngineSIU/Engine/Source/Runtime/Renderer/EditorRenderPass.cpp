@@ -1,27 +1,24 @@
 #include "EditorRenderPass.h"
 
-#include "EngineLoop.h" // GEngineLoop
-#include "Runtime/Engine/Classes/Engine/Engine.h" // GEngine
-#include "Runtime/CoreUObject/UObject/Casts.h"
-#include "Runtime/Engine/Classes/Engine/EditorEngine.h"
 #include <D3D11RHI/DXDShaderManager.h>
-
-#include <d3dcompiler.h>
+#include "EngineLoop.h" // GEngineLoop
+#include "Runtime/CoreUObject/UObject/Casts.h"
+#include "Runtime/Engine/Classes/Engine/Engine.h" // GEngine
 
 #include "UnrealClient.h"
+#include "BaseGizmos/GizmoBaseComponent.h"
+#include "D3D11RHI/GraphicDevice.h"
+#include "Engine/FLoaderOBJ.h"
+#include "Engine/Classes/Actors/Player.h"
+#include "Engine/Classes/Components/HeightFogComponent.h"
+#include "Engine/Classes/Components/Light/AmbientLightComponent.h"
+#include "Engine/Classes/Components/Light/DirectionalLightComponent.h"
+#include "Engine/Classes/Components/Light/LightComponent.h"
+#include "Engine/Classes/Components/Light/PointLightComponent.h"
+#include "Engine/Classes/Components/Light/SpotLightComponent.h"
 #include "Runtime/Engine/World/World.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectIterator.h"
-#include "BaseGizmos/GizmoBaseComponent.h"
-#include "D3D11RHI/GraphicDevice.h"
-#include "Engine/Classes/Actors/Player.h"
-#include "Engine/Classes/Components/Light/LightComponent.h"
-#include "Engine/Classes/Components/Light/DirectionalLightComponent.h"
-#include "Engine/Classes/Components/Light/SpotLightComponent.h"
-#include "Engine/Classes/Components/Light/PointLightComponent.h"
-#include "Engine/Classes/Components/HeightFogComponent.h"
-#include "Engine/Classes/Components/Light/AmbientLightComponent.h"
-#include "Engine/FLoaderOBJ.h"
 
 
 
@@ -574,7 +571,7 @@ void FEditorRenderPass::UdpateConstantbufferAABBInstanced(TArray<FConstantBuffer
 
 void FEditorRenderPass::RenderPointlightInstanced()
 {
-    SetShaderAndPrepare(L"SphereVS", L"SpherePS", Resources.Shaders.Sphere);
+    PrepareShader(Resources.Shaders.Sphere);
     UINT offset = 0;
     Graphics->DeviceContext->IASetVertexBuffers(0, 1, &Resources.Primitives.Sphere.Vertex, &Resources.Primitives.Sphere.VertexStride, &offset);
     Graphics->DeviceContext->IASetIndexBuffer(Resources.Primitives.Sphere.Index, DXGI_FORMAT_R32_UINT, 0);
@@ -648,7 +645,7 @@ void FEditorRenderPass::UdpateConstantbufferPointlightInstanced(TArray<FConstant
 
 void FEditorRenderPass::RenderSpotlightInstanced()
 {
-    SetShaderAndPrepare(L"ConeVS", L"ConePS", Resources.Shaders.Cone);
+    PrepareShader(Resources.Shaders.Cone);
     UINT offset = 0;
     Graphics->DeviceContext->IASetVertexBuffers(0, 1, &Resources.Primitives.Cone.Vertex, &Resources.Primitives.Cone.VertexStride, &offset);
     Graphics->DeviceContext->IASetIndexBuffer(Resources.Primitives.Cone.Index, DXGI_FORMAT_R32_UINT, 0);
@@ -831,7 +828,7 @@ void FEditorRenderPass::RenderArrows()
     // XYZ한번. Z는 중복으로 적용
     const float ArrowScale = 1;
 
-    SetShaderAndPrepare(L"ArrowVS", L"ArrowPS", Resources.Shaders.Arrow);
+    PrepareShader(Resources.Shaders.Arrow);
     UINT offset = 0;
     Graphics->DeviceContext->IASetVertexBuffers(0, 1, &Resources.Primitives.Arrow.Vertex, &Resources.Primitives.Arrow.VertexStride, &offset);
     Graphics->DeviceContext->IASetIndexBuffer(Resources.Primitives.Arrow.Index, DXGI_FORMAT_R32_UINT, 0);
@@ -880,12 +877,4 @@ void FEditorRenderPass::UdpateConstantbufferArrow(const FConstantBufferDebugArro
         memcpy(ConstantBufferMSR.pData, &Buffer, sizeof(FConstantBufferDebugArrow)); // TArray이니까 실제 값을 받아와야함
         Graphics->DeviceContext->Unmap(Resources.ConstantBuffers.Arrow11, 0); // GPU�� �ٽ� ��밡���ϰ� �����
     }
-}
-
-void FEditorRenderPass::SetShaderAndPrepare(const std::wstring& VertexKey, const std::wstring& PixelKey, FShaderResource& ShaderSlot)
-{
-    ShaderSlot.Vertex = ShaderManager->GetVertexShaderByKey(VertexKey);
-    ShaderSlot.Pixel = ShaderManager->GetPixelShaderByKey(PixelKey);
-    ShaderSlot.Layout = ShaderManager->GetInputLayoutByKey(VertexKey);
-    PrepareShader(ShaderSlot);
 }

@@ -256,7 +256,6 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 void FRenderer::EndRender()
 {
     ClearRenderArr();
-    ShaderManager->ReloadAllShaders(); // 
 }
 
 void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& Viewport)
