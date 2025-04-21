@@ -8,15 +8,17 @@ class ULightComponentBase : public USceneComponent
 
 public:
     ULightComponentBase();
-    virtual ~ULightComponentBase() override;
+
     virtual UObject* Duplicate(UObject* InOuter) override;
+    virtual void GetProperties(TMap<FString, FString>& OutProperties) const override;
+    virtual void SetProperties(const TMap<FString, FString>& Properties) override;
 
     virtual void TickComponent(float DeltaTime) override;
     virtual int CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) override;
-protected:
 
+protected:
     FBoundingBox AABB;
 
 public:
-    FBoundingBox GetBoundingBox() const {return AABB;}
+    FBoundingBox GetBoundingBox() const { return AABB; }
 };
