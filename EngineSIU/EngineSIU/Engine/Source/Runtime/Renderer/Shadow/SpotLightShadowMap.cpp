@@ -81,7 +81,7 @@ void FSpotLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphi
 
     // 4) 비교 샘플러 생성 (쉐도우 비교 샘플링용)
     D3D11_SAMPLER_DESC sampDesc{};
-    sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+    sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
     sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
     sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
     sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;

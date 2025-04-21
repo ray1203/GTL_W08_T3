@@ -73,7 +73,7 @@ SamplerComparisonState ShadowSampler : register(s10);
 // Point Light 의 6개 face 뷰·프로젝션 행렬과 바이어스
 cbuffer ShadowData : register(b6)
 {
-    matrix SpotLightViewProj;
+    row_major matrix SpotLightViewProj;
     float ShadowBias; // 깊이 비교 시 바이어스
     float3 _padding; // 16바이트 정렬용
 };
@@ -119,49 +119,49 @@ float CalculateSpecular(float3 WorldNormal, float3 ToLightDir, float3 ViewDir, f
 
 float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir, float spotOuterAngle)
 {
-    //float3 toFragment = worldPos - spotLightPos;
-    //float distToFragment = length(toFragment);
-    //toFragment = normalize(toFragment);
+    float3 toFragment = worldPos - spotLightPos;
+    float distToFragment = length(toFragment);
+    toFragment = normalize(toFragment);
     
-    //float cosAngle = dot(toFragment, normalize(spotLightDir));
-    //float cosOuterCone = cos(spotOuterAngle / 2);
+    float cosAngle = dot(toFragment, normalize(spotLightDir));
+    float cosOuterCone = cos(spotOuterAngle / 2);
     
-    //if (cosAngle < cosOuterCone)
-    //    return 0.0f;
+    if (cosAngle < cosOuterCone)
+        return 0.0f;
     
-    //float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLightViewProj);
+    float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLightViewProj);
     
-    //lightSpacePos.xyz /= lightSpacePos.w;
-    //float2 uv = lightSpacePos.xy / lightSpacePos.w * 0.5f + 0.5f;
-    //uv.y = 1 - uv.y; 
-    //float depth = lightSpacePos.z / lightSpacePos.w - ShadowBias;
+    lightSpacePos.xy /= lightSpacePos.w;
+    float2 uv = lightSpacePos.xy / lightSpacePos.w * 0.5f + 0.5f;
+    uv.y = 1 - uv.y;
+    float depth = lightSpacePos.z / lightSpacePos.w - ShadowBias;
     
-    //if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
-    //    return 1.0f;
+    if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
+        return 1.0f;
     
-    //float shadow = ShadowMap.SampleCmpLevelZero(
-    //    ShadowSampler,
-    //    uv,
-    //    depth
-    //);
+    float shadow = ShadowMap.SampleCmpLevelZero(
+        ShadowSampler,
+        uv,
+        depth
+    );
     
-    //return shadow;
+    return shadow;
     
     
-    // 뷰·프로젝션 변환
-    float4 proj = mul(float4(worldPos, 1), SpotLightViewProj);
-    proj.xy /= proj.w; // NDC 공간
-    float2 uv = proj.xy * 0.5 + 0.5; // [0,1] 로 변환
-    uv.x = proj.x * 0.5 + 0.5;
-    uv.y = 1.0f - (proj.y * 0.5 + 0.5);
+    //// 뷰·프로젝션 변환
+    //float4 proj = mul(float4(worldPos, 1), SpotLightViewProj);
+    //proj.xy /= proj.w; // NDC 공간
+    //float2 uv = proj.xy * 0.5 + 0.5; // [0,1] 로 변환
+    //uv.x = proj.x * 0.5 + 0.5;
+    //uv.y = 1.0f - (proj.y * 0.5 + 0.5);
     
-    float depth = proj.z - ShadowBias; // 바이어스 적용
+    //float depth = proj.z - ShadowBias; // 바이어스 적용
     
-    // 뷰포트 밖은 그림자 받지 않음
-    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
-        return 1.0;
+    //// 뷰포트 밖은 그림자 받지 않음
+    //if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
+    //    return 1.0;
     
-    return ShadowMap.SampleCmpLevelZero(ShadowSampler, uv, depth).r;
+    //return ShadowMap.SampleCmpLevelZero(ShadowSampler, uv, depth).r;
      
 }
 
