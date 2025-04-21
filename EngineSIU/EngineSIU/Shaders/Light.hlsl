@@ -117,11 +117,40 @@ float CalculateSpecular(float3 WorldNormal, float3 ToLightDir, float3 ViewDir, f
     return Spec * SpecularStrength;
 }
 
-float SamplePointShadow(float3 ToLight, float3 worldPos)
+float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir, float spotOuterAngle)
 {
+    //float3 toFragment = worldPos - spotLightPos;
+    //float distToFragment = length(toFragment);
+    //toFragment = normalize(toFragment);
+    
+    //float cosAngle = dot(toFragment, normalize(spotLightDir));
+    //float cosOuterCone = cos(spotOuterAngle / 2);
+    
+    //if (cosAngle < cosOuterCone)
+    //    return 0.0f;
+    
+    //float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLightViewProj);
+    
+    //lightSpacePos.xyz /= lightSpacePos.w;
+    //float2 uv = lightSpacePos.xy / lightSpacePos.w * 0.5f + 0.5f;
+    //uv.y = 1 - uv.y; 
+    //float depth = lightSpacePos.z / lightSpacePos.w - ShadowBias;
+    
+    //if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
+    //    return 1.0f;
+    
+    //float shadow = ShadowMap.SampleCmpLevelZero(
+    //    ShadowSampler,
+    //    uv,
+    //    depth
+    //);
+    
+    //return shadow;
+    
+    
     // 뷰·프로젝션 변환
     float4 proj = mul(float4(worldPos, 1), SpotLightViewProj);
-    proj.xyz /= proj.w; // NDC 공간
+    proj.xy /= proj.w; // NDC 공간
     float2 uv = proj.xy * 0.5 + 0.5; // [0,1] 로 변환
     uv.x = proj.x * 0.5 + 0.5;
     uv.y = 1.0f - (proj.y * 0.5 + 0.5);
@@ -133,56 +162,7 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
         return 1.0;
     
     return ShadowMap.SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-}
-
-float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir, float spotOuterAngle)
-{
-    float3 toFragment = worldPos - spotLightPos;
-    float distToFragment = length(toFragment);
-    toFragment = normalize(toFragment);
-    
-    float cosAngle = dot(toFragment, normalize(spotLightDir));
-    float cosOuterCone = cos(spotOuterAngle);
-    
-    
-    //if (cosAngle < cosOuterCone)
-    //    return 0.0f;
-    
-    float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLightViewProj);
-    
-    lightSpacePos.xyz /= lightSpacePos.w;
-    
-    float2 shadowTexCoord = float2(
-        0.5f * lightSpacePos.x + 0.5f,
-        -0.5f * lightSpacePos.y + 0.5f
-    );
-    
-    if (shadowTexCoord.x < 0.0f || shadowTexCoord.x > 1.0f ||
-        shadowTexCoord.y < 0.0f || shadowTexCoord.y > 1.0f)
-        return 1.0f;
-    
-    float currentDepth = lightSpacePos.z - ShadowBias;
-    
-    // PCF(Percentage Closer Filtering)로 부드러운 그림자 구현
-    float shadow = 0.0f;
-    float2 texelSize = 1.0f / float2(1024, 1024);
-    
-    // 3x3 커널로 주변 텍셀들을 샘플링하여 평균 내기
-    for (int x = -1; x <= 1; x++)
-    {
-        for (int y = -1; y <= 1; y++)
-        {
-            float2 offset = float2(x, y) * texelSize;
-            shadow += ShadowMap.SampleCmpLevelZero(
-                ShadowSampler,
-                shadowTexCoord + offset,
-                currentDepth - ShadowBias
-            ).r;
-        }
-    }
-    
-    shadow /= 9.0f;
-    return shadow;
+     
 }
 
 float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
@@ -232,7 +212,7 @@ float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wor
     }
     
     float DiffuseFactor = CalculateDiffuse(WorldNormal, LightDir);
-    
+
 #ifdef LIGHTING_MODEL_LAMBERT
     float3 Lit = DiffuseFactor * DiffuseColor * LightInfo.LightColor.rgb;
 #else
@@ -242,7 +222,7 @@ float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wor
 #endif
     
     //return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity, 1.0);
-    float shadow = SampleSpotShadow(WorldPosition, LightInfo.Position, ToLight, LightInfo.OuterRad);
+    float shadow = SampleSpotShadow(WorldPosition, LightInfo.Position, LightInfo.Direction, LightInfo.OuterRad);
     
     return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity * shadow, 1.0);
     //return float4(shadow, shadow, shadow, 1.0);

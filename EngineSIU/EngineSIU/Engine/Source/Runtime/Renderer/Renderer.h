@@ -93,6 +93,8 @@ public:
     void CreateCommonShader();
     void CreateDepthOnlyShader();
 
+    void CreateDepthVisualShader();
+
 public:
     FGraphicsDevice* Graphics;
     FDXDBufferManager* BufferManager;

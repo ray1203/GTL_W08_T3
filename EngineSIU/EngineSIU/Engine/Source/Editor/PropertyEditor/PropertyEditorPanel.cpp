@@ -133,8 +133,10 @@ void PropertyEditorPanel::Render()
     if(PickedActor)
         if (USpotLightComponent* spotlightObj = PickedActor->GetComponentByClass<USpotLightComponent>())
         {
+            GEngineLoop.Renderer.SpotLightShadowMapPass->RenderLinearDepth();
+
             // Shadow Depth Map 시각화
-            ID3D11ShaderResourceView* shaderSRV = GEngineLoop.Renderer.SpotLightShadowMapPass->GetShadowSRV();
+            ID3D11ShaderResourceView* shaderSRV = GEngineLoop.Renderer.SpotLightShadowMapPass->GetShadowViewSRV();
             //FVector direction = GEngineLoop.Renderer.PointLightShadowMapPass->GetDirection();
             //FVector up = GEngineLoop.Renderer.PointLightShadowMapPass->GetUp();
 
@@ -157,29 +159,17 @@ void PropertyEditorPanel::Render()
 
                 LightDirection = spotlightObj->GetDirection();
                 FImGuiWidget::DrawVec3Control("Direction", LightDirection, 0, 85);
-                /////
-                //float OuterDegree = spotlightObj->GetOuterDegree();
-                //float InnerDegree = spotlightObj->GetInnerDegree();
-                //if (ImGui::SliderFloat("InnerDegree", &InnerDegree, 0.f, 80.f, "%.1f")) {
-                //    spotlightObj->SetInnerDegree(InnerDegree);
-                //}
-                //if (ImGui::SliderFloat("OuterDegree", &OuterDegree, 0.f, 80.f, "%.1f")) {
-                //    spotlightObj->SetOuterDegree(OuterDegree);
-                //}
-                /////
+
                 float OuterDegree = spotlightObj->GetOuterDegree();
                 float InnerDegree = spotlightObj->GetInnerDegree();
 
-                // InnerDegree를 조정할 때, OuterDegree 값을 초과하지 않도록 함
-                if (ImGui::SliderFloat("InnerDegree", &InnerDegree, 0.01f, OuterDegree, "%.1f")) {
+                if (ImGui::SliderFloat("InnerDegree", &InnerDegree, 0.f, OuterDegree, "%.1f")) {
                     spotlightObj->SetInnerDegree(InnerDegree);
                 }
 
-                // OuterDegree를 조정할 때, InnerDegree 값보다 작아지지 않도록 함
-                if (ImGui::SliderFloat("OuterDegree", &OuterDegree, 0.01f, 80.f, "%.1f")) {
+                if (ImGui::SliderFloat("OuterDegree", &OuterDegree, 0.f, 80.f, "%.1f")) {
                     spotlightObj->SetOuterDegree(OuterDegree);
 
-                    // OuterDegree가 감소하여 InnerDegree보다 작아지면 InnerDegree도 함께 조정
                     if (InnerDegree > OuterDegree) {
                         InnerDegree = OuterDegree;
                         spotlightObj->SetInnerDegree(InnerDegree);

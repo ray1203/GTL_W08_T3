@@ -22,6 +22,8 @@ public:
     void SetShadowSampler(int sStart);
 
     ID3D11ShaderResourceView* GetShadowSRV();
+    ID3D11ShaderResourceView* GetShadowViewSRV();
+    void RenderLinearDepth();
 
 private:
     FDXDBufferManager* BufferManager = nullptr;
@@ -40,5 +42,15 @@ private:
 
     uint32 ShadowMapSize = 1024;
     FMatrix SpotLightViewProjMatrix = {};
+    /////
 
+    ID3D11Texture2D* DepthLinearBuffer = { nullptr };
+    ID3D11ShaderResourceView* ShadowViewSRV = { nullptr };
+    ID3D11RenderTargetView* ShadowViewRTV = { nullptr };
+    ID3D11SamplerState* LinearSampler = nullptr;
+
+    ID3D11VertexShader* FullscreenVS = nullptr;
+    ID3D11InputLayout* FullscreenIL = nullptr;
+
+    ID3D11PixelShader* DepthVisualizePS = nullptr;
 };
