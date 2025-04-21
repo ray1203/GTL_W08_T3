@@ -149,7 +149,7 @@ void PropertyEditorPanel::Render()
                     [&](FLinearColor c) { spotlightObj->SetLightColor(c); });
 
                 float Intensity = spotlightObj->GetIntensity();
-                if (ImGui::SliderFloat("Intensity", &Intensity, 0.0f, 160.0f, "%.1f"))
+                if (ImGui::SliderFloat("Intensity", &Intensity, 0.0f, 5000.0f, "%.1f"))
                     spotlightObj->SetIntensity(Intensity);
 
                 float Radius = spotlightObj->GetRadius();

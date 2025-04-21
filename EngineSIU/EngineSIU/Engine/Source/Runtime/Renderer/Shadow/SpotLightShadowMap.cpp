@@ -133,13 +133,21 @@ void FSpotLightShadowMap::PrepareRender()
         }
     }
 
+    //if (SpotLights.Num() > 0)
+    //{
+    //    FSpotLightInfo SpotLightInfo;
+    //    SpotLightInfo.Position = SpotLights[0]->GetWorldLocation();
+    //    SpotLightInfo.Direction = SpotLights[0]->GetDirection();
+
+    //    UpdateSpotLightViewProjMatrices(SpotLightInfo);
+    //}
+
     // Begin Test
-    if (SpotLights.Num() > 0)
+    for (auto SpotLight : SpotLights)
     {
         FSpotLightInfo SpotLightInfo;
-        SpotLightInfo.Position = SpotLights[0]->GetWorldLocation();
-        SpotLightInfo.Direction = SpotLights[0]->GetDirection();
-
+        SpotLightInfo.Position = SpotLight->GetWorldLocation();
+        SpotLightInfo.Direction = SpotLight->GetDirection();
         UpdateSpotLightViewProjMatrices(SpotLightInfo);
     }
     // End Test
@@ -152,8 +160,8 @@ void FSpotLightShadowMap::UpdateSpotLightViewProjMatrices(const FSpotLightInfo& 
     float aspectRatio = 1.0f; // 정방형 섀도우 맵
     float nearZ = 0.1f;
     float farZ = Info.Radius;
-
-    FMatrix Projection = JungleMath::CreateProjectionMatrix(fovY, aspectRatio, nearZ, farZ);
+    // testtest
+    FMatrix Projection = JungleMath::CreateProjectionMatrix(FMath::DegreesToRadians(90), aspectRatio, nearZ, farZ);
 
     FVector dir = Info.Direction;
 

@@ -175,19 +175,18 @@ float CalculateSpecular(float3 WorldNormal, float3 ToLightDir, float3 ViewDir, f
 
 float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir, float spotOuterAngle)
 {
-    float3 toFragment = worldPos - spotLightPos;
-    float distToFragment = length(toFragment);
-    toFragment = normalize(toFragment);
+    //float3 toFragment = worldPos - spotLightPos;
+    //float distToFragment = length(toFragment);
+    //toFragment = normalize(toFragment);
     
-    float cosAngle = dot(toFragment, normalize(spotLightDir));
-    float cosOuterCone = cos(spotOuterAngle / 2);
+    //float cosAngle = dot(toFragment, normalize(spotLightDir));
+    //float cosOuterCone = cos(spotOuterAngle / 2);
     
-    if (cosAngle < cosOuterCone)
-        return 0.0f;
+    //if (cosAngle < cosOuterCone)
+    //    return 0.0f;
     
     float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLightViewProj);
     
-    lightSpacePos.xy /= lightSpacePos.w;
     float2 uv = lightSpacePos.xy / lightSpacePos.w * 0.5f + 0.5f;
     uv.y = 1 - uv.y;
     float depth = lightSpacePos.z / lightSpacePos.w - ShadowBias;
@@ -195,6 +194,7 @@ float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir
     if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
         return 1.0f;
     
+    // pcf
     float shadow = 0.0f;
     uint width, height;
     ShadowMap.GetDimensions(width, height);
