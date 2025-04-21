@@ -67,7 +67,7 @@ cbuffer Lighting : register(b0)
 };
 
 // 6개의 페이스별로 개별 바인딩(t10~t15)
-Texture2D<float> ShadowMap[6] : register(t10);
+TextureCube<float> ShadowCube : register(t10);
 SamplerComparisonState ShadowSampler : register(s10);
 
 // Point Light 의 6개 face 뷰·프로젝션 행렬과 바이어스
@@ -131,45 +131,11 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
     
     // 뷰·프로젝션 변환
     float4 proj = mul(float4(worldPos, 1), PointLightViewProj[faceIdx]);
-    proj.xyz /= proj.w; // NDC 공간
-    float2 uv; // [0,1] 로 변환 + y가 위에서 아래로 값 커지는 거 반영
-    uv.x = proj.x * 0.5 + 0.5;
-    uv.y = 1.0f - (proj.y * 0.5 + 0.5);
+    proj.xyz /= proj.w;
     
     float depth = proj.z - ShadowBias; // 바이어스 적용
     
-    // 뷰포트 밖은 그림자 받지 않음
-    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
-        return 1.0;
-    
-    if (faceIdx == 0)
-    {
-        return ShadowMap[0].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else if (faceIdx == 1)
-    {
-        return ShadowMap[1].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else if (faceIdx == 2)
-    {
-        return ShadowMap[2].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else if (faceIdx == 3)
-    {
-        return ShadowMap[3].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else if (faceIdx == 4)
-    {
-        return ShadowMap[4].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else if (faceIdx == 5)
-    {
-        return ShadowMap[5].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
-    }
-    else
-    {
-        return 1.0f;
-    }
+    return ShadowCube.SampleCmpLevelZero(ShadowSampler, normalize(-1.0f * ToLight), depth);
 }
 
 float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)

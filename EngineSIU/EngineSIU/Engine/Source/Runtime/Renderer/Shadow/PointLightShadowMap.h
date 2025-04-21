@@ -25,7 +25,6 @@ public:
 
     TArray<ID3D11ShaderResourceView*> GetShadowViewSRVArray();
 
-    TArray<ID3D11ShaderResourceView*> GetShadowSRVArray();
     TArray<FVector> GetDirectionArray();
     TArray<FVector> GetUpArray();
 
@@ -42,9 +41,9 @@ private:
     // 일단 한 Point Light만 만들어보기
     // TODO 여러 개의 Point Light 가능하도록 변경
     // 아래를 구조체로 다루고 TArray로 동적 관리하도록 해야할듯
-    ID3D11Texture2D* DepthStencilBuffer[6] = { nullptr };
+    ID3D11Texture2D* DepthCube = nullptr;
     ID3D11DepthStencilView* ShadowDSV[6] = { nullptr };
-    ID3D11ShaderResourceView* ShadowSRV[6] = { nullptr };
+    ID3D11ShaderResourceView* ShadowCubeSRV = nullptr;
     ID3D11SamplerState* ShadowSampler = nullptr;
 
     // 시각화 하는 용의 Buffer PointLight가 여러개 이더라도
@@ -70,8 +69,8 @@ private:
         FVector(0,0,1), FVector(0,0,-1)
     };
     const FVector Ups[6] = {
-        FVector(0,0,1), FVector(0,0,1),
-        FVector(0,0,1), FVector(0,0,1),
+        FVector(0, 1, 0), FVector(0,1,0),
+        FVector(0,0,-1), FVector(0,0,1),
         FVector(0,1,0), FVector(0,1,0)
     };
 };
