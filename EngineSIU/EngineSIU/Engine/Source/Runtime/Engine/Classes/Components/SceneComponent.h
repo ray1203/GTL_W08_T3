@@ -25,9 +25,9 @@ public:
     virtual FVector GetRightVector();
     virtual FVector GetUpVector();
     
-    void AddLocation(FVector InAddValue);
-    void AddRotation(FVector InAddValue);
-    void AddScale(FVector InAddValue);
+    void AddLocation(const FVector& InAddValue);
+    void AddRotation(const FVector& InAddValue);
+    void AddScale(const FVector& InAddValue);
 
     USceneComponent* GetAttachParent() const { return AttachParent; }
     const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
@@ -35,9 +35,9 @@ public:
     void AttachToComponent(USceneComponent* InParent);
 
 public:
-    void SetRelativeLocation(FVector InNewLocation) { RelativeLocation = InNewLocation; }
-    void SetRelativeRotation(FRotator InNewRotation) { RelativeRotation = InNewRotation; }
-    void SetRelativeScale3D(FVector NewScale) { RelativeScale3D = NewScale; }
+    void SetRelativeLocation(const FVector& InNewLocation) { RelativeLocation = InNewLocation; }
+    void SetRelativeRotation(const FRotator& InNewRotation) { RelativeRotation = InNewRotation; }
+    void SetRelativeScale3D(const FVector& NewScale) { RelativeScale3D = NewScale; }
     
     FVector GetRelativeLocation() const { return RelativeLocation; }
     FRotator GetRelativeRotation() const { return RelativeRotation; }

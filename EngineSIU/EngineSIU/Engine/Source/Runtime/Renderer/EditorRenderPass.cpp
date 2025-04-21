@@ -89,7 +89,7 @@ void FEditorRenderPass::CreateShaders()
     Resources.Shaders.Arrow.Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 }
 
-void FEditorRenderPass::PrepareShader(FShaderResource ShaderResource) const
+void FEditorRenderPass::PrepareShader(const FShaderResource& ShaderResource) const
 {
     Graphics->DeviceContext->VSSetShader(ShaderResource.Vertex, nullptr, 0);
     Graphics->DeviceContext->PSSetShader(ShaderResource.Pixel, nullptr, 0);
@@ -420,7 +420,7 @@ void FEditorRenderPass::CreateConstantBuffers()
     CreateCB(sizeof(FConstantBufferDebugArrow), &Resources.ConstantBuffers.Arrow11);
 }
 
-void FEditorRenderPass::PrepareRendertarget(std::shared_ptr<FEditorViewportClient> Viewport)
+void FEditorRenderPass::PrepareRendertarget(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
     const EResourceType ResourceType = EResourceType::ERT_Editor;
 
@@ -482,7 +482,7 @@ void FEditorRenderPass::PrepareConstantbufferGlobal()
     }
 }
 
-void FEditorRenderPass::UpdateConstantbufferGlobal(FConstantBufferCamera Buffer)
+void FEditorRenderPass::UpdateConstantbufferGlobal(const FConstantBufferCamera& Buffer)
 {
     if (Resources.ConstantBuffers.Camera00)
     {
@@ -494,7 +494,7 @@ void FEditorRenderPass::UpdateConstantbufferGlobal(FConstantBufferCamera Buffer)
     }
 }
 
-void FEditorRenderPass::Render(std::shared_ptr<FEditorViewportClient> Viewport)
+void FEditorRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
     static bool isLoaded = false;
     if (!isLoaded)
@@ -808,7 +808,7 @@ void FEditorRenderPass::PrepareConstantbufferIcon()
     }
 }
 
-void FEditorRenderPass::UdpateConstantbufferIcon(FConstantBufferDebugIcon Buffer)
+void FEditorRenderPass::UdpateConstantbufferIcon(const FConstantBufferDebugIcon& Buffer)
 {
     if (Resources.ConstantBuffers.Icon11)
     {
@@ -870,7 +870,7 @@ void FEditorRenderPass::PrepareConstantbufferArrow()
     }
 }
 
-void FEditorRenderPass::UdpateConstantbufferArrow(FConstantBufferDebugArrow Buffer)
+void FEditorRenderPass::UdpateConstantbufferArrow(const FConstantBufferDebugArrow& Buffer)
 {
     if (Resources.ConstantBuffers.Arrow11)
     {

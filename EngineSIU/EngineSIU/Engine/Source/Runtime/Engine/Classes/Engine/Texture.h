@@ -4,9 +4,23 @@
 
 struct FTexture
 {
-    FTexture(ID3D11ShaderResourceView* SRV, ID3D11Texture2D* Texture2D, ID3D11SamplerState* Sampler, FWString Name, uint32 NewWidth, uint32 NewHeight)
-        : TextureSRV(SRV), Texture(Texture2D), SamplerState(Sampler), Name(Name), Width(NewWidth), Height(NewHeight)
-    {}
+    FTexture(
+        ID3D11ShaderResourceView* SRV,
+        ID3D11Texture2D* Texture2D,
+        ID3D11SamplerState* Sampler,
+        FWString Name,
+        uint32 NewWidth,
+        uint32 NewHeight
+    )
+        : Name(std::move(Name))
+        , TextureSRV(SRV)
+        , Texture(Texture2D)
+        , SamplerState(Sampler)
+        , Width(NewWidth)
+        , Height(NewHeight)
+    {
+    }
+
     ~FTexture() = default;
 
     void Release()

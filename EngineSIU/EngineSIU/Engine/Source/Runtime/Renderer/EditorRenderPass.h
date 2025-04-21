@@ -15,7 +15,7 @@ class FEditorRenderPass
 {
 public:
     void Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager);
-    void Render(std::shared_ptr<FEditorViewportClient> Viewport);
+    void Render(const std::shared_ptr<FEditorViewportClient>& Viewport);
     void Release();
 
     void PrepareRender();
@@ -29,7 +29,7 @@ private:
     FRenderResourcesDebug Resources;
 
     void CreateShaders();
-    void PrepareShader(FShaderResource ShaderResource) const;
+    void PrepareShader(const FShaderResource& ShaderResource) const;
     void ReleaseShaders();
 
     void CreateBuffers();
@@ -37,10 +37,10 @@ private:
 
     void LazyLoad();
     
-    void PrepareRendertarget(std::shared_ptr<FEditorViewportClient> Viewport);
+    void PrepareRendertarget(const std::shared_ptr<FEditorViewportClient>& Viewport);
 
     void PrepareConstantbufferGlobal();
-    void UpdateConstantbufferGlobal(FConstantBufferCamera Buffer);
+    void UpdateConstantbufferGlobal(const FConstantBufferCamera& Buffer);
 
     // Gizmo 관련 함수
     //void RenderGizmos(const UWorld* World);
@@ -73,13 +73,13 @@ private:
     // Icon
     void RenderIcons(const UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void PrepareConstantbufferIcon();
-    void UdpateConstantbufferIcon(FConstantBufferDebugIcon Buffer);
+    void UdpateConstantbufferIcon(const FConstantBufferDebugIcon& Buffer);
     void UpdateTextureIcon(IconType type);
 
     // Arrow
     void RenderArrows();
     void PrepareConstantbufferArrow();
-    void UdpateConstantbufferArrow(FConstantBufferDebugArrow Buffer);
+    void UdpateConstantbufferArrow(const FConstantBufferDebugArrow& Buffer);
 
     // ShaderManager의 Hot Reload에 대응하기 위한 함수
     void SetShaderAndPrepare(const std::wstring& VertexKey, const std::wstring& PixelKey, FShaderResource& ShaderSlot);
