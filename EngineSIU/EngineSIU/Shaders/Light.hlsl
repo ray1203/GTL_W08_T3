@@ -73,7 +73,7 @@ SamplerComparisonState ShadowSampler : register(s10);
 // Point Light 의 6개 face 뷰·프로젝션 행렬과 바이어스
 cbuffer ShadowData : register(b6)
 {
-    matrix PointLightViewProj[6];
+    row_major matrix PointLightViewProj[6];
     float ShadowBias; // 깊이 비교 시 바이어스
     float3 _padding; // 16바이트 정렬용
 };
