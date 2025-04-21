@@ -132,7 +132,7 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
     // 뷰·프로젝션 변환
     float4 proj = mul(float4(worldPos, 1), PointLightViewProj[faceIdx]);
     proj.xyz /= proj.w; // NDC 공간
-    float2 uv = proj.xy * 0.5 + 0.5; // [0,1] 로 변환
+    float2 uv; // [0,1] 로 변환 + y가 위에서 아래로 값 커지는 거 반영
     uv.x = proj.x * 0.5 + 0.5;
     uv.y = 1.0f - (proj.y * 0.5 + 0.5);
     
