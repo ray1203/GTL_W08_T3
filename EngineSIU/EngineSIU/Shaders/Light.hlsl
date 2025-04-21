@@ -123,11 +123,11 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
     int faceIdx = 0;
     float3 absToL = abs(ToLight);
     if (absToL.x > absToL.y && absToL.x > absToL.z)
-        faceIdx = (ToLight.x > 0) ? 0 : 1;
+        faceIdx = (ToLight.x > 0) ? 1 : 0;
     else if (absToL.y > absToL.z)
-        faceIdx = (ToLight.y > 0) ? 2 : 3;
+        faceIdx = (ToLight.y > 0) ? 3 : 2;
     else
-        faceIdx = (ToLight.z > 0) ? 4 : 5;
+        faceIdx = (ToLight.z > 0) ? 5 : 4;
     
     // 뷰·프로젝션 변환
     float4 proj = mul(float4(worldPos, 1), PointLightViewProj[faceIdx]);
@@ -162,9 +162,13 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
     {
         return ShadowMap[4].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
     }
-    else
+    else if (faceIdx == 5)
     {
         return ShadowMap[5].SampleCmpLevelZero(ShadowSampler, uv, depth).r;
+    }
+    else
+    {
+        return 1.0f;
     }
 }
 
@@ -192,6 +196,8 @@ float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wo
 #endif
 
     float shadow = SamplePointShadow(ToLight, WorldPosition);
+    
+    //return float4(shadow, 0, 0, 1);
     
     return float4(Lit * Attenuation * LightInfo.Intensity * shadow, 1.0);
 }

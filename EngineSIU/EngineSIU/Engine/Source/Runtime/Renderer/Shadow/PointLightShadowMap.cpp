@@ -233,7 +233,7 @@ void FPointLightShadowMap::UpdateConstantBuffer()
     for (int face = 0; face < faceNum; face++) {
         PointLightShadowData.PointLightViewProj[face] = PointLightViewProjMatrix[face];
     }
-    PointLightShadowData.ShadowBias = 0.005f;
+    PointLightShadowData.ShadowBias = 0.0001f;
     BufferManager->UpdateConstantBuffer(TEXT("FPointLightShadowData"), PointLightShadowData);
     BufferManager->BindConstantBuffer(TEXT("FPointLightShadowData"), 6, EShaderStage::Pixel);
 }
