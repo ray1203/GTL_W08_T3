@@ -302,7 +302,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 {
                     SpawnedActor = World->SpawnActor<AActor>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_SPHERE"));
-                    USphereComp* SphereComp = SpawnedActor->AddComponent<USphereComp>();
+                    USphereComp* SphereComp = SpawnedActor->AddComponent<USphereComp>(TEXT("SphereComponent"));
                     SphereComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
                     break;
                 }
@@ -342,7 +342,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 {
                     SpawnedActor = World->SpawnActor<AActor>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_PARTICLE"));
-                    UParticleSubUVComponent* ParticleComponent = SpawnedActor->AddComponent<UParticleSubUVComponent>();
+                    UParticleSubUVComponent* ParticleComponent = SpawnedActor->AddComponent<UParticleSubUVComponent>(TEXT("ParticleSubUVComponent"));
                     ParticleComponent->SetTexture(L"Assets/Texture/T_Explosion_SubUV.png");
                     ParticleComponent->SetRowColumnCount(6, 6);
                     ParticleComponent->SetRelativeScale3D(FVector(10.0f, 10.0f, 1.0f));
@@ -354,7 +354,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 {
                     SpawnedActor = World->SpawnActor<AActor>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_TEXT"));
-                    UTextComponent* TextComponent = SpawnedActor->AddComponent<UTextComponent>();
+                    UTextComponent* TextComponent = SpawnedActor->AddComponent<UTextComponent>(TEXT("TextComponent"));
                     TextComponent->SetTexture(L"Assets/Texture/font.png");
                     TextComponent->SetRowColumnCount(106, 106);
                     TextComponent->SetText(L"안녕하세요 Jungle 1");

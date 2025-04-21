@@ -545,7 +545,14 @@ void PropertyEditorPanel::RenderForStaticMesh(UStaticMeshComponent* StaticMeshCo
             {
                 if (ImGui::Selectable(GetData(Class->GetName()), false))
                 {
-                    USceneComponent* NewComp = Cast<USceneComponent>(StaticMeshComp->GetOwner()->AddComponent(Class));
+                    // TODO: 임시로 static uint32 NewCompIndex사용
+                    static uint32 NewCompIndex = 0;
+                    USceneComponent* NewComp = Cast<USceneComponent>(
+                        StaticMeshComp->GetOwner()->AddComponent(
+                            Class,
+                            FString::Printf(TEXT("%s_%d"), *Class->GetName(), NewCompIndex++)
+                        )
+                    );
                     if (NewComp)
                     {
                         NewComp->SetupAttachment(StaticMeshComp);
