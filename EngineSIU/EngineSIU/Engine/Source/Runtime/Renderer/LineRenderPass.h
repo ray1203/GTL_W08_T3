@@ -30,6 +30,8 @@ public:
     void ProcessLineRendering(const std::shared_ptr<FEditorViewportClient>& Viewport);
     void DrawLineBatch(const FLinePrimitiveBatchArgs& BatchArgs) const;
 
+    void ReloadShader();
+
 private:
     FDXDBufferManager* BufferManager;
     FGraphicsDevice* Graphics;

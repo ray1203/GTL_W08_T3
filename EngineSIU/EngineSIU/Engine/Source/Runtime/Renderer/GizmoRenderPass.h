@@ -36,7 +36,9 @@ public:
     void ReleaseShader();
 
     void CreateBuffer();
-    
+
+    void ReloadShader();
+
 private:
     FDXDBufferManager* BufferManager;
     FGraphicsDevice* Graphics;

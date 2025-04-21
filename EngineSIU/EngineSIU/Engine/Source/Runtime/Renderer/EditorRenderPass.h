@@ -22,6 +22,8 @@ public:
 
     void ClearRenderArr();
 
+    void ReloadShader();
+
 private:
     FDXDBufferManager* BufferManager;
     FGraphicsDevice* Graphics;

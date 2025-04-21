@@ -471,6 +471,20 @@ void FEditorRenderPass::ClearRenderArr()
     Resources.Components.Fog.Empty();
 }
 
+void FEditorRenderPass::ReloadShader()
+{
+    auto ReloadShader = [this](const std::wstring& KeyPrefix, FShaderResource& TargetResource)
+    {
+        TargetResource.Vertex = ShaderManager->GetVertexShaderByKey(KeyPrefix + L"VS");
+        TargetResource.Pixel = ShaderManager->GetPixelShaderByKey(KeyPrefix + L"PS");
+    };
+
+    ReloadShader(L"Sphere", Resources.Shaders.Sphere);
+    ReloadShader(L"Cone", Resources.Shaders.Cone);
+    ReloadShader(L"Icon", Resources.Shaders.Icon);
+    ReloadShader(L"Arrow", Resources.Shaders.Arrow);
+}
+
 void FEditorRenderPass::PrepareConstantbufferGlobal()
 {
     if (Resources.ConstantBuffers.Camera00)

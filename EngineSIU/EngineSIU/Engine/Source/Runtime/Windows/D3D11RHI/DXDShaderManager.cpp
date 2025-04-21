@@ -1,5 +1,60 @@
 #include "DXDShaderManager.h"
 #include <d3dcompiler.h>
+#include <fstream>
+
+#include "UserInterface/Console.h"
+
+using namespace NS_ShaderMetadata;
+
+
+class FShaderIncludeHandler : public ID3DInclude
+{
+public:
+    FShaderIncludeHandler() = default;
+    virtual ~FShaderIncludeHandler() = default;
+
+    [[nodiscard]] IncludesMetadata GetIncludePaths() const
+    {
+        return IncludePaths;
+    }
+
+protected:
+    virtual HRESULT Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) noexcept override
+    {
+        const fs::path AbsolutePath = absolute(fs::path("Shaders") / pFileName);
+        IncludePaths.Add(MakePair(AbsolutePath, fs::last_write_time(AbsolutePath)));
+
+        // 파일 열기
+        std::ifstream File(AbsolutePath, std::ios::binary);
+        if (!File.is_open())
+        {
+            return E_FAIL;
+        }
+
+        File.seekg(0, std::ios::end);
+        const int64 Size = File.tellg();
+        File.seekg(0, std::ios::beg);
+
+        char* Data = new char[Size];
+        File.read(Data, Size);
+        File.close();
+
+        *ppData = Data;
+        *pBytes = static_cast<UINT>(Size);
+
+        return S_OK;
+    }
+
+    virtual HRESULT Close(LPCVOID pData) noexcept override
+    {
+        delete[] static_cast<const char*>(pData);
+        return S_OK;
+    }
+
+private:
+    IncludesMetadata IncludePaths;
+};
+
 
 FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device)
     : DXDDevice(Device)
@@ -29,7 +84,6 @@ void FDXDShaderManager::ReleaseAllShader()
         }
     }
     PixelShaders.Empty();
-
 }
 
 HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint)
@@ -45,78 +99,82 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
 
     ID3DBlob* PsBlob = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
-    hr = D3DCompileFromFile(FileName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "ps_5_0", shaderFlags, 0, &PsBlob, &ErrorBlob);
+    FShaderIncludeHandler IncludesHandler;
+    hr = D3DCompileFromFile(FileName.c_str(), nullptr, &IncludesHandler, EntryPoint.c_str(), "ps_5_0", shaderFlags, 0, &PsBlob, &ErrorBlob);
     if (FAILED(hr))
     {
-        std::string error = (char*)ErrorBlob->GetBufferPointer();
+        if (ErrorBlob) {
+            OutputDebugStringA((char*)ErrorBlob->GetBufferPointer());
+            ErrorBlob->Release();
+        }
         return hr;
     }
 
     ID3D11PixelShader* NewPixelShader;
     hr = DXDDevice->CreatePixelShader(PsBlob->GetBufferPointer(), PsBlob->GetBufferSize(), nullptr, &NewPixelShader);
     if (PsBlob)
-    {
         PsBlob->Release();
-    }
+
     if (FAILED(hr))
-    {
         return hr;
-    }
 
     PixelShaders[Key] = NewPixelShader;
+    PixelShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
 
     return S_OK;
 }
 
-HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* defines)
+HRESULT FDXDShaderManager::AddPixelShader(
+    const std::wstring& Key,
+    const std::wstring& FileName,
+    const std::string& EntryPoint,
+    const D3D_SHADER_MACRO* Defines)
 {
-	UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+    UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef _DEBUG
-	shaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+    shaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
-	HRESULT hr = S_OK;
 
-	if (DXDDevice == nullptr)
-		return S_FALSE;
+    if (DXDDevice == nullptr)
+        return S_FALSE;
 
-	ID3DBlob* PsBlob = nullptr;
-
-    // Begin Test
+    ID3DBlob* PsBlob = nullptr;
     ID3DBlob* errorBlob = nullptr;
-	//hr = D3DCompileFromFile(FileName.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "ps_5_0", shaderFlags, 0, &PsBlob, nullptr);
-	//if (FAILED(hr))
-	//	return hr;
-    hr = D3DCompileFromFile(FileName.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "ps_5_0", shaderFlags, 0, &PsBlob, &errorBlob);
+    FShaderIncludeHandler IncludesHandler;
+    
+    HRESULT hr = D3DCompileFromFile(
+        FileName.c_str(),
+        Defines, // << 매크로 정의 들어가는 핵심 부분
+        &IncludesHandler,
+        EntryPoint.c_str(),
+        "ps_5_0",
+        shaderFlags,
+        0,
+        &PsBlob,
+        &errorBlob);
 
     if (FAILED(hr)) {
         if (errorBlob) {
-            // 에러 메시지를 문자열로 변환하여 출력
-            const char* errorMsg = static_cast<const char*>(errorBlob->GetBufferPointer());
-            OutputDebugStringA(errorMsg); // 디버그 창에 출력
-            MessageBoxA(NULL, errorMsg, "Shader Compilation Error", MB_OK); // 팝업 창으로 표시
+            std::string errMsg((char*)errorBlob->GetBufferPointer(), errorBlob->GetBufferSize());
+            std::cerr << "Shader compile error: " << errMsg << std::endl;
             errorBlob->Release();
         }
         return hr;
     }
-    // End Test
 
-	ID3D11PixelShader* NewPixelShader;
-	hr = DXDDevice->CreatePixelShader(PsBlob->GetBufferPointer(), PsBlob->GetBufferSize(), nullptr, &NewPixelShader);
-	if (PsBlob)
-	{
-		PsBlob->Release();
-	}
-	if (FAILED(hr))
-		return hr;
+    ID3D11PixelShader* NewPixelShader;
+    hr = DXDDevice->CreatePixelShader(PsBlob->GetBufferPointer(), PsBlob->GetBufferSize(), nullptr, &NewPixelShader);
 
-	PixelShaders[Key] = NewPixelShader;
+    if (PsBlob)
+        PsBlob->Release();
 
-	return S_OK;
-}
+    if (FAILED(hr))
+        return hr;
 
-HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::wstring& FileName)
-{
-    return E_NOTIMPL;
+    PixelShaders[Key] = NewPixelShader;
+    PixelShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+
+    return S_OK;
 }
 
 HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint)
@@ -129,7 +187,8 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     ID3DBlob* VertexShaderCSO = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
 
-    hr = D3DCompileFromFile(FileName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorBlob);
+    FShaderIncludeHandler IncludesHandler;
+    hr = D3DCompileFromFile(FileName.c_str(), nullptr, &IncludesHandler, EntryPoint.c_str(), "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorBlob);
     if (FAILED(hr))
     {
         if (ErrorBlob) {
@@ -148,23 +207,42 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     }
 
     VertexShaders[Key] = NewVertexShader;
+    VertexShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
 
     VertexShaderCSO->Release();
 
     return S_OK;
 }
 
-HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* defines)
+HRESULT FDXDShaderManager::AddVertexShader(
+    const std::wstring& Key,
+    const std::wstring& FileName,
+    const std::string& EntryPoint,
+    const D3D_SHADER_MACRO* Defines)
 {
     if (DXDDevice == nullptr)
         return S_FALSE;
 
-    HRESULT hr = S_OK;
+    UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+    shaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
 
     ID3DBlob* VertexShaderCSO = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
+    FShaderIncludeHandler IncludesHandler;
 
-    hr = D3DCompileFromFile(FileName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorBlob);
+    HRESULT hr = D3DCompileFromFile(
+        FileName.c_str(),
+        Defines,
+        &IncludesHandler,
+        EntryPoint.c_str(),
+        "vs_5_0",
+        shaderFlags,
+        0,
+        &VertexShaderCSO,
+        &ErrorBlob);
+
     if (FAILED(hr))
     {
         if (ErrorBlob) {
@@ -183,7 +261,7 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     }
 
     VertexShaders[Key] = NewVertexShader;
-
+    VertexShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
     VertexShaderCSO->Release();
 
     return S_OK;
@@ -208,7 +286,8 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     ID3DBlob* VertexShaderCSO = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
 
-    hr = D3DCompileFromFile(FileName.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "vs_5_0", shaderFlags, 0, &VertexShaderCSO, &ErrorBlob);
+    FShaderIncludeHandler IncludesHandler;
+    hr = D3DCompileFromFile(FileName.c_str(), nullptr, &IncludesHandler, EntryPoint.c_str(), "vs_5_0", shaderFlags, 0, &VertexShaderCSO, &ErrorBlob);
     if (FAILED(hr))
     {
         if (ErrorBlob) {
@@ -233,15 +312,16 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
         return hr;
     }
 
-    VertexShaderCSO->Release();
-
     VertexShaders[Key] = NewVertexShader;
+    VertexShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
     InputLayouts[Key] = NewInputLayout;
+
+    VertexShaderCSO->Release();
 
     return S_OK;
 }
 
-HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* defines)
+HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* Defines)
 {
     UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef _DEBUG
@@ -254,8 +334,9 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
 
     ID3DBlob* VertexShaderCSO = nullptr;
     ID3DBlob* ErrorBlob = nullptr;
+    FShaderIncludeHandler IncludesHandler;
 
-    hr = D3DCompileFromFile(FileName.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE, EntryPoint.c_str(), "vs_5_0", shaderFlags, 0, &VertexShaderCSO, &ErrorBlob);
+    hr = D3DCompileFromFile(FileName.c_str(), Defines, &IncludesHandler, EntryPoint.c_str(), "vs_5_0", shaderFlags, 0, &VertexShaderCSO, &ErrorBlob);
     if (FAILED(hr))
     {
         if (ErrorBlob) {
@@ -283,6 +364,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     VertexShaderCSO->Release();
 
     VertexShaders[Key] = NewVertexShader;
+    VertexShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
     InputLayouts[Key] = NewInputLayout;
     return S_OK;
 }
@@ -312,4 +394,115 @@ ID3D11PixelShader* FDXDShaderManager::GetPixelShaderByKey(const std::wstring& Ke
         return *PixelShaders.Find(Key);
     }
     return nullptr;
+}
+
+bool FDXDShaderManager::HandleHotReloadShader()
+{
+    bool bIsHotReloadShader = false;
+    for (auto& Vs : VertexShaders)
+    {
+        FShaderFileMetadata& Data = Vs.Value.GetShaderMetadata();
+        if (Vs.Value.GetShaderMetadata().IsOutdatedAndUpdateLastTime())
+        {
+            ID3DBlob* VertexShaderCSO = nullptr;
+            ID3DBlob* ErrorBlob = nullptr;
+
+            // 셰이더 컴파일
+            FShaderIncludeHandler IncludesHandler;
+            HRESULT Hr = D3DCompileFromFile(
+                Data.FileMetadata.Key.c_str(), nullptr, &IncludesHandler, *Data.EntryPoint,
+                "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorBlob
+            );
+
+            // 셰이더 컴파일 실패시
+            if (FAILED(Hr))
+            {
+                if (ErrorBlob)
+                {
+                    UE_LOG(LogLevel::Error, "[Shader Hot Reload] VertexShader Compile Failed %s", ErrorBlob->GetBufferPointer());
+                    ErrorBlob->Release();
+                }
+                continue;
+            }
+
+            ID3D11VertexShader* NewVertexShader;
+            Hr = DXDDevice->CreateVertexShader(
+                VertexShaderCSO->GetBufferPointer(),
+                VertexShaderCSO->GetBufferSize(),
+                nullptr, &NewVertexShader
+            );
+
+            // VS 만들기 실패시
+            if (FAILED(Hr))
+            {
+                UE_LOG(LogLevel::Error, "[Shader Hot Reload] Failed CreateVertexShader");
+                VertexShaderCSO->Release();
+                continue;
+            }
+
+            // 기존 셰이더 제거
+            Vs.Value->Release();
+
+            // 새로운 셰이더 할당
+            Vs.Value = NewVertexShader;
+            Data.IncludePaths = IncludesHandler.GetIncludePaths();
+
+            VertexShaderCSO->Release();
+            bIsHotReloadShader = true;
+        }
+    }
+
+    for (auto& Ps : PixelShaders)
+    {
+        FShaderFileMetadata& Data = Ps.Value.GetShaderMetadata();
+        if (Ps.Value.GetShaderMetadata().IsOutdatedAndUpdateLastTime())
+        {
+            ID3DBlob* PixelShaderCSO = nullptr;
+            ID3DBlob* ErrorBlob = nullptr;
+
+            // 셰이더 컴파일
+            FShaderIncludeHandler IncludesHandler;
+            HRESULT Hr = D3DCompileFromFile(
+                Data.FileMetadata.Key.c_str(), nullptr, &IncludesHandler, *Data.EntryPoint,
+                "ps_5_0", 0, 0, &PixelShaderCSO, &ErrorBlob
+            );
+
+            // 셰이더 컴파일 실패시
+            if (FAILED(Hr))
+            {
+                if (ErrorBlob)
+                {
+                    UE_LOG(LogLevel::Error, "[Shader Hot Reload] PixelShader Compile Failed %s", ErrorBlob->GetBufferPointer());
+                    ErrorBlob->Release();
+                }
+                continue;
+            }
+
+            ID3D11PixelShader* NewPixelShader;
+            Hr = DXDDevice->CreatePixelShader(
+                PixelShaderCSO->GetBufferPointer(),
+                PixelShaderCSO->GetBufferSize(),
+                nullptr, &NewPixelShader
+            );
+
+            // PS 만들기 실패시
+            if (FAILED(Hr))
+            {
+                UE_LOG(LogLevel::Error, "[Shader Hot Reload] Failed CreatePixelShader");
+                PixelShaderCSO->Release();
+                continue;
+            }
+
+            // 기존 셰이더 제거
+            Ps.Value->Release();
+
+            // 새로운 셰이더 할당
+            Ps.Value = NewPixelShader;
+            Data.IncludePaths = IncludesHandler.GetIncludePaths();
+
+            PixelShaderCSO->Release();
+            bIsHotReloadShader = true;
+        }
+    }
+    return bIsHotReloadShader;
 }

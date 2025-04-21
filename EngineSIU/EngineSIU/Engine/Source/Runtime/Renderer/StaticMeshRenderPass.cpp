@@ -105,9 +105,9 @@ void FStaticMeshRenderPass::ReleaseShader()
     
 }
 
-void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex ViewModeIndex)
+void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex InViewModeIndex)
 {
-    switch (ViewModeIndex)
+    switch (InViewModeIndex)
     {
     case EViewModeIndex::VMI_Lit_Gouraud:
         VertexShader = ShaderManager->GetVertexShaderByKey(L"GOURAUD_StaticMeshVertexShader");
@@ -135,6 +135,40 @@ void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex ViewModeIndex)
         UpdateLitUnlitConstant(0);
         break;
     }
+    ViewModeIndex = InViewModeIndex;
+}
+
+void FStaticMeshRenderPass::ReloadShader()
+{
+    switch (ViewModeIndex)
+    {
+        case EViewModeIndex::VMI_Lit_Gouraud:
+            VertexShader = ShaderManager->GetVertexShaderByKey(L"GOURAUD_StaticMeshVertexShader");
+            PixelShader = ShaderManager->GetPixelShaderByKey(L"GOURAUD_StaticMeshPixelShader");
+            break;
+        case EViewModeIndex::VMI_Lit_Lambert:
+            VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
+            PixelShader = ShaderManager->GetPixelShaderByKey(L"LAMBERT_StaticMeshPixelShader");
+            break;
+        case EViewModeIndex::VMI_Lit_BlinnPhong:
+        case EViewModeIndex::VMI_Wireframe:
+        case EViewModeIndex::VMI_Unlit:
+            VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
+            PixelShader = ShaderManager->GetPixelShaderByKey(L"PHONG_StaticMeshPixelShader");
+            break;
+        case EViewModeIndex::VMI_SceneDepth:
+        case EViewModeIndex::VMI_WorldNormal:
+        case EViewModeIndex::VMI_MAX:
+            break;
+        default:
+            assert(0); // Invalid ViewModeIndex
+            break;
+    }
+    VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
+    PixelShader = ShaderManager->GetPixelShaderByKey(L"PHONG_StaticMeshPixelShader");
+
+    DebugDepthShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderDepth");
+    DebugWorldNormalShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderWorldNormal");
 }
 
 void FStaticMeshRenderPass::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager)

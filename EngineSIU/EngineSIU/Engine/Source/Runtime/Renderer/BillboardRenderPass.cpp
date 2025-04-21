@@ -136,6 +136,12 @@ void FBillboardRenderPass::ReleaseShader()
 {
 }
 
+void FBillboardRenderPass::ReloadShader()
+{
+    VertexShader = ShaderManager->GetVertexShaderByKey(L"VertexBillboardShader");
+    PixelShader = ShaderManager->GetPixelShaderByKey(L"PixelBillboardShader");
+}
+
 void FBillboardRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
     FViewportResource* ViewportResource = Viewport->GetViewportResource();
