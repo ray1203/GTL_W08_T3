@@ -22,6 +22,8 @@ public:
 
     void ClearRenderArr();
 
+    void ReloadShader();
+
 private:
     FDXDBufferManager* BufferManager;
     FGraphicsDevice* Graphics;
@@ -80,9 +82,6 @@ private:
     void RenderArrows();
     void PrepareConstantbufferArrow();
     void UdpateConstantbufferArrow(const FConstantBufferDebugArrow& Buffer);
-
-    // ShaderManager의 Hot Reload에 대응하기 위한 함수
-    void SetShaderAndPrepare(const std::wstring& VertexKey, const std::wstring& PixelKey, FShaderResource& ShaderSlot);
 
     const UINT32 ConstantBufferSizeAABB = 8;
     const UINT32 ConstantBufferSizeSphere = 8;

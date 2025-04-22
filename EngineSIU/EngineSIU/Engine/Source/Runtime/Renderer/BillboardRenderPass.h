@@ -48,6 +48,8 @@ public:
     void CreateShader();
     void ReleaseShader();
 
+    void ReloadShader();
+
 protected:
     TArray<UBillboardComponent*> BillboardComps;
 

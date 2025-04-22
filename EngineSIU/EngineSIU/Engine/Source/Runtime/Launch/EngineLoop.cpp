@@ -141,6 +141,14 @@ void FEngineLoop::Tick()
         GUObjectArray.ProcessPendingDestroyObjects();
 
         GraphicDevice.SwapBuffer();
+
+#if _DEBUG
+        if (bIsEnableShaderHotReload)
+        {
+            (void)Renderer.HandleHotReloadShader();
+        }
+#endif
+
         do
         {
             Sleep(0);

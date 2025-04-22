@@ -50,7 +50,9 @@ public:
 
     void SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap);
     void SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap);
-    
+
+    void ReloadShader();
+
 private:
     TArray<UStaticMeshComponent*> StaticMeshComponents;
 
@@ -66,6 +68,7 @@ private:
     FGraphicsDevice* Graphics;
     FDXDShaderManager* ShaderManager;
 
+    EViewModeIndex ViewModeIndex;
     FSpotLightShadowMap* SpotLightShadowMap;
     FPointLightShadowMap* PointLightShadowMap;
 };

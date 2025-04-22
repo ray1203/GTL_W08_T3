@@ -91,6 +91,9 @@ public:
     void CreateConstantBuffers();
     void ReleaseConstantBuffer();
 
+    /** Shader Hot Reload */
+    bool HandleHotReloadShader() const;
+
     void CreateCommonShader();
     void CreateDepthOnlyShader();
     void CreateDepthVisualShader();

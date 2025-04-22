@@ -24,7 +24,8 @@ public:
     virtual void Render(const std::shared_ptr<FEditorViewportClient>& Viewport) override;
 
     virtual void ClearRenderArr() override;
-    
+
+    void ReloadShader();
 
     // Fog 렌더링용 셰이더 생성 및 입력 레이아웃 설정
     void CreateShader();

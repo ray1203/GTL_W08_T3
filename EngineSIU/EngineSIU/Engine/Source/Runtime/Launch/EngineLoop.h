@@ -46,6 +46,7 @@ public:
     static uint32 TotalAllocationCount;
 
     HWND AppWnd;
+    bool bIsEnableShaderHotReload = true; // TODO: ImGui에서 변경가능하게 설정하기
 
 private:
     UImGuiManager* UIMgr;
