@@ -66,16 +66,21 @@ cbuffer Lighting : register(b0)
     int AmbientLightsCount;
 };
 
-// 6개의 페이스별로 개별 바인딩(t10~t15)
-TextureCube<float> ShadowCube : register(t10);
+Texture2D ShadowMap : register(t10);
+TextureCube<float> ShadowCube : register(t11);
 SamplerComparisonState ShadowSampler : register(s10);
 
 // Point Light 의 6개 face 뷰·프로젝션 행렬과 바이어스
-cbuffer ShadowData : register(b6)
+cbuffer SpotShadowData : register(b6)
 {
-    row_major matrix PointLightViewProj[6];
+    row_major matrix SpotLightViewProj;
     float ShadowBias; // 깊이 비교 시 바이어스
     float3 _padding; // 16바이트 정렬용
+};
+
+cbuffer PointShadowData : register(b7)
+{
+    row_major matrix PointLightViewProj[6];
 };
 
 float CalculateAttenuation(float Distance, float AttenuationFactor, float Radius)
@@ -117,6 +122,48 @@ float CalculateSpecular(float3 WorldNormal, float3 ToLightDir, float3 ViewDir, f
     return Spec * SpecularStrength;
 }
 
+float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir, float spotOuterAngle)
+{
+    //float3 toFragment = worldPos - spotLightPos;
+    //float distToFragment = length(toFragment);
+    //toFragment = normalize(toFragment);
+    
+    //float cosAngle = dot(toFragment, normalize(spotLightDir));
+    //float cosOuterCone = cos(spotOuterAngle / 2);
+    
+    //if (cosAngle < cosOuterCone)
+    //    return 0.0f;
+    
+    float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLightViewProj);
+    
+    float2 uv = lightSpacePos.xy / lightSpacePos.w * 0.5f + 0.5f;
+    uv.y = 1 - uv.y;
+    float depth = lightSpacePos.z / lightSpacePos.w - ShadowBias;
+    
+    if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
+        return 1.0f;
+    
+    // pcf
+    float shadow = 0.0f;
+    uint width, height;
+    ShadowMap.GetDimensions(width, height);
+    float2 texelSize = float2(1.0 / width, 1.0 / height);
+
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float2 offset = float2(x, y) * texelSize;
+            shadow += ShadowMap.SampleCmpLevelZero(
+                ShadowSampler,
+                uv.xy + offset,
+                depth
+            );
+        }
+    }
+    shadow /= 9.0;
+    return shadow;
+}
 // ——— 그림자 샘플링 헬퍼 ———
 float SamplePointShadow(float3 ToLight, float3 worldPos)
 {
@@ -133,7 +180,7 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
     float4 proj = mul(float4(worldPos, 1), PointLightViewProj[faceIdx]);
     proj.xyz /= proj.w;
     
-    float depth = proj.z - ShadowBias; // 바이어스 적용
+    float depth = proj.z - ShadowBias;
     
     return ShadowCube.SampleCmpLevelZero(ShadowSampler, normalize(-1.0f * ToLight), depth);
 }
@@ -189,7 +236,7 @@ float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wor
     }
     
     float DiffuseFactor = CalculateDiffuse(WorldNormal, LightDir);
-    
+
 #ifdef LIGHTING_MODEL_LAMBERT
     float3 Lit = DiffuseFactor * DiffuseColor * LightInfo.LightColor.rgb;
 #else
@@ -198,7 +245,12 @@ float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wor
     float3 Lit = ((DiffuseFactor * DiffuseColor) + (SpecularFactor * Material.SpecularColor)) * LightInfo.LightColor.rgb;
 #endif
     
-    return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity, 1.0);
+    //return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity, 1.0);
+    float shadow = SampleSpotShadow(WorldPosition, LightInfo.Position, LightInfo.Direction, LightInfo.OuterRad);
+    //float shadow = SampleSpotShadow(WorldNormal, WorldPosition, LightInfo.Position, LightInfo.Direction, LightInfo.OuterRad);
+    
+    return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity * shadow, 1.0);
+    //return float4(shadow, shadow, shadow, 1.0);
 }
 
 float4 DirectionalLight(int nIndex, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)

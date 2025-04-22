@@ -20,7 +20,8 @@
 #include "GameFramework/Actor.h"
 #include "Engine/AssetManager.h"
 #include "UObject/UObjectIterator.h"
-#include "Engine/Source/Runtime/Renderer/Shadow/PointLightShadowMap.h"
+#include "Renderer/Shadow/SpotLightShadowMap.h"
+#include "Renderer/Shadow/PointLightShadowMap.h"
 
 void PropertyEditorPanel::Render()
 {
@@ -48,8 +49,6 @@ void PropertyEditorPanel::Render()
 
     /* Render Start */
     ImGui::Begin("Detail", nullptr, PanelFlags);
-
-
 
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
     if (!Engine)
@@ -105,51 +104,6 @@ void PropertyEditorPanel::Render()
         }
     }
 
-    //// TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
-    //if (PickedActor)
-    //    if (ULightComponent* lightObj = PickedActor->GetComponentByClass<ULightComponent>())
-    //    {
-    //        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-
-    //        if (ImGui::TreeNodeEx("Light Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
-    //        {
-    //            /*  DrawColorProperty("Ambient Color",
-    //                  [&]() { return lightObj->GetAmbientColor(); },
-    //                  [&](FVector4 c) { lightObj->SetAmbientColor(c); });
-    //              */
-    //            DrawColorProperty("Base Color",
-    //                [&]() { return lightObj->GetDiffuseColor(); },
-    //                [&](FLinearColor c) { lightObj->SetDiffuseColor(c); });
-
-    //            float Intensity = lightObj->GetIntensity();
-    //            if (ImGui::SliderFloat("Intensity", &Intensity, 0.0f, 100.0f, "%1.f"))
-    //                lightObj->SetIntensity(Intensity);
-
-    //             /*  
-    //            float falloff = lightObj->GetFalloff();
-    //            if (ImGui::SliderFloat("Falloff", &falloff, 0.1f, 10.0f, "%.2f")) {
-    //                lightObj->SetFalloff(falloff);
-    //            }
-
-    //            TODO : For SpotLight
-    //            */
-
-    //            float attenuation = lightObj->GetAttenuation();
-    //            if (ImGui::SliderFloat("Attenuation", &attenuation, 0.01f, 10000.f, "%.1f")) {
-    //                lightObj->SetAttenuation(attenuation);
-    //            }
-
-    //            float AttenuationRadius = lightObj->GetAttenuationRadius();
-    //            if (ImGui::SliderFloat("Attenuation Radius", &AttenuationRadius, 0.01f, 10000.f, "%.1f")) {
-    //                lightObj->SetAttenuationRadius(AttenuationRadius);
-    //            }
-
-    //            ImGui::TreePop();
-    //        }
-
-    //        ImGui::PopStyleColor();
-    //    }
-
     if(PickedActor)
         if (UPointLightComponent* pointlightObj = PickedActor->GetComponentByClass<UPointLightComponent>())
         {
@@ -202,6 +156,13 @@ void PropertyEditorPanel::Render()
     if(PickedActor)
         if (USpotLightComponent* spotlightObj = PickedActor->GetComponentByClass<USpotLightComponent>())
         {
+            GEngineLoop.Renderer.SpotLightShadowMapPass->RenderLinearDepth();
+
+            // Shadow Depth Map 시각화
+            ID3D11ShaderResourceView* shaderSRV = GEngineLoop.Renderer.SpotLightShadowMapPass->GetShadowViewSRV();
+            //FVector direction = GEngineLoop.Renderer.PointLightShadowMapPass->GetDirection();
+            //FVector up = GEngineLoop.Renderer.PointLightShadowMapPass->GetUp();
+
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
             if (ImGui::TreeNodeEx("SpotLight Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
@@ -211,7 +172,7 @@ void PropertyEditorPanel::Render()
                     [&](FLinearColor c) { spotlightObj->SetLightColor(c); });
 
                 float Intensity = spotlightObj->GetIntensity();
-                if (ImGui::SliderFloat("Intensity", &Intensity, 0.0f, 160.0f, "%.1f"))
+                if (ImGui::SliderFloat("Intensity", &Intensity, 0.0f, 5000.0f, "%.1f"))
                     spotlightObj->SetIntensity(Intensity);
 
                 float Radius = spotlightObj->GetRadius();
@@ -221,16 +182,33 @@ void PropertyEditorPanel::Render()
 
                 LightDirection = spotlightObj->GetDirection();
                 FImGuiWidget::DrawVec3Control("Direction", LightDirection, 0, 85);
-                
+
+                float OuterDegree = spotlightObj->GetOuterDegree();
                 float InnerDegree = spotlightObj->GetInnerDegree();
-                if (ImGui::SliderFloat("InnerDegree", &InnerDegree, 0.01f, 180.f, "%.1f")) {
+
+                if (ImGui::SliderFloat("InnerDegree", &InnerDegree, 0.f, OuterDegree, "%.1f")) {
                     spotlightObj->SetInnerDegree(InnerDegree);
                 }
 
-                float OuterDegree = spotlightObj->GetOuterDegree();
-                if (ImGui::SliderFloat("OuterDegree", &OuterDegree, 0.01f, 180.f, "%.1f")) {
+                if (ImGui::SliderFloat("OuterDegree", &OuterDegree, 0.f, 80.f, "%.1f")) {
                     spotlightObj->SetOuterDegree(OuterDegree);
+
+                    if (InnerDegree > OuterDegree) {
+                        InnerDegree = OuterDegree;
+                        spotlightObj->SetInnerDegree(InnerDegree);
+                    }
                 }
+                //////
+                // ─ Shadow Map 미리보기 (1열) ─
+                ImGui::Separator();
+                ImGui::Text("Testing SpotLight:");
+
+                const float imgSize = 256.0f; // 원하는 크기로 조정
+
+                ImGui::Text("Direction %.01f %.01f %.01f", LightDirection.X, LightDirection.Y, LightDirection.Z);
+                ImTextureID texID = (ImTextureID)shaderSRV;
+                ImGui::Image(texID, ImVec2(imgSize, imgSize));
+                ImGui::Spacing();    // 이미지 사이에 약간의 여백
 
                 ImGui::TreePop();
             }

@@ -1,16 +1,16 @@
-Texture2D<float> DepthSRV : register(t0);
+Texture2D DepthSRV : register(t0);
 SamplerState LinearSampler : register(s0);
-
+ 
 cbuffer DepthMapData : register(b0)
 {
-    matrix ViewProj; // 카메라 View*Proj 행렬
+    matrix ViewProj;
     float4 Params; //  x=Near, y=Far, z=1/Gamma, w=unused
 };
-
+ 
 struct VSInput
-{ 
+{
     float3 pos : POSITION;
-    float2 uv : TEXCOORD;    
+    float2 uv : TEXCOORD;
 };
 
 struct PSInput

@@ -27,6 +27,7 @@
 
 #include "PropertyEditor/ShowFlags.h"
 #include "Shadow/CascadeShadowMap.h"
+#include "Shadow/SpotLightShadowMap.h"
 #include "Shadow/PointLightShadowMap.h"
 //------------------------------------------------------------------------------
 // 초기화 및 해제 관련 함수
@@ -41,6 +42,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CreateConstantBuffers();
     CreateCommonShader();
     CreateDepthOnlyShader();
+
     CreateDepthVisualShader();
 
     StaticMeshRenderPass = new FStaticMeshRenderPass();
@@ -54,6 +56,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
+    SpotLightShadowMapPass = new FSpotLightShadowMap();
     PointLightShadowMapPass = new FPointLightShadowMap();
 
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -69,6 +72,9 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     PostProcessCompositingPass->Initialize(BufferManager, Graphics, ShaderManager);
     
     SlateRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+
+    SpotLightShadowMapPass->Initialize(BufferManager, Graphics, ShaderManager);
+    StaticMeshRenderPass->SetSpotLightShadowMap(SpotLightShadowMapPass);
 
     PointLightShadowMapPass->Initialize(BufferManager, Graphics, ShaderManager);
     StaticMeshRenderPass->SetPointLightShadowMap(PointLightShadowMapPass);
@@ -89,6 +95,7 @@ void FRenderer::Release()
     delete PostProcessCompositingPass;
     delete SlateRenderPass;
 
+    delete SpotLightShadowMapPass;
     delete PointLightShadowMapPass;
 }
 
@@ -96,6 +103,8 @@ void FRenderer::RenderShadowMap()
 {
     // TODO: Point Light 여러 개인 것에 대응
     // 현재는 1개로 간단화 해서 실행
+    SpotLightShadowMapPass->PrepareRender();
+    SpotLightShadowMapPass->RenderShadowMap();
     PointLightShadowMapPass->PrepareRender();
     PointLightShadowMapPass->RenderShadowMap();
 }
@@ -144,8 +153,12 @@ void FRenderer::CreateConstantBuffers()
     UINT ShadowObjWorld = sizeof(FShadowObjWorld);
     BufferManager->CreateBufferGeneric<FShadowObjWorld>("FShadowObjWorld", nullptr, ShadowObjWorld, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
+    UINT SpotLightShadowData = sizeof(struct FSpotLightShadowData);
+    BufferManager->CreateBufferGeneric<struct FSpotLightShadowData>("FSpotLightShadowData", nullptr, SpotLightShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
     UINT PointlIghtShadowData = sizeof(struct FPointLightShadowData);
     BufferManager->CreateBufferGeneric<struct FPointLightShadowData>("FPointLightShadowData", nullptr, PointlIghtShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
 
     UINT DepthMapData = sizeof(struct FDepthMapData);
     BufferManager->CreateBufferGeneric<struct FDepthMapData>("FDepthMapData", nullptr, DepthMapData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
@@ -277,6 +290,7 @@ void FRenderer::ClearRenderArr()
     UpdateLightBufferPass->ClearRenderArr();
     FogRenderPass->ClearRenderArr();
     EditorRenderPass->ClearRenderArr();
+    SpotLightShadowMapPass->ClearRenderArr();
     PointLightShadowMapPass->ClearRenderArr();
 }
 

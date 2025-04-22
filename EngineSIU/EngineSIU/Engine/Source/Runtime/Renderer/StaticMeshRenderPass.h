@@ -11,7 +11,7 @@ class UMaterial;
 class FEditorViewportClient;
 class UStaticMeshComponent;
 struct FStaticMaterial;
-class FPointLightShadowMap;
+class FSpotLightShadowMap;
 
 class FStaticMeshRenderPass : public IRenderPass
 {
@@ -46,7 +46,7 @@ public:
 
     void ChangeViewMode(EViewModeIndex ViewModeIndex);
 
-    void SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap);
+    void SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap);
     
 private:
     TArray<UStaticMeshComponent*> StaticMeshComponents;
@@ -62,5 +62,5 @@ private:
     FGraphicsDevice* Graphics;
     FDXDShaderManager* ShaderManager;
 
-    FPointLightShadowMap* PointLightShadowMap;
+    FSpotLightShadowMap* SpotLightShadowMap;
 };

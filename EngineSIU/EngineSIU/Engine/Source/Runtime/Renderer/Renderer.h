@@ -41,7 +41,8 @@ class FSlateRenderPass;
 class FEditorRenderPass;
 class FCascadeShadowMap;
 
-class FPointLightShadowMap;
+
+class FSpotLightShadowMap;
 
 class FRenderer
 {
@@ -93,6 +94,8 @@ public:
     void CreateDepthOnlyShader();
     void CreateDepthVisualShader();
 
+    void CreateDepthVisualShader();
+
 public:
     FGraphicsDevice* Graphics;
     FDXDBufferManager* BufferManager;
@@ -112,7 +115,7 @@ public:
     
     FSlateRenderPass* SlateRenderPass = nullptr;
 
-    FPointLightShadowMap* PointLightShadowMapPass = nullptr;
+    FSpotLightShadowMap* SpotLightShadowMapPass = nullptr;
 };
 
 template<typename T>

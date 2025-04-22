@@ -266,7 +266,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcessCompositingPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Renderer.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\CascadeShadowMap.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\PointLightShadowMap.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\SpotLightShadowMap.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\SlateRenderPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\StaticMeshRenderPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\UpdateLightBufferPass.cpp" />
@@ -418,7 +418,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\RenderResources.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\ShaderConstants.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\CascadeShadowMap.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\PointLightShadowMap.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\SpotLightShadowMap.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\SlateRenderPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\StaticMeshRenderPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\UpdateLightBufferPass.h" />
@@ -472,6 +472,10 @@
     <ClInclude Include="EngineSIU\Font\RawFonts.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="DepthVisualize.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="EngineSIU\UberLit.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

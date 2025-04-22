@@ -25,7 +25,7 @@
 
 #include "UnrealEd/EditorViewportClient.h"
 
-#include "Engine/Source/Runtime/Renderer/Shadow/PointLightShadowMap.h"
+#include "Engine/Source/Runtime/Renderer/Shadow/SpotLightShadowMap.h"
 
 
 FStaticMeshRenderPass::FStaticMeshRenderPass()
@@ -140,9 +140,9 @@ void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex ViewModeIndex)
     }
 }
 
-void FStaticMeshRenderPass::SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap)
+void FStaticMeshRenderPass::SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap)
 {
-    PointLightShadowMap = InPointLightShadowMap;
+    SpotLightShadowMap = InSpotLightShadowMap;
 }
 
 void FStaticMeshRenderPass::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager)
@@ -322,9 +322,9 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
         const bool bIsSelected = (Engine && Engine->GetSelectedActor() == Comp->GetOwner());
         
         UpdateObjectConstant(WorldMatrix, UUIDColor, bIsSelected);
-        PointLightShadowMap->UpdateConstantBuffer();
-        PointLightShadowMap->SetShadowResource(10);
-        PointLightShadowMap->SetShadowSampler(10);
+        SpotLightShadowMap->UpdateConstantBuffer();
+        SpotLightShadowMap->SetShadowResource(10);
+        SpotLightShadowMap->SetShadowSampler(10);
         RenderPrimitive(RenderData, Comp->GetStaticMesh()->GetMaterials(), Comp->GetOverrideMaterials(), Comp->GetselectedSubMeshIndex());
 
         if (Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_AABB))
