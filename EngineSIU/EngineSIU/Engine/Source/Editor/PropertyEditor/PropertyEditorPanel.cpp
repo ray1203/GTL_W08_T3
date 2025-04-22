@@ -153,13 +153,13 @@ void PropertyEditorPanel::Render()
             ImGui::PopStyleColor();
         }
 
-    if(PickedActor)
-        if (USpotLightComponent* spotlightObj = PickedActor->GetComponentByClass<USpotLightComponent>())
+    if (PickedActor)
+        if (USpotLightComponent* SpotLightComp = PickedActor->GetComponentByClass<USpotLightComponent>())
         {
-            GEngineLoop.Renderer.SpotLightShadowMapPass->RenderLinearDepth();
+            FEngineLoop::Renderer.SpotLightShadowMapPass->RenderLinearDepth();
 
             // Shadow Depth Map 시각화
-            ID3D11ShaderResourceView* shaderSRV = GEngineLoop.Renderer.SpotLightShadowMapPass->GetShadowViewSRV();
+            ID3D11ShaderResourceView* shaderSRV = FEngineLoop::Renderer.SpotLightShadowMapPass->GetShadowViewSRV();
             //FVector direction = GEngineLoop.Renderer.PointLightShadowMapPass->GetDirection();
             //FVector up = GEngineLoop.Renderer.PointLightShadowMapPass->GetUp();
 
@@ -167,38 +167,44 @@ void PropertyEditorPanel::Render()
 
             if (ImGui::TreeNodeEx("SpotLight Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
             {
-                DrawColorProperty("Light Color",
-                    [&]() { return spotlightObj->GetLightColor(); },
-                    [&](FLinearColor c) { spotlightObj->SetLightColor(c); });
+                DrawColorProperty(
+                    "Light Color",
+                    [&] { return SpotLightComp->GetLightColor(); },
+                    [&](FLinearColor c) { SpotLightComp->SetLightColor(c); }
+                );
 
-                float Intensity = spotlightObj->GetIntensity();
+                float Intensity = SpotLightComp->GetIntensity();
                 if (ImGui::SliderFloat("Intensity", &Intensity, 0.0f, 5000.0f, "%.1f"))
-                    spotlightObj->SetIntensity(Intensity);
+                    SpotLightComp->SetIntensity(Intensity);
 
-                float Radius = spotlightObj->GetRadius();
-                if (ImGui::SliderFloat("Radius", &Radius, 0.01f, 200.f, "%.1f")) {
-                    spotlightObj->SetRadius(Radius);
+                float Radius = SpotLightComp->GetRadius();
+                if (ImGui::SliderFloat("Radius", &Radius, 0.01f, 200.f, "%.1f"))
+                {
+                    SpotLightComp->SetRadius(Radius);
                 }
 
-                LightDirection = spotlightObj->GetDirection();
+                LightDirection = SpotLightComp->GetDirection();
                 FImGuiWidget::DrawVec3Control("Direction", LightDirection, 0, 85);
 
-                float OuterDegree = spotlightObj->GetOuterDegree();
-                float InnerDegree = spotlightObj->GetInnerDegree();
+                float OuterDegree = SpotLightComp->GetOuterDegree();
+                float InnerDegree = SpotLightComp->GetInnerDegree();
 
-                if (ImGui::SliderFloat("InnerDegree", &InnerDegree, 0.f, OuterDegree, "%.1f")) {
-                    spotlightObj->SetInnerDegree(InnerDegree);
+                if (ImGui::SliderFloat("InnerDegree", &InnerDegree, 0.f, 90.0f, "%.1f"))
+                {
+                    SpotLightComp->SetInnerDegree(InnerDegree);
+                    SpotLightComp->SetOuterDegree(
+                        FMath::Max(InnerDegree, OuterDegree)
+                    );
                 }
 
-                if (ImGui::SliderFloat("OuterDegree", &OuterDegree, 0.f, 80.f, "%.1f")) {
-                    spotlightObj->SetOuterDegree(OuterDegree);
-
-                    if (InnerDegree > OuterDegree) {
-                        InnerDegree = OuterDegree;
-                        spotlightObj->SetInnerDegree(InnerDegree);
-                    }
+                if (ImGui::SliderFloat("OuterDegree", &OuterDegree, 0.f, 90.f, "%.1f"))
+                {
+                    SpotLightComp->SetOuterDegree(OuterDegree);
+                    SpotLightComp->SetInnerDegree(
+                        FMath::Min(OuterDegree, InnerDegree)
+                    );
                 }
-                //////
+
                 // ─ Shadow Map 미리보기 (1열) ─
                 ImGui::Separator();
                 ImGui::Text("Testing SpotLight:");
@@ -208,7 +214,7 @@ void PropertyEditorPanel::Render()
                 ImGui::Text("Direction %.01f %.01f %.01f", LightDirection.X, LightDirection.Y, LightDirection.Z);
                 ImTextureID texID = (ImTextureID)shaderSRV;
                 ImGui::Image(texID, ImVec2(imgSize, imgSize));
-                ImGui::Spacing();    // 이미지 사이에 약간의 여백
+                ImGui::Spacing(); // 이미지 사이에 약간의 여백
 
                 ImGui::TreePop();
             }
