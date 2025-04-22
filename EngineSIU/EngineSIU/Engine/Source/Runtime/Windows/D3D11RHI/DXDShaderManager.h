@@ -4,6 +4,8 @@
 #include <filesystem>
 
 #include "Container/Map.h"
+#include "Container/TSafeQueue.h"
+#include "Developer/ShaderHotReload/BackgroundShaderCompileData.h"
 #include "Developer/ShaderHotReload/ShaderMetadataPtr.h"
 
 
@@ -46,5 +48,6 @@ private:
 	TMap<std::wstring, ID3D11InputLayout*> InputLayouts;
     TMap<std::wstring, TShaderMetadataPtr<ID3D11VertexShader>> VertexShaders;
 	TMap<std::wstring, TShaderMetadataPtr<ID3D11PixelShader>> PixelShaders;
-};
 
+    TSafeQueue<FShaderCompileResult> CompileResultsQueue;
+};

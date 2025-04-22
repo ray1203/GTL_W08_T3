@@ -2,6 +2,7 @@
 #include <d3dcompiler.h>
 #include <fstream>
 
+#include "Container/TSafeQueue.h"
 #include "Developer/ShaderHotReload/BackgroundShaderCompile.h"
 #include "UserInterface/Console.h"
 
@@ -349,37 +350,37 @@ ID3D11PixelShader* FDXDShaderManager::GetPixelShaderByKey(const std::wstring& Ke
 bool FDXDShaderManager::HandleHotReloadShader()
 {
     bool bIsHotReloadShader = false;
-    for (auto& Vs : VertexShaders)
+
+    FShaderCompileResult CompletedResult;
+    while (CompileResultsQueue.Dequeue(CompletedResult))
     {
-        FShaderFileMetadata& Data = Vs.Value.GetMetadata();
-        if (Data.IsOutdatedAndUpdateLastTime())
+        ID3DBlob* CsoBlob = CompletedResult.CsoBlob;
+        ID3DBlob* ErrorBlob = CompletedResult.ErrorBlob;
+
+        // 셰이더 컴파일 실패시
+        if (!CompletedResult.bSuccess)
         {
-            // 셰이더 컴파일
-            const FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
-                .FilePath = Data.FileMetadata.FilePath,
-                .Defines = Data.Defines,
-                .EntryPoint = Data.EntryPoint,
-                .Type = EShaderType::VertexShader,
-            });
-
-            ID3DBlob* VertexShaderCSO = CompileResult.CsoBlob;
-            ID3DBlob* ErrorBlob = CompileResult.ErrorBlob;
-
-            // 셰이더 컴파일 실패시
-            if (!CompileResult.bSuccess)
+            if (ErrorBlob)
             {
-                if (ErrorBlob)
-                {
-                    UE_LOG(LogLevel::Error, "[Shader Hot Reload] VertexShader Compile Failed %s", ErrorBlob->GetBufferPointer());
-                    ErrorBlob->Release();
-                }
-                continue;
+                UE_LOG(
+                    LogLevel::Error,
+                    "[Shader Hot Reload] %s Compile Failed %s",
+                    ToString(CompletedResult.Type),
+                    ErrorBlob->GetBufferPointer()
+                );
+                ErrorBlob->Release();
             }
+            continue;
+        }
 
+        switch (CompletedResult.Type)
+        {
+        case EShaderType::VertexShader:
+        {
             ID3D11VertexShader* NewVertexShader;
-            HRESULT Hr = DXDDevice->CreateVertexShader(
-                VertexShaderCSO->GetBufferPointer(),
-                VertexShaderCSO->GetBufferSize(),
+            const HRESULT Hr = DXDDevice->CreateVertexShader(
+                CsoBlob->GetBufferPointer(),
+                CsoBlob->GetBufferSize(),
                 nullptr, &NewVertexShader
             );
 
@@ -387,19 +388,76 @@ bool FDXDShaderManager::HandleHotReloadShader()
             if (FAILED(Hr))
             {
                 UE_LOG(LogLevel::Error, "[Shader Hot Reload] Failed CreateVertexShader");
-                VertexShaderCSO->Release();
-                continue;
+                CsoBlob->Release();
+                break;
             }
 
             // 기존 셰이더 제거
-            Vs.Value->Release();
-
+            auto& Vs = VertexShaders[CompletedResult.ShaderKey];
+            Vs->Release();
+            
             // 새로운 셰이더 할당
-            Vs.Value = NewVertexShader;
-            Data.IncludePaths = CompileResult.IncludePaths;
-
-            VertexShaderCSO->Release();
+            Vs = NewVertexShader;
+            Vs.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
+            
+            CsoBlob->Release();
             bIsHotReloadShader = true;
+            break;
+        }
+        case EShaderType::PixelShader:
+        {
+            ID3D11PixelShader* NewPixelShader;
+            const HRESULT Hr = DXDDevice->CreatePixelShader(
+                CsoBlob->GetBufferPointer(),
+                CsoBlob->GetBufferSize(),
+                nullptr, &NewPixelShader
+            );
+
+            // PS 만들기 실패시
+            if (FAILED(Hr))
+            {
+                UE_LOG(LogLevel::Error, "[Shader Hot Reload] Failed CreatePixelShader");
+                CsoBlob->Release();
+                break;
+            }
+
+            // 기존 셰이더 제거
+            auto& Vs = PixelShaders[CompletedResult.ShaderKey];
+            Vs->Release();
+            
+            // 새로운 셰이더 할당
+            Vs = NewPixelShader;
+            Vs.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
+            
+            CsoBlob->Release();
+            bIsHotReloadShader = true;
+            break;
+        }
+        default:
+            assert(false); // Unreachable
+            break;
+        }
+    }
+
+    for (auto& Vs : VertexShaders)
+    {
+        FShaderFileMetadata& Data = Vs.Value.GetMetadata();
+        if (Data.IsOutdatedAndUpdateLastTime())
+        {
+            std::thread Th{[&Vs, &Data, &CompileResultsQueue = this->CompileResultsQueue]
+            {
+                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Vs.Key));
+                const FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
+                    .ShaderKey = Vs.Key,
+                    .FilePath = Data.FileMetadata.FilePath,
+                    .Defines = Data.Defines,
+                    .EntryPoint = Data.EntryPoint,
+                    .Type = EShaderType::VertexShader,
+                });
+                CompileResultsQueue.Enqueue(CompileResult);
+                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Vs.Key));
+            }};
+            Th.detach();
         }
     }
 
@@ -408,52 +466,20 @@ bool FDXDShaderManager::HandleHotReloadShader()
         FShaderFileMetadata& Data = Ps.Value.GetMetadata();
         if (Data.IsOutdatedAndUpdateLastTime())
         {
-            // 셰이더 컴파일
-            FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
-                .FilePath = Data.FileMetadata.FilePath,
-                .Defines = Data.Defines,
-                .EntryPoint = Data.EntryPoint,
-                .Type = EShaderType::PixelShader,
-            });
-
-            ID3DBlob* PixelShaderCSO = CompileResult.CsoBlob;
-            ID3DBlob* ErrorBlob = CompileResult.ErrorBlob;
-
-            // 셰이더 컴파일 실패시
-            if (!CompileResult.bSuccess)
+            std::thread Th{[&Ps, &Data, &CompileResultsQueue = this->CompileResultsQueue]
             {
-                if (ErrorBlob)
-                {
-                    UE_LOG(LogLevel::Error, "[Shader Hot Reload] PixelShader Compile Failed %s", ErrorBlob->GetBufferPointer());
-                    ErrorBlob->Release();
-                }
-                continue;
-            }
-
-            ID3D11PixelShader* NewPixelShader;
-            HRESULT Hr = DXDDevice->CreatePixelShader(
-                PixelShaderCSO->GetBufferPointer(),
-                PixelShaderCSO->GetBufferSize(),
-                nullptr, &NewPixelShader
-            );
-
-            // PS 만들기 실패시
-            if (FAILED(Hr))
-            {
-                UE_LOG(LogLevel::Error, "[Shader Hot Reload] Failed CreatePixelShader");
-                PixelShaderCSO->Release();
-                continue;
-            }
-
-            // 기존 셰이더 제거
-            Ps.Value->Release();
-
-            // 새로운 셰이더 할당
-            Ps.Value = NewPixelShader;
-            Data.IncludePaths = CompileResult.IncludePaths;
-
-            PixelShaderCSO->Release();
-            bIsHotReloadShader = true;
+                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Ps.Key));
+                const FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
+                    .ShaderKey = Ps.Key,
+                    .FilePath = Data.FileMetadata.FilePath,
+                    .Defines = Data.Defines,
+                    .EntryPoint = Data.EntryPoint,
+                    .Type = EShaderType::PixelShader,
+                });
+                CompileResultsQueue.Enqueue(CompileResult);
+                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Ps.Key));
+            }};
+            Th.detach();
         }
     }
     return bIsHotReloadShader;
