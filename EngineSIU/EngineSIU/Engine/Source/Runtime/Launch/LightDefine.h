@@ -18,6 +18,9 @@ struct FDirectionalLightInfo
 
     FVector Direction;   // 정규화된 광선 방향 (월드 공간 기준)
     float   Intensity;   // 밝기
+    
+    FMatrix LightView;  // ShadowMap을 위한 Matrix
+    FMatrix LightProj;
 };
 
 struct FPointLightInfo
@@ -31,6 +34,8 @@ struct FPointLightInfo
     float   Intensity;   // 밝기
     float   Attenuation;
     float   Padding;  // 16바이트 정렬
+
+    FMatrix PointLightViewProj[6];
 };
 
 struct FSpotLightInfo
@@ -47,6 +52,8 @@ struct FSpotLightInfo
     float   InnerRad; // cos(inner angle)
     float   OuterRad; // cos(outer angle)
     float   Attenuation;
+
+    FMatrix SpotLightViewProj;
 };
 
 struct FLightInfoBuffer
@@ -61,9 +68,4 @@ struct FLightInfoBuffer
     int AmbientLightsCount;
 };
 
-struct  FLightViewProj
-{
-    FMatrix LightView;
-    FMatrix LightProj;
-};
 

@@ -382,8 +382,7 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
         SpotLightShadowMap->SetShadowResource(10);
         SpotLightShadowMap->SetShadowSampler(10);
         
-        PointLightShadowMap->UpdateConstantBuffer();
-        PointLightShadowMap->SetShadowResource(11);
+        PointLightShadowMap->SetShadowResource(32);
         PointLightShadowMap->SetShadowSampler(10);
 
         RenderPrimitive(RenderData, Comp->GetStaticMesh()->GetMaterials(), Comp->GetOverrideMaterials(), Comp->GetselectedSubMeshIndex());

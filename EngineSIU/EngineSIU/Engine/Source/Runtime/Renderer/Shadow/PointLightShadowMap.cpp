@@ -14,20 +14,6 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
     Graphics = InGraphic;
     ShaderManager = InShaderManager;
 
-    D3D11_TEXTURE2D_DESC texDesc = {};
-    texDesc.Width = ShadowMapSize;
-    texDesc.Height = ShadowMapSize;
-    texDesc.MipLevels = 1;
-    texDesc.ArraySize = 6;                                   // ← 6면
-    texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-    texDesc.SampleDesc = { 1,0 };
-    texDesc.Usage = D3D11_USAGE_DEFAULT;
-    texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-    texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
-
-    HRESULT hr = Graphics->Device->CreateTexture2D(&texDesc, nullptr, &DepthCube);
-    assert(SUCCEEDED(hr));
-
     for (uint32 face = 0; face < faceNum; face++) 
     {
         // Linear Depth 시각화용
@@ -44,7 +30,7 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
         linDesc.CPUAccessFlags = 0;
         linDesc.MiscFlags = 0;
 
-        hr = Graphics->Device->CreateTexture2D(&linDesc, nullptr, &DepthLinearBuffer[face]);
+        HRESULT hr = Graphics->Device->CreateTexture2D(&linDesc, nullptr, &DepthLinearBuffer[face]);
         assert(SUCCEEDED(hr));
 
         // Linear Depth 시각화용 SRV 생성 (쉐이더에서 깊이 읽기)
@@ -55,16 +41,6 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
         srvDesc.Texture2D.MipLevels = 1;
 
         hr = Graphics->Device->CreateShaderResourceView(DepthLinearBuffer[face], &srvDesc, &ShadowViewSRV[face]);
-        assert(SUCCEEDED(hr));
-
-        // 2) DSV 생성 (뎁스 기록용)
-        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-        dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
-        dsvDesc.Texture2DArray.MipSlice = 0;
-        dsvDesc.Texture2DArray.ArraySize = 1;
-        dsvDesc.Texture2DArray.FirstArraySlice = face;               // ← 각 면 슬라이스
-        hr = Graphics->Device->CreateDepthStencilView(DepthCube, &dsvDesc, &ShadowDSV[face]);
         assert(SUCCEEDED(hr));
 
         D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
@@ -78,14 +54,6 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
 
     }
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvCubeDesc = {};
-    srvCubeDesc.Format = DXGI_FORMAT_R32_FLOAT;
-    srvCubeDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
-    srvCubeDesc.TextureCube.MostDetailedMip = 0;
-    srvCubeDesc.TextureCube.MipLevels = 1;
-    hr = Graphics->Device->CreateShaderResourceView(DepthCube, &srvCubeDesc, &ShadowCubeSRV);
-    assert(SUCCEEDED(hr));
-
     // 4) 비교 샘플러 생성 (쉐도우 비교 샘플링용)
     D3D11_SAMPLER_DESC sampDesc{};
     sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
@@ -98,9 +66,9 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
     sampDesc.BorderColor[3] = 1.0f;
     sampDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
 
-    hr = Graphics->Device->CreateSamplerState(&sampDesc, &ShadowSampler);
+    HRESULT hr = Graphics->Device->CreateSamplerState(&sampDesc, &ShadowSampler);
     assert(SUCCEEDED(hr));
-
+    
     // 리니어 샘플러 생성
     D3D11_SAMPLER_DESC sampLinearDesc = {};
     sampLinearDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -140,12 +108,24 @@ void FPointLightShadowMap::PrepareRender()
     
     if (PointLights.Num() > 0) 
     {
-        // 일단 한 개의 Point Light에 대해서만 처리
-        UpdatePointLightViewProjMatrices(PointLights[0]->GetWorldLocation(), PointLights[0]->GetRadius());
+        // Light 갯수에 맞춰 TArray 동적할당
+        int pointLightNum = PointLights.Num();
+        if (prevShadowCubeNum < pointLightNum) {
+            AddPointLightShadowCube(pointLightNum - prevShadowCubeNum);
+        }
+        else if (prevShadowCubeNum > pointLightNum) {
+            DeletePointLightShadowCube(prevShadowCubeNum - pointLightNum);
+        }
+        prevShadowCubeNum = PointLightShadowCubes.Num();
+    }
+
+    for (int i = 0; i < PointLights.Num(); i++) 
+    {
+        UpdatePointLightViewProjMatrices(i, PointLights[0]->GetWorldLocation(), PointLights[0]->GetRadius());
     }
 }
 
-void FPointLightShadowMap::UpdatePointLightViewProjMatrices(const FVector& pointLightPos, const float lightRadius)
+void FPointLightShadowMap::UpdatePointLightViewProjMatrices(int index, const FVector& pointLightPos, const float lightRadius)
 {   
     FMatrix Projection = JungleMath::CreateProjectionMatrix(FMath::DegreesToRadians(90.0f), 1.0f, 0.1f, lightRadius);
 
@@ -157,7 +137,7 @@ void FPointLightShadowMap::UpdatePointLightViewProjMatrices(const FVector& point
 
         FMatrix View = JungleMath::CreateViewMatrix(pointLightPos, target, up);
 
-        PointLightViewProjMatrix[face] = View * Projection;
+        PointLightShadowCubes[index].PointLightViewProjMatrix[face] = View * Projection;
     }
 }
 
@@ -177,69 +157,63 @@ void FPointLightShadowMap::RenderShadowMap()
         }
     }
 
-    // 각 큐브맵 Face에 대해 렌더링
-    for (int face = 0; face < 6; ++face)
+    for (int i = 0; i < PointLightShadowCubes.Num(); i++) 
     {
-        // 뎁스 타겟 설정
-        Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, ShadowDSV[face]);
-        Graphics->DeviceContext->ClearDepthStencilView(ShadowDSV[face], D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-        D3D11_VIEWPORT vp = { 0, 0, (FLOAT)ShadowMapSize, (FLOAT)ShadowMapSize, 0, 1 };
-        Graphics->DeviceContext->RSSetViewports(1, &vp);
-
-        // 파이프라인 세팅
-        Graphics->DeviceContext->VSSetShader(DepthVS, nullptr, 0);
-        Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
-        Graphics->DeviceContext->IASetInputLayout(DepthIL);
-        Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        // ViewProj 상수 업데이트
-        BufferManager->BindConstantBuffer(TEXT("FShadowViewProj"), 0, EShaderStage::Vertex);
-        // FMatrix를 담는 단일 structure라면 struct으로 안 감싸도 괜찮을까?
-        // 테스트 해봐야지
-        // 단일은 안감싸도 잘 작동
-        BufferManager->UpdateConstantBuffer(TEXT("FShadowViewProj"), PointLightViewProjMatrix[face]);
-
-        // 메시 렌더
-        for (auto* Comp : MeshComps)
+        // 각 큐브맵 Face에 대해 렌더링
+        for (int face = 0; face < 6; ++face)
         {
-            if (!Comp->GetStaticMesh()) continue;
-            auto* RenderData = Comp->GetStaticMesh()->GetRenderData();
-            if (!RenderData) continue;
+            // 뎁스 타겟 설정
+            Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, PointLightShadowCubes[i].ShadowDSV[face]);
+            Graphics->DeviceContext->ClearDepthStencilView(PointLightShadowCubes[i].ShadowDSV[face], D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-            // 월드 행렬 상수
-            FMatrix W = Comp->GetWorldMatrix();
-            BufferManager->BindConstantBuffer(TEXT("FShadowObjWorld"), 1, EShaderStage::Vertex);
-            BufferManager->UpdateConstantBuffer(TEXT("FShadowObjWorld"), W);
+            D3D11_VIEWPORT vp = { 0, 0, (FLOAT)ShadowMapSize, (FLOAT)ShadowMapSize, 0, 1 };
+            Graphics->DeviceContext->RSSetViewports(1, &vp);
 
-            UINT stride = sizeof(FStaticMeshVertex);
-            UINT offset = 0;
-            auto* vb = RenderData->VertexBuffer;
-            auto* ib = RenderData->IndexBuffer;
+            // 파이프라인 세팅
+            Graphics->DeviceContext->VSSetShader(DepthVS, nullptr, 0);
+            Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
+            Graphics->DeviceContext->IASetInputLayout(DepthIL);
+            Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-            Graphics->DeviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-            if (ib)
+            // ViewProj 상수 업데이트
+            BufferManager->BindConstantBuffer(TEXT("FShadowViewProj"), 0, EShaderStage::Vertex);
+            // FMatrix를 담는 단일 structure라면 struct으로 안 감싸도 괜찮을까?
+            // 테스트 해봐야지
+            // 단일은 안감싸도 잘 작동
+            BufferManager->UpdateConstantBuffer(TEXT("FShadowViewProj"), PointLightShadowCubes[i].PointLightViewProjMatrix[face]);
+
+            // 메시 렌더
+            for (auto* Comp : MeshComps)
             {
-                Graphics->DeviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
-                Graphics->DeviceContext->DrawIndexed(RenderData->Indices.Num(), 0, 0);
-            }
-            else
-            {
-                Graphics->DeviceContext->Draw(RenderData->Vertices.Num(), 0);
+                if (!Comp->GetStaticMesh()) continue;
+                auto* RenderData = Comp->GetStaticMesh()->GetRenderData();
+                if (!RenderData) continue;
+
+                // 월드 행렬 상수
+                FMatrix W = Comp->GetWorldMatrix();
+                BufferManager->BindConstantBuffer(TEXT("FShadowObjWorld"), 1, EShaderStage::Vertex);
+                BufferManager->UpdateConstantBuffer(TEXT("FShadowObjWorld"), W);
+
+                UINT stride = sizeof(FStaticMeshVertex);
+                UINT offset = 0;
+                auto* vb = RenderData->VertexBuffer;
+                auto* ib = RenderData->IndexBuffer;
+
+                Graphics->DeviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+                if (ib)
+                {
+                    Graphics->DeviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
+                    Graphics->DeviceContext->DrawIndexed(RenderData->Indices.Num(), 0, 0);
+                }
+                else
+                {
+                    Graphics->DeviceContext->Draw(RenderData->Vertices.Num(), 0);
+                }
             }
         }
     }
 }
 
-void FPointLightShadowMap::UpdateConstantBuffer()
-{
-    FPointLightShadowData PointLightShadowData;
-    for (int face = 0; face < faceNum; face++) {
-        PointLightShadowData.PointLightViewProj[face] = PointLightViewProjMatrix[face];
-    }
-    BufferManager->UpdateConstantBuffer(TEXT("FPointLightShadowData"), PointLightShadowData);
-    BufferManager->BindConstantBuffer(TEXT("FPointLightShadowData"), 7, EShaderStage::Pixel);
-}
 
 void FPointLightShadowMap::ClearRenderArr()
 {
@@ -248,7 +222,10 @@ void FPointLightShadowMap::ClearRenderArr()
 
 void FPointLightShadowMap::SetShadowResource(int tStart)
 {
-    Graphics->DeviceContext->PSSetShaderResources(tStart, 1, &ShadowCubeSRV);
+    for (int i = 0; i < PointLightShadowCubes.Num(); i++) 
+    {
+        Graphics->DeviceContext->PSSetShaderResources(tStart + i, 1, &PointLightShadowCubes[i].ShadowCubeSRV);
+    }
 }
 
 void FPointLightShadowMap::SetShadowSampler(int sStart)
@@ -256,9 +233,66 @@ void FPointLightShadowMap::SetShadowSampler(int sStart)
     Graphics->DeviceContext->PSSetSamplers(sStart, 1, &ShadowSampler);
 }
 
+void FPointLightShadowMap::AddPointLightShadowCube(int num)
+{
+    for (int i = 0; i < num; i++) {
+        FPointLightShadowCube pointLightShadowCube;
+
+        D3D11_TEXTURE2D_DESC texDesc = {};
+        texDesc.Width = ShadowMapSize;
+        texDesc.Height = ShadowMapSize;
+        texDesc.MipLevels = 1;
+        texDesc.ArraySize = 6;                                   // ← 6면
+        texDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+        texDesc.SampleDesc = { 1,0 };
+        texDesc.Usage = D3D11_USAGE_DEFAULT;
+        texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+        texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+        HRESULT hr = Graphics->Device->CreateTexture2D(&texDesc, nullptr, &pointLightShadowCube.DepthCube);
+        assert(SUCCEEDED(hr));
+
+        for (int face = 0; face < faceNum; face++) {
+            // 2) DSV 생성 (뎁스 기록용)
+            D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+            dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+            dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
+            dsvDesc.Texture2DArray.MipSlice = 0;
+            dsvDesc.Texture2DArray.ArraySize = 1;
+            dsvDesc.Texture2DArray.FirstArraySlice = face;               // ← 각 면 슬라이스
+            hr = Graphics->Device->CreateDepthStencilView(pointLightShadowCube.DepthCube, &dsvDesc, &pointLightShadowCube.ShadowDSV[face]);
+            assert(SUCCEEDED(hr));
+        }
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvCubeDesc = {};
+        srvCubeDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        srvCubeDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+        srvCubeDesc.TextureCube.MostDetailedMip = 0;
+        srvCubeDesc.TextureCube.MipLevels = 1;
+        hr = Graphics->Device->CreateShaderResourceView(pointLightShadowCube.DepthCube, &srvCubeDesc, &pointLightShadowCube.ShadowCubeSRV);
+        assert(SUCCEEDED(hr));
+
+        PointLightShadowCubes.Add(pointLightShadowCube);
+    }
+}
+
+void FPointLightShadowMap::DeletePointLightShadowCube(int num)
+{
+    for (int i = prevShadowCubeNum - 1; i >= prevShadowCubeNum - num; i--) {
+        PointLightShadowCubes[i].DepthCube->Release();
+        PointLightShadowCubes[i].ShadowCubeSRV->Release();
+        for (int face = 0; face < faceNum; face++) {
+            PointLightShadowCubes[i].ShadowDSV[face]->Release();
+        }
+        PointLightShadowCubes.RemoveAt(i);
+    }
+}
+
 void FPointLightShadowMap::RenderLinearDepth()
 {
-    if (DepthCube == nullptr) return;
+    // 임시로 첫번째 PointLight 것이 나오도록 함 이후에 고른 것이 나오도록 변경 필요
+
+    if (PointLightShadowCubes[0].DepthCube == nullptr) return;
 
     // ─── 0) 기존 RenderTargets, DepthStencilView, Viewports 백업 ───
     ID3D11RenderTargetView* oldRTVs[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = {};
@@ -292,12 +326,12 @@ void FPointLightShadowMap::RenderLinearDepth()
 
         // (D) 원본 Depth SRV 와 리니어 샘플러 바인딩
         // 큐브에 대한 대응 필요
-        Graphics->DeviceContext->PSSetShaderResources(0, 1, &ShadowCubeSRV);
+        Graphics->DeviceContext->PSSetShaderResources(0, 1, &PointLightShadowCubes[0].ShadowCubeSRV);
         Graphics->DeviceContext->PSSetSamplers(0, 1, &LinearSampler);
 
         // (E) 카메라(라이트) 매트릭스 및 Near/Far/Gamma 상수 업데이트
         FDepthMapData depthMapData;
-        depthMapData.ViewProj = PointLightViewProjMatrix[face];           // light ViewProj
+        depthMapData.ViewProj = PointLightShadowCubes[0].PointLightViewProjMatrix[face];           // light ViewProj
         depthMapData.Params.X = 0.1f;                                     // Near plane
         // TODO Light의 범위를 저장해 뒀다가 Far Plane 값에 적용 필요함
         // 일단 임시로 20 값을 넣어 뒀음
@@ -351,5 +385,10 @@ TArray<FVector> FPointLightShadowMap::GetUpArray()
         arr.Add(Ups[i]);
     }
     return arr;
+}
+
+FMatrix FPointLightShadowMap::GetViewProjMatrix(int index, int face)
+{
+    return PointLightShadowCubes[index].PointLightViewProjMatrix[face];
 }
 

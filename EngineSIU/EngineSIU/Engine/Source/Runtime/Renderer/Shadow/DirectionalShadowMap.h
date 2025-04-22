@@ -48,7 +48,10 @@ public:
     void UpdateObjectConstant(const FMatrix& WorldMatrix, const FVector4& UUIDColor, bool bIsSelected) const;
     void RenderPrimitive(OBJ::FStaticMeshRenderData* RenderData, TArray<FStaticMaterial*> Materials, TArray<UMaterial*> OverrideMaterials, int SelectedSubMeshIndex) const;
     void Render(FEditorViewportClient* Viewport);
- 
+    
+    FMatrix GetDireictionalView(int index);
+    FMatrix GetDirectionalProj(int index);
+
     ID3D11Texture2D* DepthStencilTexture = nullptr;
 
     ID3D11DepthStencilView* ShadowDSV = nullptr;
@@ -69,4 +72,6 @@ private:
     ID3D11VertexShader* LightDepthOnlyVS;
     ID3D11InputLayout* InputLayoutLightDepthOnly;
 
+    TArray<FMatrix> DirectionalViews;
+    TArray<FMatrix> DirectionalProjs;
 };

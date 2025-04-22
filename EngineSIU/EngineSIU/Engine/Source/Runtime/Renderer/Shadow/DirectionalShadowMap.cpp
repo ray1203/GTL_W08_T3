@@ -129,6 +129,9 @@ void FDirectionalShadowMap::CollectStaticMeshes()
 void FDirectionalShadowMap::CollectDirectionalLights()
 {
     DirectionalLights.Empty();
+    // 일단 매 프레임마다 생성하고 없앰, 최적화 필요.
+    DirectionalViews.Empty();
+    DirectionalProjs.Empty();
 
     for (const auto iter : TObjectRange<ULightComponentBase>())
     {
@@ -189,9 +192,10 @@ void FDirectionalShadowMap::UpdateViewProjMatrices(FEditorViewportClient& ViewCa
     const float farZ = maxB.Z;
     FMatrix lightProj =JungleMath::CreateOrthoOffCenterProjectionMatrix(minB.X, maxB.X, minB.Y, maxB.Y, nearZ, farZ);
    
-  
-    FLightViewProj vp{ lightView, lightProj };
-    BufferManager->UpdateConstantBuffer(TEXT("FLightViewProj"), vp);
+    // 순서대로 추가하니까 DirectionalLight랑 index가 일치하긴 하는데
+    // 수정하는게 좋을듯
+    DirectionalProjs.Add(lightProj);
+    DirectionalViews.Add(lightView);
 }
 
 void FDirectionalShadowMap::UpdateObjectConstant(const FMatrix& WorldMatrix, const FVector4& UUIDColor, bool bIsSelected) const
@@ -303,6 +307,16 @@ void FDirectionalShadowMap::Render(FEditorViewportClient* Viewport)
     Graphics->DeviceContext->PSSetSamplers(5, 1, &ShadowSampler);
     Graphics->DeviceContext->RSSetState(nullptr);
 
+}
+
+FMatrix FDirectionalShadowMap::GetDireictionalView(int index)
+{
+    return DirectionalViews[index];
+}
+
+FMatrix FDirectionalShadowMap::GetDirectionalProj(int index)
+{
+    return DirectionalProjs[index];
 }
 
 void FDirectionalShadowMap::ChangeViewportSize()

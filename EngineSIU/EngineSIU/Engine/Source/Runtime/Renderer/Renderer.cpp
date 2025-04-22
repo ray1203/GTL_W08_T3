@@ -156,14 +156,9 @@ void FRenderer::CreateConstantBuffers()
     UINT ShadowObjWorld = sizeof(FShadowObjWorld);
     BufferManager->CreateBufferGeneric<FShadowObjWorld>("FShadowObjWorld", nullptr, ShadowObjWorld, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
-    UINT SpotLightShadowData = sizeof(struct FSpotLightShadowData);
-    BufferManager->CreateBufferGeneric<struct FSpotLightShadowData>("FSpotLightShadowData", nullptr, SpotLightShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-
-    UINT PointlIghtShadowData = sizeof(struct FPointLightShadowData);
-    BufferManager->CreateBufferGeneric<struct FPointLightShadowData>("FPointLightShadowData", nullptr, PointlIghtShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-
-  UINT FLightViewProjSize = sizeof(FLightViewProj);
-    BufferManager->CreateBufferGeneric<FLightViewProj>("FLightViewProj", nullptr, FLightViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+    
+    UINT ShadowSettingDataSize = sizeof(ShadowSettingDataSize);
+    BufferManager->CreateBufferGeneric<ShadowSettingData>("FLightViewProj", nullptr, ShadowSettingDataSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     UINT DepthMapData = sizeof(struct FDepthMapData);
     BufferManager->CreateBufferGeneric<struct FDepthMapData>("FDepthMapData", nullptr, DepthMapData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
