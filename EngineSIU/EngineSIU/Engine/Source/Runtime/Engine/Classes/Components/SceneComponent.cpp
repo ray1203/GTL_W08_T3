@@ -103,19 +103,19 @@ FVector USceneComponent::GetUpVector()
 }
 
 
-void USceneComponent::AddLocation(FVector InAddValue)
+void USceneComponent::AddLocation(const FVector& InAddValue)
 {
 	RelativeLocation = RelativeLocation + InAddValue;
 
 }
 
-void USceneComponent::AddRotation(FVector InAddValue)
+void USceneComponent::AddRotation(const FVector& InAddValue)
 {
 	RelativeRotation = RelativeRotation + InAddValue;
 
 }
 
-void USceneComponent::AddScale(FVector InAddValue)
+void USceneComponent::AddScale(const FVector& InAddValue)
 {
 	RelativeScale3D = RelativeScale3D + InAddValue;
 

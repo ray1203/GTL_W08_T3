@@ -190,7 +190,7 @@ void AEditorPlayer::AddCoordiMode()
     CoordMode = static_cast<ECoordMode>((CoordMode + 1) % CDM_END);
 }
 
-void AEditorPlayer::ScreenToViewSpace(int32 ScreenX, int32 ScreenY, std::shared_ptr<FEditorViewportClient> ActiveViewport, FVector& RayOrigin)
+void AEditorPlayer::ScreenToViewSpace(int32 ScreenX, int32 ScreenY, const std::shared_ptr<FEditorViewportClient>& ActiveViewport, FVector& RayOrigin)
 {
     FRect Rect = ActiveViewport->GetViewport()->GetRect();
     

@@ -7,7 +7,7 @@
 using namespace DirectX;
 
 
-FVector4 JungleMath::ConvertV3ToV4(FVector vec3)
+FVector4 JungleMath::ConvertV3ToV4(const FVector& vec3)
 {
 	FVector4 newVec4;
 	newVec4.X = vec3.X;
@@ -16,7 +16,7 @@ FVector4 JungleMath::ConvertV3ToV4(FVector vec3)
 	return newVec4;
 }
 
-FMatrix JungleMath::CreateModelMatrix(FVector translation, FVector rotation, FVector scale)
+FMatrix JungleMath::CreateModelMatrix(const FVector& translation, const FVector& rotation, const FVector& scale)
 {
     FMatrix Translation = FMatrix::CreateTranslationMatrix(translation);
 
@@ -27,14 +27,14 @@ FMatrix JungleMath::CreateModelMatrix(FVector translation, FVector rotation, FVe
     return Scale * Rotation * Translation;
 }
 
-FMatrix JungleMath::CreateModelMatrix(FVector translation, FQuat rotation, FVector scale)
+FMatrix JungleMath::CreateModelMatrix(const FVector& translation, FQuat rotation, const FVector& scale)
 {
     FMatrix Translation = FMatrix::CreateTranslationMatrix(translation);
     FMatrix Rotation = rotation.ToMatrix();
     FMatrix Scale = FMatrix::CreateScaleMatrix(scale.X, scale.Y, scale.Z);
     return Scale * Rotation * Translation;
 }
-FMatrix JungleMath::CreateViewMatrix(FVector eye, FVector target, FVector up)
+FMatrix JungleMath::CreateViewMatrix(const FVector& eye, const FVector& target, const FVector& up)
 {
     FVector zAxis = (target - eye).GetSafeNormal();  // DirectX는 LH이므로 -z가 아니라 +z 사용
     FVector xAxis = (up.Cross(zAxis)).GetSafeNormal();
@@ -183,7 +183,7 @@ FVector JungleMath::FVectorRotate(FVector& origin, const FRotator& InRotation)
     return InRotation.ToQuaternion().RotateVector(origin);
 }
 
-FMatrix JungleMath::CreateRotationMatrix(FVector rotation)
+FMatrix JungleMath::CreateRotationMatrix(const FVector& rotation)
 {
     XMVECTOR quatX = XMQuaternionRotationAxis(XMVectorSet(1, 0, 0, 0), FMath::DegreesToRadians(rotation.X));
     XMVECTOR quatY = XMQuaternionRotationAxis(XMVectorSet(0, 1, 0, 0), FMath::DegreesToRadians(rotation.Y));

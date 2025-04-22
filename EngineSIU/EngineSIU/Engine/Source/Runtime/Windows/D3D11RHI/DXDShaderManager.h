@@ -41,8 +41,8 @@ public:
 
     // Hot Reload 관련 함수
 	void ReleaseAllShader();
-    void UpdateShaderIfOutdated(const std::wstring Key, const std::wstring FilePath, const std::string EntryPoint, bool IsVertexShader, const D3D_SHADER_MACRO * Defines = nullptr, const D3D11_INPUT_ELEMENT_DESC * Layout = nullptr, uint32 LayoutSize = 0);
-    void RegisterShaderForReload(std::wstring Key, std::wstring FilePath, std::string EntryPoint, bool IsVertexShader, D3D_SHADER_MACRO* Defines = nullptr, D3D11_INPUT_ELEMENT_DESC* Layout = nullptr, uint32 LayoutSize = 0);
+    void UpdateShaderIfOutdated(const std::wstring& Key, const std::wstring& FilePath, const std::string& EntryPoint, bool IsVertexShader, const D3D_SHADER_MACRO * Defines = nullptr, const D3D11_INPUT_ELEMENT_DESC * Layout = nullptr, uint32 LayoutSize = 0);
+    void RegisterShaderForReload(const std::wstring& Key, const std::wstring& FilePath, const std::string& EntryPoint, bool IsVertexShader, D3D_SHADER_MACRO* Defines = nullptr, D3D11_INPUT_ELEMENT_DESC* Layout = nullptr, uint32 LayoutSize = 0);
     void ReloadAllShaders();
 
     // Dependency Graph 관련 함수

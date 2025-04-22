@@ -1,10 +1,11 @@
 #include "DirectionalLightActor.h"
 #include "Components/Light/DirectionalLightComponent.h"
 #include "Components/BillboardComponent.h"
+
 ADirectionalLight::ADirectionalLight()
 {
-    DirectionalLightComponent = AddComponent<UDirectionalLightComponent>();
-    BillboardComponent = AddComponent<UBillboardComponent>();
+    DirectionalLightComponent = AddComponent<UDirectionalLightComponent>(TEXT("DirectionalLightComponent"));
+    BillboardComponent = AddComponent<UBillboardComponent>(TEXT("BillboardComponent"));
 
     RootComponent = BillboardComponent;
 
@@ -14,10 +15,7 @@ ADirectionalLight::ADirectionalLight()
     DirectionalLightComponent->AttachToComponent(RootComponent);
 }
 
-ADirectionalLight::~ADirectionalLight()
-{
-}
-
+// ReSharper disable once CppMemberFunctionMayBeConst
 void ADirectionalLight::SetIntensity(float Intensity)
 {
     if (DirectionalLightComponent)

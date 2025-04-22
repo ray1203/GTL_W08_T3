@@ -7,7 +7,11 @@ class USpotLightComponent :public ULightComponentBase
     DECLARE_CLASS(USpotLightComponent, ULightComponentBase)
 public:
     USpotLightComponent();
-    virtual ~USpotLightComponent();
+
+    virtual UObject* Duplicate(UObject* InOuter) override;
+    virtual void GetProperties(TMap<FString, FString>& OutProperties) const override;
+    virtual void SetProperties(const TMap<FString, FString>& Properties) override;
+
     FVector GetDirection();
 
     const FSpotLightInfo& GetSpotLightInfo() const;

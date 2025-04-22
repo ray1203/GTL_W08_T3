@@ -10,7 +10,7 @@ public:
 
     virtual UObject* Duplicate(UObject* InOuter) override;
 
-    void SetVelocity(FVector NewVelocity) { Velocity = NewVelocity; }
+    void SetVelocity(const FVector& NewVelocity) { Velocity = NewVelocity; }
 
     FVector GetVelocity() const { return Velocity; }
 

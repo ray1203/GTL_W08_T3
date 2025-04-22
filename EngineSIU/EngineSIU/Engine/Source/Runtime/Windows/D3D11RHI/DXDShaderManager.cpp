@@ -43,7 +43,15 @@ void FDXDShaderManager::ReleaseAllShader()
 }
 
 // VS & IL / PS Outdated 여부 확인 후 업데이트 
-void FDXDShaderManager::UpdateShaderIfOutdated(const std::wstring Key, const std::wstring FilePath, const std::string EntryPoint, bool IsVertexShader, const D3D_SHADER_MACRO* Defines, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32 LayoutSize)
+void FDXDShaderManager::UpdateShaderIfOutdated(
+    const std::wstring& Key,
+    const std::wstring& FilePath,
+    const std::string& EntryPoint,
+    bool IsVertexShader,
+    const D3D_SHADER_MACRO* Defines,
+    const D3D11_INPUT_ELEMENT_DESC* Layout,
+    uint32 LayoutSize
+)
 {
     if (!std::filesystem::exists(FilePath)) { return; }
 
@@ -82,7 +90,7 @@ void FDXDShaderManager::UpdateShaderIfOutdated(const std::wstring Key, const std
 }
 
 // 리로드 대상이 될 모든 Shader 등록 함수 
-void FDXDShaderManager::RegisterShaderForReload(std::wstring Key, std::wstring FilePath, std::string EntryPoint, bool IsVertexShader, D3D_SHADER_MACRO* Defines, D3D11_INPUT_ELEMENT_DESC* Layout, uint32 LayoutSize)
+void FDXDShaderManager::RegisterShaderForReload(const std::wstring& Key, const std::wstring& FilePath, const std::string& EntryPoint, bool IsVertexShader, D3D_SHADER_MACRO* Defines, D3D11_INPUT_ELEMENT_DESC* Layout, uint32 LayoutSize)
 {
     FShaderReloadInfo Info{ Key, FilePath, EntryPoint, IsVertexShader };
 

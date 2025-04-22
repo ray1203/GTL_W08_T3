@@ -1,5 +1,7 @@
 #include "PointLightComponent.h"
 
+#include "UObject/Casts.h"
+
 UPointLightComponent::UPointLightComponent()
 {
     PointLightInfo.Position = GetWorldLocation();
@@ -12,8 +14,45 @@ UPointLightComponent::UPointLightComponent()
     PointLightInfo.Attenuation = 20.0f;
 }
 
-UPointLightComponent::~UPointLightComponent()
+UObject* UPointLightComponent::Duplicate(UObject* InOuter)
 {
+    ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
+    if (NewComponent)
+    {
+        NewComponent->PointLightInfo = PointLightInfo;
+    }
+    return NewComponent;
+}
+
+void UPointLightComponent::GetProperties(TMap<FString, FString>& OutProperties) const
+{
+    Super::GetProperties(OutProperties);
+    OutProperties.Add(TEXT("Radius"), FString::SanitizeFloat(PointLightInfo.Radius));
+    OutProperties.Add(TEXT("LightColor"), PointLightInfo.LightColor.ToString());
+    OutProperties.Add(TEXT("Intensity"), FString::SanitizeFloat(PointLightInfo.Intensity));
+    OutProperties.Add(TEXT("Type"), FString::FromInt(PointLightInfo.Type));
+    OutProperties.Add(TEXT("Attenuation"), FString::SanitizeFloat(PointLightInfo.Attenuation));
+    OutProperties.Add(TEXT("Position"), PointLightInfo.Position.ToString());
+}
+
+void UPointLightComponent::SetProperties(const TMap<FString, FString>& InProperties)
+{
+    Super::SetProperties(InProperties);
+
+    auto SetPropertyHelper = [&InProperties] <typename T, typename Fn>(const FString& Key, T& MemberVariable, const Fn& ConversionFunc)
+    {
+        if (const FString* TempStr = InProperties.Find(Key))
+        {
+            MemberVariable = ConversionFunc(*TempStr);
+        }
+    };
+
+    SetPropertyHelper(TEXT("Radius"),      PointLightInfo.Radius,      [](const FString& Str) { return FString::ToFloat(Str); });
+    SetPropertyHelper(TEXT("LightColor"),  PointLightInfo.LightColor,  [](const FString& Str) { FLinearColor Color; Color.InitFromString(Str); return Color; });
+    SetPropertyHelper(TEXT("Intensity"),   PointLightInfo.Intensity,   [](const FString& Str) { return FString::ToFloat(Str); });
+    SetPropertyHelper(TEXT("Type"),        PointLightInfo.Type,        [](const FString& Str) { return FString::ToInt(Str); });
+    SetPropertyHelper(TEXT("Attenuation"), PointLightInfo.Attenuation, [](const FString& Str) { return FString::ToFloat(Str); });
+    SetPropertyHelper(TEXT("Position"),    PointLightInfo.Position,    [](const FString& Str) { FVector Pos; Pos.InitFromString(Str); return Pos; });
 }
 
 const FPointLightInfo& UPointLightComponent::GetPointLightInfo() const
