@@ -4,8 +4,10 @@
 SamplerState DiffuseSampler : register(s0);
 SamplerState NormalSampler : register(s1);
 
+
 Texture2D DiffuseTexture : register(t0);
 Texture2D NormalTexture : register(t1);
+
 
 cbuffer MaterialConstants : register(b1)
 {
@@ -14,13 +16,13 @@ cbuffer MaterialConstants : register(b1)
 
 cbuffer FlagConstants : register(b2)
 {
-    bool IsLit;
+    int IsLit;
     float3 flagPad0;
 }
 
 cbuffer SubMeshConstants : register(b3)
 {
-    bool IsSelectedSubMesh;
+    int IsSelectedSubMesh;
     float3 SubMeshPad0;
 }
 
@@ -31,6 +33,7 @@ cbuffer TextureConstants : register(b4)
 }
 
 #include "Light.hlsl"
+
 
 float4 mainPS(PS_INPUT_StaticMesh Input) : SV_Target
 {
@@ -68,7 +71,7 @@ float4 mainPS(PS_INPUT_StaticMesh Input) : SV_Target
         FinalColor = float4(DiffuseColor, 1);
     }
     
-    if (bIsSelected)
+    if (IsSelectedSubMesh)
     {
         FinalColor += float4(0.01, 0.01, 0.0, 1);
     }

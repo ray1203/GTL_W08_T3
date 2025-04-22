@@ -263,6 +263,55 @@ struct FBoundingBox
 
         return true;
     }
+
+
+    FBoundingBox TransformWorld(const FMatrix& worldMatrix) const
+    {
+        // 로컬 공간에서 중심과 half-extents 계산
+        FVector center = (min + max) * 0.5f;
+        FVector extents = (max - min) * 0.5f;
+
+        // 중심을 월드 공간으로 변환
+        FVector worldCenter = worldMatrix.TransformPosition(center);
+
+        // 행렬의 상위 3x3 부분의 절대값 벡터를 사용하여 각 축에 대한 확장량 계산
+        // (FVector::GetAbs()와 DotProduct() 함수가 사용됨)
+        FVector row0(worldMatrix.M[0][0], worldMatrix.M[0][1], worldMatrix.M[0][2]);
+        FVector row1(worldMatrix.M[1][0], worldMatrix.M[1][1], worldMatrix.M[1][2]);
+        FVector row2(worldMatrix.M[2][0], worldMatrix.M[2][1], worldMatrix.M[2][2]);
+
+        FVector::GetAbs(row0);
+        FVector::GetAbs(row1);
+        FVector::GetAbs(row2);
+
+        float worldExtentX = row0.Dot(extents);
+        float worldExtentY = row1.Dot(extents);
+        float worldExtentZ = row2.Dot(extents);
+
+        FVector worldExtents(worldExtentX, worldExtentY, worldExtentZ);
+
+        return FBoundingBox(worldCenter - worldExtents, worldCenter + worldExtents);
+    }
+    void Expand(const FVector& point)
+    {
+        min.X = std::min(min.X, point.X);
+        min.Y = std::min(min.Y, point.Y);
+        min.Z = std::min(min.Z, point.Z);
+
+        max.X = std::max(max.X, point.X);
+        max.Y = std::max(max.Y, point.Y);
+        max.Z = std::max(max.Z, point.Z);
+    }
+
+    FVector GetCorner(int index) const
+    {
+        return FVector(
+            (index & 1) ? max.X : min.X,
+            (index & 2) ? max.Y : min.Y,
+            (index & 4) ? max.Z : min.Z
+        );
+    }
+
 };
 
 struct FCone

@@ -26,7 +26,7 @@
 #include "GameFrameWork/Actor.h"
 
 #include "PropertyEditor/ShowFlags.h"
-#include "Shadow/CascadeShadowMap.h"
+#include "Shadow/DirectionalShadowMap.h"
 #include "Shadow/SpotLightShadowMap.h"
 #include "Shadow/PointLightShadowMap.h"
 //------------------------------------------------------------------------------
@@ -56,6 +56,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
+    DirectionalShadowMap = new FDirectionalShadowMap();
     SpotLightShadowMapPass = new FSpotLightShadowMap();
     PointLightShadowMapPass = new FPointLightShadowMap();
 
@@ -73,6 +74,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     
     SlateRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
 
+    DirectionalShadowMap->Initialize(BufferManager, Graphics, ShaderManager);
     SpotLightShadowMapPass->Initialize(BufferManager, Graphics, ShaderManager);
     StaticMeshRenderPass->SetSpotLightShadowMap(SpotLightShadowMapPass);
 
@@ -95,6 +97,7 @@ void FRenderer::Release()
     delete PostProcessCompositingPass;
     delete SlateRenderPass;
 
+    delete DirectionalShadowMap;
     delete SpotLightShadowMapPass;
     delete PointLightShadowMapPass;
 }
@@ -159,6 +162,8 @@ void FRenderer::CreateConstantBuffers()
     UINT PointlIghtShadowData = sizeof(struct FPointLightShadowData);
     BufferManager->CreateBufferGeneric<struct FPointLightShadowData>("FPointLightShadowData", nullptr, PointlIghtShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
+  UINT FLightViewProjSize = sizeof(FLightViewProj);
+    BufferManager->CreateBufferGeneric<FLightViewProj>("FLightViewProj", nullptr, FLightViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     UINT DepthMapData = sizeof(struct FDepthMapData);
     BufferManager->CreateBufferGeneric<struct FDepthMapData>("FDepthMapData", nullptr, DepthMapData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
@@ -193,7 +198,11 @@ void FRenderer::CreateCommonShader()
     {
         return;
     }
-    
+    D3D11_INPUT_ELEMENT_DESC LightDepthLayoutDesc[] = {
+       {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+    };
+    hr = ShaderManager->AddVertexShaderAndInputLayout(L"LightDepthOnlyVS", L"Shaders/LightDepthOnlyVS.hlsl", "mainVS", LightDepthLayoutDesc, ARRAYSIZE(LightDepthLayoutDesc));
+
 #pragma region UberShader
     D3D_SHADER_MACRO DefinesGouraud[] =
     {
@@ -361,6 +370,7 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     if (ShowFlag & EEngineShowFlags::SF_Primitives)
     {
         UpdateLightBufferPass->Render(Viewport);
+        DirectionalShadowMap->Render(Viewport.get());
         StaticMeshRenderPass->Render(Viewport);
     }
     

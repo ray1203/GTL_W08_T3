@@ -39,7 +39,7 @@ class FFogRenderPass;
 class FCompositingPass;
 class FSlateRenderPass;
 class FEditorRenderPass;
-class FCascadeShadowMap;
+class FDirectionalShadowMap;
 
 
 class FSpotLightShadowMap;
@@ -116,6 +116,7 @@ public:
 
     FSpotLightShadowMap* SpotLightShadowMapPass = nullptr;
     FPointLightShadowMap* PointLightShadowMapPass = nullptr;
+    FDirectionalShadowMap* DirectionalShadowMap = nullptr;
 };
 
 template<typename T>

@@ -12,7 +12,7 @@
 #include "Engine/EditorEngine.h"
 #include "GameFramework/Actor.h"
 #include "UObject/UObjectIterator.h"
-#include "Shadow/CascadeShadowMap.h"
+
 //------------------------------------------------------------------------------
 // 생성자/소멸자
 //------------------------------------------------------------------------------
@@ -32,8 +32,6 @@ void FUpdateLightBufferPass::Initialize(FDXDBufferManager* InBufferManager, FGra
     BufferManager = InBufferManager;
     Graphics = InGraphics;
     ShaderManager = InShaderManager;
-    CascadShadowMap = new FCascadeShadowMap();
-    CascadShadowMap->Initialize(InBufferManager, InGraphics, ShaderManager);
 }
 
 void FUpdateLightBufferPass::PrepareRender()
@@ -116,7 +114,6 @@ void FUpdateLightBufferPass::UpdateLightBuffer() const
         {
             LightBufferData.Directional[DirectionalLightsCount] = Light->GetDirectionalLightInfo();
             LightBufferData.Directional[DirectionalLightsCount].Direction = Light->GetDirection();
-            CascadShadowMap->UpdateCascadeViewProjMatrices(*CurrentViewport, Light->GetDirection());
             DirectionalLightsCount++;
         }
     }
@@ -137,6 +134,5 @@ void FUpdateLightBufferPass::UpdateLightBuffer() const
     LightBufferData.AmbientLightsCount = AmbientLightsCount;
 
     BufferManager->UpdateConstantBuffer(TEXT("FLightInfoBuffer"), LightBufferData);
-    CascadShadowMap->Render(CurrentViewport);
-    
+     
 }

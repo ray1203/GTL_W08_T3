@@ -10,6 +10,7 @@ class UWorld;
 class UMaterial;
 class FEditorViewportClient;
 class UStaticMeshComponent;
+class FDirectionalShadowMap;
 struct FStaticMaterial;
 class FSpotLightShadowMap;
 class FPointLightShadowMap;
@@ -55,6 +56,7 @@ private:
 
     ID3D11VertexShader* VertexShader;
     ID3D11InputLayout* InputLayout;
+
     
     ID3D11PixelShader* PixelShader;
     ID3D11PixelShader* DebugDepthShader;

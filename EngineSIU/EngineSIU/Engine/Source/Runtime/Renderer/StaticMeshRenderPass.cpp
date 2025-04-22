@@ -24,6 +24,7 @@
 #include "PropertyEditor/ShowFlags.h"
 
 #include "UnrealEd/EditorViewportClient.h"
+#include "Shadow/DirectionalShadowMap.h"
 
 #include "Renderer/Shadow/SpotLightShadowMap.h"
 #include "Renderer/Shadow/PointLightShadowMap.h"
@@ -71,7 +72,7 @@ void FStaticMeshRenderPass::CreateShader()
     {
         return;
     }
-    
+
     D3D_SHADER_MACRO DefinesLambert[] =
     {
         { LAMBERT, "1" },
@@ -82,7 +83,7 @@ void FStaticMeshRenderPass::CreateShader()
     {
         return;
     }
-    
+
     D3D_SHADER_MACRO DefinesBlinnPhong[] =
     {
         { PHONG, "1" },
@@ -93,12 +94,13 @@ void FStaticMeshRenderPass::CreateShader()
     {
         return;
     }
-    
+
 #pragma endregion UberShader
-    
+
     VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
     InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
-    
+
+
     PixelShader = ShaderManager->GetPixelShaderByKey(L"PHONG_StaticMeshPixelShader");
     DebugDepthShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderDepth");
     DebugWorldNormalShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderWorldNormal");
@@ -106,7 +108,7 @@ void FStaticMeshRenderPass::CreateShader()
 
 void FStaticMeshRenderPass::ReleaseShader()
 {
-    
+
 }
 
 void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex ViewModeIndex)
@@ -227,7 +229,7 @@ void FStaticMeshRenderPass::UpdateObjectConstant(const FMatrix& WorldMatrix, con
     ObjectData.InverseTransposedWorld = FMatrix::Transpose(FMatrix::Inverse(WorldMatrix));
     ObjectData.UUIDColor = UUIDColor;
     ObjectData.bIsSelected = bIsSelected;
-    
+
     BufferManager->UpdateConstantBuffer(TEXT("FObjectConstantBuffer"), ObjectData);
 }
 
@@ -242,7 +244,7 @@ void FStaticMeshRenderPass::RenderPrimitive(OBJ::FStaticMeshRenderData* RenderDa
 {
     UINT Stride = sizeof(FStaticMeshVertex);
     UINT Offset = 0;
-    
+
     Graphics->DeviceContext->IASetVertexBuffers(0, 1, &RenderData->VertexBuffer, &Stride, &Offset);
 
     if (RenderData->IndexBuffer)
@@ -298,14 +300,31 @@ void FStaticMeshRenderPass::RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT nu
 
 void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    const EResourceType ResourceType = EResourceType::ERT_Scene;
     FViewportResource* ViewportResource = Viewport->GetViewportResource();
-    FRenderTargetRHI* RenderTargetRHI = ViewportResource->GetRenderTarget(ResourceType);
-    
-    Graphics->DeviceContext->OMSetRenderTargets(1, &RenderTargetRHI->RTV, ViewportResource->GetDepthStencilView());
-    ViewportResource->ClearRenderTarget(Graphics->DeviceContext, ResourceType);
-    Graphics->DeviceContext->ClearDepthStencilView(ViewportResource->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-    
+    FRenderTargetRHI* RenderTargetRHI = ViewportResource->GetRenderTarget(EResourceType::ERT_Scene);
+
+
+    D3D11_VIEWPORT vp{};
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    vp.Width = ViewportResource->GetD3DViewport().Width;
+    vp.Height = ViewportResource->GetD3DViewport().Height;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+
+    // 그림자 맵을 타겟으로 바인딩한 후
+    Graphics->DeviceContext->RSSetViewports(1, &vp);
+
+    Graphics->DeviceContext->OMSetRenderTargets(
+        1, &RenderTargetRHI->RTV,
+        ViewportResource->GetDepthStencilView()
+    );
+    ViewportResource->ClearRenderTarget(Graphics->DeviceContext, EResourceType::ERT_Scene);
+    Graphics->DeviceContext->ClearDepthStencilView(
+        ViewportResource->GetDepthStencilView(),
+        D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+        1.0f, 0);
+
     PrepareRenderState(Viewport);
 
     for (UStaticMeshComponent* Comp : StaticMeshComponents)
@@ -344,8 +363,8 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
         }
     }
 
-    // 렌더 타겟 해제
     Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+
 }
 
 void FStaticMeshRenderPass::ClearRenderArr()

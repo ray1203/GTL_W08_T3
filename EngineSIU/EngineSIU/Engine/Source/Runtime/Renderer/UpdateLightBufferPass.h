@@ -13,7 +13,7 @@ class UPointLightComponent;
 class USpotLightComponent;
 class UDirectionalLightComponent;
 class UAmbientLightComponent;
-class FCascadeShadowMap;
+class FDirectionalShadowMap;
 class FUpdateLightBufferPass : public IRenderPass
 {
 public:
@@ -31,7 +31,7 @@ private:
     TArray<UPointLightComponent*> PointLights;
     TArray<UDirectionalLightComponent*> DirectionalLights;
     TArray<UAmbientLightComponent*> AmbientLights;
-    FCascadeShadowMap* CascadShadowMap = nullptr;
+    FDirectionalShadowMap* CascadShadowMap = nullptr;
     FEditorViewportClient* CurrentViewport = nullptr;
     FDXDBufferManager* BufferManager;
     FGraphicsDevice* Graphics;
