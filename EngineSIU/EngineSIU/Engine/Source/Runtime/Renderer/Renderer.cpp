@@ -280,7 +280,6 @@ bool FRenderer::HandleHotReloadShader() const
         EditorBillboardRenderPass->ReloadShader();
         FogRenderPass->ReloadShader();
         EditorRenderPass->ReloadShader();
-        UE_LOG(LogLevel::Display, "[Shader Hot Reload] Succeeded Shader Hot Reload");
         return true;
     }
     return false;

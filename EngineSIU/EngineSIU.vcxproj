@@ -167,6 +167,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\BackgroundShaderCompileData.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\BackgroundShaderCompile.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderCompileUtility.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderFileMetadata.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderMetadataPtr.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\AmbientLightActor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Editor\LevelEditor\SlateAppMessageHandler.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Editor\LevelEditor\SLevelEditor.cpp" />
@@ -292,6 +297,13 @@
     <ClCompile Include="EngineSIU\LightGridGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\BackgroundShaderCompileData.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\BackgroundShaderCompile.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderCompileUtility.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderFileMetadata.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderMetadataPtr.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Container\Queue.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Container\TSafeQueue.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\AmbientLightActor.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\LevelEditor\SlateAppMessageHandler.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\LevelEditor\SLevelEditor.h" />
@@ -475,10 +487,6 @@
     <ClInclude Include="EngineSIU\Font\RawFonts.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="DepthVisualize.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="EngineSIU\UberLit.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
