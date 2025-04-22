@@ -2,67 +2,8 @@
 #include <d3dcompiler.h>
 #include <fstream>
 
+#include "Developer/ShaderHotReload/BackgroundShaderCompile.h"
 #include "UserInterface/Console.h"
-
-namespace fs = std::filesystem;
-
-/**
- * HLSL 셰이더를 컴파일할 때 include 파일을 확인하는 데 사용됩니다.
- * 
- * 모든 포함된 파일 및 해당 확인 경로에 대한 메타데이터를 저장하여 추적 및 추가 처리를 수행합니다.
- */
-class FShaderIncludeHandler : public ID3DInclude
-{
-public:
-    FShaderIncludeHandler() = default;
-    virtual ~FShaderIncludeHandler() = default;
-
-    FShaderIncludeHandler(const FShaderIncludeHandler&) = delete;
-    FShaderIncludeHandler& operator=(const FShaderIncludeHandler&) = delete;
-    FShaderIncludeHandler(FShaderIncludeHandler&&) = delete;
-    FShaderIncludeHandler& operator=(FShaderIncludeHandler&&) = delete;
-
-    [[nodiscard]] TArray<FFileMetadata>& GetIncludePaths()
-    {
-        return IncludePaths;
-    }
-
-protected:
-    virtual HRESULT Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) noexcept override
-    {
-        const fs::path AbsolutePath = fs::absolute(fs::path("Shaders") / pFileName);
-        IncludePaths.Emplace(AbsolutePath, fs::last_write_time(AbsolutePath));
-
-        // 파일 열기
-        std::ifstream File(AbsolutePath, std::ios::binary);
-        if (!File.is_open())
-        {
-            return E_FAIL;
-        }
-
-        File.seekg(0, std::ios::end);
-        const int64 Size = File.tellg();
-        File.seekg(0, std::ios::beg);
-
-        char* Data = new char[Size];
-        File.read(Data, Size);
-        File.close();
-
-        *ppData = Data;
-        *pBytes = static_cast<UINT>(Size);
-
-        return S_OK;
-    }
-
-    virtual HRESULT Close(LPCVOID pData) noexcept override
-    {
-        delete[] static_cast<const char*>(pData);
-        return S_OK;
-    }
-
-private:
-    TArray<FFileMetadata> IncludePaths;
-};
 
 
 FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device)
