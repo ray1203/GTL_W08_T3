@@ -48,6 +48,7 @@ HRESULT FShaderIncludeHandler::Close(LPCVOID pData) noexcept
 FShaderCompileResult FBackgroundShaderCompile::Compile(const FShaderCompileJob& Job)
 {
     FShaderCompileResult Result{};
+    Result.ShaderKey = Job.ShaderKey;
     Result.Type = Job.Type;
 
     TArray<D3D_SHADER_MACRO> Defines;
