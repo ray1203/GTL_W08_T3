@@ -64,7 +64,9 @@ void FUpdateLightBufferPass::PrepareRender()
 
 void FUpdateLightBufferPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
+    CurrentViewport = Viewport.get();
     UpdateLightBuffer();
+
 }
 
 void FUpdateLightBufferPass::ClearRenderArr()
@@ -84,7 +86,7 @@ void FUpdateLightBufferPass::UpdateLightBuffer() const
     int PointLightsCount=0;
     int SpotLightsCount=0;
     int AmbientLightsCount=0;
-    
+
     for (auto Light : SpotLights)
     {
         if (SpotLightsCount < MAX_SPOT_LIGHT)
@@ -132,5 +134,5 @@ void FUpdateLightBufferPass::UpdateLightBuffer() const
     LightBufferData.AmbientLightsCount = AmbientLightsCount;
 
     BufferManager->UpdateConstantBuffer(TEXT("FLightInfoBuffer"), LightBufferData);
-    
+     
 }

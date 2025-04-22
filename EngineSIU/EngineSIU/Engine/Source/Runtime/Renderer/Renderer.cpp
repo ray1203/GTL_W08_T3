@@ -26,7 +26,9 @@
 #include "GameFrameWork/Actor.h"
 
 #include "PropertyEditor/ShowFlags.h"
-
+#include "Shadow/DirectionalShadowMap.h"
+#include "Shadow/SpotLightShadowMap.h"
+#include "Shadow/PointLightShadowMap.h"
 //------------------------------------------------------------------------------
 // 초기화 및 해제 관련 함수
 //------------------------------------------------------------------------------
@@ -39,7 +41,10 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
 
     CreateConstantBuffers();
     CreateCommonShader();
-    
+    CreateDepthOnlyShader();
+
+    CreateDepthVisualShader();
+
     StaticMeshRenderPass = new FStaticMeshRenderPass();
     WorldBillboardRenderPass = new FWorldBillboardRenderPass();
     EditorBillboardRenderPass = new FEditorBillboardRenderPass();
@@ -51,6 +56,9 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
+    DirectionalShadowMap = new FDirectionalShadowMap();
+    SpotLightShadowMapPass = new FSpotLightShadowMap();
+    PointLightShadowMapPass = new FPointLightShadowMap();
 
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     WorldBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -65,6 +73,13 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     PostProcessCompositingPass->Initialize(BufferManager, Graphics, ShaderManager);
     
     SlateRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+
+    DirectionalShadowMap->Initialize(BufferManager, Graphics, ShaderManager);
+    SpotLightShadowMapPass->Initialize(BufferManager, Graphics, ShaderManager);
+    StaticMeshRenderPass->SetSpotLightShadowMap(SpotLightShadowMapPass);
+
+    PointLightShadowMapPass->Initialize(BufferManager, Graphics, ShaderManager);
+    StaticMeshRenderPass->SetPointLightShadowMap(PointLightShadowMapPass);
 }
 
 void FRenderer::Release()
@@ -81,6 +96,20 @@ void FRenderer::Release()
     delete CompositingPass;
     delete PostProcessCompositingPass;
     delete SlateRenderPass;
+
+    delete DirectionalShadowMap;
+    delete SpotLightShadowMapPass;
+    delete PointLightShadowMapPass;
+}
+
+void FRenderer::RenderShadowMap()
+{
+    // TODO: Point Light 여러 개인 것에 대응
+    // 현재는 1개로 간단화 해서 실행
+    SpotLightShadowMapPass->PrepareRender();
+    SpotLightShadowMapPass->RenderShadowMap();
+    PointLightShadowMapPass->PrepareRender();
+    PointLightShadowMapPass->RenderShadowMap();
 }
 
 //------------------------------------------------------------------------------
@@ -121,6 +150,23 @@ void FRenderer::CreateConstantBuffers()
     UINT LightInfoBufferSize = sizeof(FLightInfoBuffer);
     BufferManager->CreateBufferGeneric<FLightInfoBuffer>("FLightInfoBuffer", nullptr, LightInfoBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
+    UINT ShadowViewProjSize = sizeof(FShadowViewProj);
+    BufferManager->CreateBufferGeneric<FShadowViewProj>("FShadowViewProj", nullptr, ShadowViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
+    UINT ShadowObjWorld = sizeof(FShadowObjWorld);
+    BufferManager->CreateBufferGeneric<FShadowObjWorld>("FShadowObjWorld", nullptr, ShadowObjWorld, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
+    UINT SpotLightShadowData = sizeof(struct FSpotLightShadowData);
+    BufferManager->CreateBufferGeneric<struct FSpotLightShadowData>("FSpotLightShadowData", nullptr, SpotLightShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
+    UINT PointlIghtShadowData = sizeof(struct FPointLightShadowData);
+    BufferManager->CreateBufferGeneric<struct FPointLightShadowData>("FPointLightShadowData", nullptr, PointlIghtShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
+  UINT FLightViewProjSize = sizeof(FLightViewProj);
+    BufferManager->CreateBufferGeneric<FLightViewProj>("FLightViewProj", nullptr, FLightViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+
+    UINT DepthMapData = sizeof(struct FDepthMapData);
+    BufferManager->CreateBufferGeneric<struct FDepthMapData>("FDepthMapData", nullptr, DepthMapData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     // TODO: 함수로 분리
     ID3D11Buffer* ObjectBuffer = BufferManager->GetConstantBuffer(TEXT("FObjectConstantBuffer"));
@@ -152,7 +198,11 @@ void FRenderer::CreateCommonShader()
     {
         return;
     }
-    
+    D3D11_INPUT_ELEMENT_DESC LightDepthLayoutDesc[] = {
+       {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
+    };
+    hr = ShaderManager->AddVertexShaderAndInputLayout(L"LightDepthOnlyVS", L"Shaders/LightDepthOnlyVS.hlsl", "mainVS", LightDepthLayoutDesc, ARRAYSIZE(LightDepthLayoutDesc));
+
 #pragma region UberShader
     D3D_SHADER_MACRO DefinesGouraud[] =
     {
@@ -165,6 +215,58 @@ void FRenderer::CreateCommonShader()
         return;
     }
 #pragma endregion UberShader
+}
+
+void FRenderer::CreateDepthOnlyShader()
+{
+    // Position만 사용하는 단순 레이아웃
+    D3D11_INPUT_ELEMENT_DESC DepthLayoutDesc[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
+          0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+    };
+    UINT LayoutCount = ARRAYSIZE(DepthLayoutDesc);
+
+    // 셰이더와 레이아웃 등록
+    HRESULT hr = ShaderManager->AddVertexShaderAndInputLayout(
+        L"DepthOnlyVS",                                   // 키
+        L"Shaders/DepthOnlyVertexShader.hlsl",            // 파일 경로
+        "mainVS",                                         // 엔트리 포인트
+        DepthLayoutDesc,                                   // 레이아웃
+        LayoutCount                                       // 요소 개수
+    );
+    if (FAILED(hr))
+    {
+        return;
+    }
+}
+
+void FRenderer::CreateDepthVisualShader()
+{
+    D3D11_INPUT_ELEMENT_DESC DepthLayoutDesc[] = {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,
+          0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 40, D3D11_INPUT_PER_VERTEX_DATA, 0},
+    };
+    UINT LayoutCount = ARRAYSIZE(DepthLayoutDesc);
+
+    // 셰이더와 레이아웃 등록
+    HRESULT hr = ShaderManager->AddVertexShaderAndInputLayout(
+        L"FullScreenVS",                                   // 키
+        L"Shaders/DepthVisualize.hlsl",            // 파일 경로
+        "VS_Fullscreen",                                         // 엔트리 포인트
+        DepthLayoutDesc,                                   // 레이아웃
+        LayoutCount                                       // 요소 개수
+    );
+    if (FAILED(hr))
+    {
+        return;
+    }
+
+    hr = ShaderManager->AddPixelShader(L"DepthVisualizePS", L"Shaders/DepthVisualize.hlsl", "PS_DepthVisualize");
+    if (FAILED(hr))
+    {
+        return;
+    }
 }
 
 bool FRenderer::HandleHotReloadShader() const
@@ -213,6 +315,8 @@ void FRenderer::ClearRenderArr()
     UpdateLightBufferPass->ClearRenderArr();
     FogRenderPass->ClearRenderArr();
     EditorRenderPass->ClearRenderArr();
+    SpotLightShadowMapPass->ClearRenderArr();
+    PointLightShadowMapPass->ClearRenderArr();
 }
 
 void FRenderer::UpdateCommonBuffer(const std::shared_ptr<FEditorViewportClient>& Viewport)
@@ -281,6 +385,7 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     if (ShowFlag & EEngineShowFlags::SF_Primitives)
     {
         UpdateLightBufferPass->Render(Viewport);
+        DirectionalShadowMap->Render(Viewport.get());
         StaticMeshRenderPass->Render(Viewport);
     }
     

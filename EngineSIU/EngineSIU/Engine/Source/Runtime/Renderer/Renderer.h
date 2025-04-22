@@ -39,6 +39,11 @@ class FFogRenderPass;
 class FCompositingPass;
 class FSlateRenderPass;
 class FEditorRenderPass;
+class FDirectionalShadowMap;
+
+
+class FSpotLightShadowMap;
+class FPointLightShadowMap;
 
 class FRenderer
 {
@@ -48,6 +53,12 @@ public:
     //==========================================================================
     void Initialize(FGraphicsDevice* graphics, FDXDBufferManager* bufferManager);
     void Release();
+
+    //==========================================================================
+    // 그림자 패스 관련 함수
+    //==========================================================================
+    void RenderShadowMap();
+
 
     //==========================================================================
     // 렌더 패스 관련 함수
@@ -84,6 +95,8 @@ public:
     bool HandleHotReloadShader() const;
 
     void CreateCommonShader();
+    void CreateDepthOnlyShader();
+    void CreateDepthVisualShader();
 
 public:
     FGraphicsDevice* Graphics;
@@ -103,6 +116,10 @@ public:
     FPostProcessCompositingPass* PostProcessCompositingPass = nullptr;
     
     FSlateRenderPass* SlateRenderPass = nullptr;
+
+    FSpotLightShadowMap* SpotLightShadowMapPass = nullptr;
+    FPointLightShadowMap* PointLightShadowMapPass = nullptr;
+    FDirectionalShadowMap* DirectionalShadowMap = nullptr;
 };
 
 template<typename T>

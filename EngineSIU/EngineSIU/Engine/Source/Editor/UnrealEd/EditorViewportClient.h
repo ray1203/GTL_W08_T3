@@ -106,7 +106,7 @@ public:
      * @param OutWorldDir Direction Vector (World Space)
      */
     void DeprojectFVector2D(const FVector2D& ScreenPos, FVector& OutWorldOrigin, FVector& OutWorldDir) const;
-
+    TArray<FVector> GetFrustumCorners();
 protected:
     /** Camera speed setting */
     int32 CameraSpeedSetting = 1;

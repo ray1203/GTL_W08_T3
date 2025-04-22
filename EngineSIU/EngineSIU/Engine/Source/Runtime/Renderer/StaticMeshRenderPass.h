@@ -10,7 +10,10 @@ class UWorld;
 class UMaterial;
 class FEditorViewportClient;
 class UStaticMeshComponent;
+class FDirectionalShadowMap;
 struct FStaticMaterial;
+class FSpotLightShadowMap;
+class FPointLightShadowMap;
 
 class FStaticMeshRenderPass : public IRenderPass
 {
@@ -43,7 +46,10 @@ public:
     void CreateShader();
     void ReleaseShader();
 
-    void ChangeViewMode(EViewModeIndex InViewModeIndex);
+    void ChangeViewMode(EViewModeIndex ViewModeIndex);
+
+    void SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap);
+    void SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap);
 
     void ReloadShader();
 
@@ -52,6 +58,7 @@ private:
 
     ID3D11VertexShader* VertexShader;
     ID3D11InputLayout* InputLayout;
+
     
     ID3D11PixelShader* PixelShader;
     ID3D11PixelShader* DebugDepthShader;
@@ -62,4 +69,6 @@ private:
     FDXDShaderManager* ShaderManager;
 
     EViewModeIndex ViewModeIndex;
+    FSpotLightShadowMap* SpotLightShadowMap;
+    FPointLightShadowMap* PointLightShadowMap;
 };
