@@ -29,6 +29,16 @@ namespace
     }
 };
 
+struct FDirectionalShadowResource 
+{
+    ID3D11Texture2D* DepthStencilTexture = nullptr;
+    ID3D11DepthStencilView* ShadowDSV = nullptr;
+    ID3D11ShaderResourceView* ShadowSRV = nullptr;
+    FMatrix DirectionalView;
+    FMatrix DirectionalProj;
+    FMatrix DirectionalViewProj;
+};
+
 class FDirectionalShadowMap
 {
 public:
@@ -38,7 +48,7 @@ public:
     void CreateShadowRasterizer();
     void CreateDepthStencilState();
     void LoadShadowShaders();
-    void UpdateViewProjMatrices(FEditorViewportClient& ViewCamera, const FVector& LightDir);
+    void UpdateViewProjMatrices(int index, FEditorViewportClient& ViewCamera, const FVector& LightDir);
     void ChangeViewportSize();
     void CreateDepthTexture();
     void PrepareRender(const std::shared_ptr<FEditorViewportClient>& Viewport);
@@ -50,12 +60,17 @@ public:
     void SetShadowResource(int tStart);
     void SetShadowSampler(int sStart);
 
-    ID3D11ShaderResourceView* GetShadowViewSRV();
-private:
-    ID3D11Texture2D* DepthStencilTexture = nullptr;
+    FMatrix GetDirectionalView(int index);
+    FMatrix GetDirectionalProj(int index);
 
-    ID3D11DepthStencilView* ShadowDSV = nullptr;
-    ID3D11ShaderResourceView* ShadowSRV = nullptr;
+    void AddDirectionalShadowResource(int num);
+    void DeleteDirectionalShadowResource(int num);
+
+    ID3D11ShaderResourceView* GetShadowViewSRV(int index);
+private:
+    TArray<FDirectionalShadowResource> DirectionalShadowResources;
+    int prevDirectionalNum = 0;
+
     ID3D11SamplerState* ShadowSampler = nullptr;
 
     float ShadowResolution = 4096;
@@ -70,5 +85,4 @@ private:
 
     ID3D11VertexShader* DepthVS;
     ID3D11InputLayout* DepthIL;
-    FMatrix DirectionalLightViewProjMatrix;
 };

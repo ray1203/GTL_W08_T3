@@ -14,6 +14,7 @@ class USpotLightComponent;
 class UDirectionalLightComponent;
 class UAmbientLightComponent;
 class FDirectionalShadowMap;
+class FSpotLightShadowMap;
 class FUpdateLightBufferPass : public IRenderPass
 {
 public:
@@ -28,6 +29,7 @@ public:
 
     void SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap);
     void SetDirectionalShadowMap(FDirectionalShadowMap* InDirectionalShadowMap);
+    void SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap);
 
 private:
     TArray<USpotLightComponent*> SpotLights;
@@ -42,4 +44,5 @@ private:
 
     FPointLightShadowMap* PointLightShadowMap = nullptr;
     FDirectionalShadowMap* DirectionalShadowMap = nullptr;
+    FSpotLightShadowMap* SpotLightShadowMap = nullptr;
 };

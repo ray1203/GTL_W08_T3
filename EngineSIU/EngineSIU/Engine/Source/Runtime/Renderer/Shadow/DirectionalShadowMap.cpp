@@ -107,7 +107,6 @@ void FDirectionalShadowMap::PrepareRenderState()
 
 
     BufferManager->BindConstantBuffer(TEXT("FShadowViewProj"), 0, EShaderStage::Vertex);
-    BufferManager->BindConstantBuffer(TEXT("FDirectionalLightViewProj"), 5, EShaderStage::Pixel);
 
 }
 
@@ -138,9 +137,21 @@ void FDirectionalShadowMap::CollectDirectionalLights()
             }
         }
     }
+
+    int directionalNum = DirectionalLights.Num();
+    if (prevDirectionalNum < directionalNum) 
+    {
+        AddDirectionalShadowResource(directionalNum - prevDirectionalNum);
+    }
+    else if (prevDirectionalNum > directionalNum) 
+    {
+        DeleteDirectionalShadowResource(prevDirectionalNum - directionalNum);
+    }
+    prevDirectionalNum = directionalNum;
+
 }
 
-void FDirectionalShadowMap::UpdateViewProjMatrices(FEditorViewportClient& ViewCamera, const FVector& LightDir)
+void FDirectionalShadowMap::UpdateViewProjMatrices(int index, FEditorViewportClient& ViewCamera, const FVector& LightDir)
 {
 
     TArray<FVector> points = ViewCamera.GetFrustumCorners();
@@ -188,12 +199,9 @@ void FDirectionalShadowMap::UpdateViewProjMatrices(FEditorViewportClient& ViewCa
     const float farZ = maxB.Z;
     FMatrix LightProj = JungleMath::CreateOrthoOffCenterProjectionMatrix(minB.X, maxB.X, minB.Y, maxB.Y, nearZ, farZ);
 
-    DirectionalLightViewProjMatrix = LightView * LightProj;
-
-    FDirectionalLightViewProj vp{ LightView, LightProj };
-    FShadowViewProj LightVP{ DirectionalLightViewProjMatrix };
-    BufferManager->UpdateConstantBuffer(TEXT("FDirectionalLightViewProj"), vp);
-    BufferManager->UpdateConstantBuffer(TEXT("FShadowViewProj"), LightVP);
+    DirectionalShadowResources[index].DirectionalView = LightView;
+    DirectionalShadowResources[index].DirectionalProj = LightProj;
+    DirectionalShadowResources[index].DirectionalViewProj = LightView * LightProj;
 }
 
 void FDirectionalShadowMap::UpdateObjectConstant(const FMatrix& WorldMatrix, const FVector4& UUIDColor, bool bIsSelected) const
@@ -222,53 +230,104 @@ void FDirectionalShadowMap::RenderShadowMap()
         }
     }
 
-    // 뎁스 타겟 설정
-    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, ShadowDSV);
-    Graphics->DeviceContext->ClearDepthStencilView(ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-    D3D11_VIEWPORT vp = { 0, 0, (FLOAT)ShadowResolution, (FLOAT)ShadowResolution, 0, 1 };
-    Graphics->DeviceContext->RSSetViewports(1, &vp);
-
-    PrepareRenderState();
-
-
-    // 메시 렌더
-    for (auto* Comp : MeshComps)
+    for (int i = 0; i < DirectionalShadowResources.Num(); i++) 
     {
-        if (!Comp->GetStaticMesh()) continue;
-        auto* RenderData = Comp->GetStaticMesh()->GetRenderData();
-        if (!RenderData) continue;
+        // 뎁스 타겟 설정
+        Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, DirectionalShadowResources[i].ShadowDSV);
+        Graphics->DeviceContext->ClearDepthStencilView(DirectionalShadowResources[i].ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-        // 월드 행렬 상수
-        FMatrix W = Comp->GetWorldMatrix();
-        BufferManager->BindConstantBuffer(TEXT("FShadowObjWorld"), 1, EShaderStage::Vertex);
-        BufferManager->UpdateConstantBuffer(TEXT("FShadowObjWorld"), W);
+        D3D11_VIEWPORT vp = { 0, 0, (FLOAT)ShadowResolution, (FLOAT)ShadowResolution, 0, 1 };
+        Graphics->DeviceContext->RSSetViewports(1, &vp);
 
-        UINT stride = sizeof(FStaticMeshVertex);
-        UINT offset = 0;
-        auto* vb = RenderData->VertexBuffer;
-        auto* ib = RenderData->IndexBuffer;
+        PrepareRenderState();
+        BufferManager->UpdateConstantBuffer(TEXT("FShadowViewProj"), DirectionalShadowResources[i].DirectionalViewProj);
 
-        Graphics->DeviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-        if (ib)
+
+        // 메시 렌더
+        for (auto* Comp : MeshComps)
         {
-            Graphics->DeviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
-            Graphics->DeviceContext->DrawIndexed(RenderData->Indices.Num(), 0, 0);
-        }
-        else
-        {
-            Graphics->DeviceContext->Draw(RenderData->Vertices.Num(), 0);
+            if (!Comp->GetStaticMesh()) continue;
+            auto* RenderData = Comp->GetStaticMesh()->GetRenderData();
+            if (!RenderData) continue;
+
+            // 월드 행렬 상수
+            FMatrix W = Comp->GetWorldMatrix();
+            BufferManager->BindConstantBuffer(TEXT("FShadowObjWorld"), 1, EShaderStage::Vertex);
+            BufferManager->UpdateConstantBuffer(TEXT("FShadowObjWorld"), W);
+
+            UINT stride = sizeof(FStaticMeshVertex);
+            UINT offset = 0;
+            auto* vb = RenderData->VertexBuffer;
+            auto* ib = RenderData->IndexBuffer;
+
+            Graphics->DeviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+            if (ib)
+            {
+                Graphics->DeviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
+                Graphics->DeviceContext->DrawIndexed(RenderData->Indices.Num(), 0, 0);
+            }
+            else
+            {
+                Graphics->DeviceContext->Draw(RenderData->Vertices.Num(), 0);
+            }
         }
     }
 }
 void FDirectionalShadowMap::SetShadowResource(int tStart)
 {
-    Graphics->DeviceContext->PSSetShaderResources(tStart, 1, &ShadowSRV);
+    for (int i = 0; i < DirectionalShadowResources.Num(); i++) 
+    {
+        Graphics->DeviceContext->PSSetShaderResources(tStart + i, 1, &DirectionalShadowResources[i].ShadowSRV);
+    }
+
+    
 }
 
 void FDirectionalShadowMap::SetShadowSampler(int sStart)
 {
     Graphics->DeviceContext->PSSetSamplers(sStart, 1, &ShadowSampler);
+}
+
+FMatrix FDirectionalShadowMap::GetDirectionalView(int index)
+{
+    return DirectionalShadowResources[index].DirectionalView;
+}
+
+FMatrix FDirectionalShadowMap::GetDirectionalProj(int index)
+{
+    return DirectionalShadowResources[index].DirectionalProj;
+}
+
+void FDirectionalShadowMap::AddDirectionalShadowResource(int num)
+{
+    for (int i = 0; i < num; i++) 
+    {
+        CreateDepthTexture();
+    }
+}
+
+void FDirectionalShadowMap::DeleteDirectionalShadowResource(int num)
+{
+    for (int i = prevDirectionalNum - 1; i >= prevDirectionalNum - num; i--) {
+        // 1) 기존 리소스 해제
+        if (DirectionalShadowResources[i].DepthStencilTexture)
+        {
+            DirectionalShadowResources[i].DepthStencilTexture->Release();
+            DirectionalShadowResources[i].DepthStencilTexture = nullptr;
+        }
+        if (DirectionalShadowResources[i].ShadowDSV)
+        {
+            DirectionalShadowResources[i].ShadowDSV->Release();
+            DirectionalShadowResources[i].ShadowDSV = nullptr;
+        }
+        if (DirectionalShadowResources[i].ShadowSRV)
+        {
+            DirectionalShadowResources[i].ShadowSRV->Release();
+            DirectionalShadowResources[i].ShadowSRV = nullptr;
+        }
+
+        DirectionalShadowResources.RemoveAt(i);
+    }   
 }
 
 void FDirectionalShadowMap::ChangeViewportSize()
@@ -286,11 +345,7 @@ void FDirectionalShadowMap::ChangeViewportSize()
 
 void FDirectionalShadowMap::CreateDepthTexture()
 {
-    // 1) 기존 리소스 해제
-    if (DepthStencilTexture) { DepthStencilTexture->Release(); DepthStencilTexture = nullptr; }
-    if (ShadowDSV) { ShadowDSV->Release();           ShadowDSV = nullptr; }
-    if (ShadowSRV) { ShadowSRV->Release();           ShadowSRV = nullptr; }
-
+    FDirectionalShadowResource directionalShadowResource;
 
     D3D11_TEXTURE2D_DESC shadowMapDesc;
     ZeroMemory(&shadowMapDesc, sizeof(D3D11_TEXTURE2D_DESC));
@@ -304,7 +359,7 @@ void FDirectionalShadowMap::CreateDepthTexture()
     shadowMapDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
     shadowMapDesc.Height = (UINT)ShadowResolution;
     shadowMapDesc.Width = (UINT)ShadowResolution;
-    FEngineLoop::GraphicDevice.Device->CreateTexture2D(&shadowMapDesc, nullptr, &DepthStencilTexture);
+    FEngineLoop::GraphicDevice.Device->CreateTexture2D(&shadowMapDesc, nullptr, &directionalShadowResource.DepthStencilTexture);
 
 
     // 2-2) Depth-Stencil View (DSV)
@@ -314,7 +369,7 @@ void FDirectionalShadowMap::CreateDepthTexture()
     depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
     depthStencilViewDesc.Texture2D.MipSlice = 0;
 
-    FEngineLoop::GraphicDevice.Device->CreateDepthStencilView(DepthStencilTexture, &depthStencilViewDesc, &ShadowDSV);
+    FEngineLoop::GraphicDevice.Device->CreateDepthStencilView(directionalShadowResource.DepthStencilTexture, &depthStencilViewDesc, &directionalShadowResource.ShadowDSV);
 
     // 2-3) Shader Resource View (SRV)
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -323,7 +378,9 @@ void FDirectionalShadowMap::CreateDepthTexture()
     srvDesc.Texture2D.MostDetailedMip = 0;
     srvDesc.Texture2D.MipLevels = 1;
 
-    Graphics->Device->CreateShaderResourceView(DepthStencilTexture, &srvDesc, &ShadowSRV);
+    Graphics->Device->CreateShaderResourceView(directionalShadowResource.DepthStencilTexture, &srvDesc, &directionalShadowResource.ShadowSRV);
+
+    DirectionalShadowResources.Add(directionalShadowResource);
 
 }
 
@@ -338,14 +395,14 @@ void FDirectionalShadowMap::PrepareRender(const std::shared_ptr<FEditorViewportC
         if (DirectionalLightsCount < MAX_DIRECTIONAL_LIGHT)
         {
             Light->GetDirectionalLightInfo().Direction;
-            UpdateViewProjMatrices(*Viewport, Light->GetDirection());
+            UpdateViewProjMatrices(DirectionalLightsCount, *Viewport, Light->GetDirection());
             DirectionalLightsCount++;
         }
     }
 
 }
 
-ID3D11ShaderResourceView* FDirectionalShadowMap::GetShadowViewSRV()
+ID3D11ShaderResourceView* FDirectionalShadowMap::GetShadowViewSRV(int index)
 {
-    return ShadowSRV;
+    return DirectionalShadowResources[index].ShadowSRV;
 }

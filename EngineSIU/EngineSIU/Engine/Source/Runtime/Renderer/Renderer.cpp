@@ -81,6 +81,10 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     StaticMeshRenderPass->SetSpotLightShadowMap(SpotLightShadowMapPass);
     StaticMeshRenderPass->SetPointLightShadowMap(PointLightShadowMapPass);
     StaticMeshRenderPass->SetDirectionalShadowMap(DirectionalShadowMap);
+
+	UpdateLightBufferPass->SetSpotLightShadowMap(SpotLightShadowMapPass);
+	UpdateLightBufferPass->SetPointLightShadowMap(PointLightShadowMapPass);
+	UpdateLightBufferPass->SetDirectionalShadowMap(DirectionalShadowMap);
 }
 
 void FRenderer::Release()
@@ -151,20 +155,16 @@ void FRenderer::CreateConstantBuffers()
     UINT LightInfoBufferSize = sizeof(FLightInfoBuffer);
     BufferManager->CreateBufferGeneric<FLightInfoBuffer>("FLightInfoBuffer", nullptr, LightInfoBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
+	// Light 시점에서 Depth에 그릴 때 사용하는 ViewProj
     UINT ShadowViewProjSize = sizeof(FShadowViewProj);
     BufferManager->CreateBufferGeneric<FShadowViewProj>("FShadowViewProj", nullptr, ShadowViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+    
+	// Light에 Bias 값 전달해주는 CBuffer
+	UINT ShadowSettingSize = sizeof(FShadowSettingData);
+	BufferManager->CreateBufferGeneric<FShadowViewProj>("FShadowSettingData", nullptr, ShadowSettingSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     UINT ShadowObjWorld = sizeof(FShadowObjWorld);
     BufferManager->CreateBufferGeneric<FShadowObjWorld>("FShadowObjWorld", nullptr, ShadowObjWorld, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-
-    UINT SpotLightShadowData = sizeof(struct FSpotLightShadowData);
-    BufferManager->CreateBufferGeneric<struct FSpotLightShadowData>("FSpotLightShadowData", nullptr, SpotLightShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-
-    UINT PointlIghtShadowData = sizeof(struct FPointLightShadowData);
-    BufferManager->CreateBufferGeneric<struct FPointLightShadowData>("FPointLightShadowData", nullptr, PointlIghtShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-
-  UINT FDirectionalLightViewProjSize = sizeof(FDirectionalLightViewProj);
-    BufferManager->CreateBufferGeneric<FDirectionalLightViewProj>("FDirectionalLightViewProj", nullptr, FDirectionalLightViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     UINT DepthMapData = sizeof(struct FDepthMapData);
     BufferManager->CreateBufferGeneric<struct FDepthMapData>("FDepthMapData", nullptr, DepthMapData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);

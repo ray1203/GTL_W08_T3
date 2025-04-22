@@ -14,6 +14,7 @@
 #include "UObject/UObjectIterator.h"
 #include "Renderer/Shadow/PointLightShadowMap.h"
 #include "Renderer/Shadow/DirectionalShadowMap.h"
+#include "Renderer/Shadow/SpotLightShadowMap.h"
 
 //------------------------------------------------------------------------------
 // 생성자/소멸자
@@ -96,6 +97,7 @@ void FUpdateLightBufferPass::UpdateLightBuffer() const
             LightBufferData.SpotLights[SpotLightsCount] = Light->GetSpotLightInfo();
             LightBufferData.SpotLights[SpotLightsCount].Position = Light->GetWorldLocation();
             LightBufferData.SpotLights[SpotLightsCount].Direction = Light->GetDirection();
+            LightBufferData.SpotLights[SpotLightsCount].SpotLightViewProj = SpotLightShadowMap->GetViewProjMatrix(SpotLightsCount);
             SpotLightsCount++;
         }
     }
@@ -119,7 +121,7 @@ void FUpdateLightBufferPass::UpdateLightBuffer() const
         {
             LightBufferData.Directional[DirectionalLightsCount] = Light->GetDirectionalLightInfo();
             LightBufferData.Directional[DirectionalLightsCount].Direction = Light->GetDirection();
-            LightBufferData.Directional[DirectionalLightsCount].LightView = DirectionalShadowMap->GetDireictionalView(DirectionalLightsCount);
+            LightBufferData.Directional[DirectionalLightsCount].LightView = DirectionalShadowMap->GetDirectionalView(DirectionalLightsCount);
             LightBufferData.Directional[DirectionalLightsCount].LightProj = DirectionalShadowMap->GetDirectionalProj(DirectionalLightsCount);
 
             DirectionalLightsCount++;
@@ -153,4 +155,9 @@ void FUpdateLightBufferPass::SetPointLightShadowMap(FPointLightShadowMap* InPoin
 void FUpdateLightBufferPass::SetDirectionalShadowMap(FDirectionalShadowMap* InDirectionalShadowMap)
 {
     DirectionalShadowMap = InDirectionalShadowMap;
+}
+
+void FUpdateLightBufferPass::SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap)
+{
+    SpotLightShadowMap = InSpotLightShadowMap;
 }

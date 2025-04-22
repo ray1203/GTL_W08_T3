@@ -11,7 +11,7 @@ struct FShadowObjWorld
     FMatrix World;
 };
 
-struct ShadowSettingData
+struct FShadowSettingData
 {
     float ShadowBias;
     FVector _padding;
@@ -23,10 +23,3 @@ struct FDepthMapData
     FMatrix ViewProj;
     FVector4 Params;
 };
-
-struct  FDirectionalLightViewProj
-{
-    FMatrix DirectionalLightView;
-    FMatrix DirectionalLightProj;
-};
-

@@ -79,9 +79,11 @@ Texture2D<float> DirectionalShadowTexture[MAX_DIRECTIONAL_LIGHT] : register(t10)
 // Spot
 Texture2D<float> SpotShadowTexture[MAX_SPOT_LIGHT] : register(t26);
 // Point
-TextureCube<float> PointShadowCube[MAX_POINT_LIGHT] : register(t32);
+TextureCube<float> PointShadowCube[MAX_POINT_LIGHT] : register(t42);
 SamplerComparisonState ShadowSampler : register(s10);
 
+
+//TODO ShadowSetting해주삼
 cbuffer ShadowSettingData : register(b6)
 {
     float ShadowBias;
@@ -423,7 +425,7 @@ float4 Lighting(float3 WorldPosition, float3 WorldNormal, float3 WorldViewPositi
         FinalColor.a = 1.0;
     }
     
-        [unroll(MAX_DIRECTIONAL_LIGHT)]
+    [unroll(MAX_DIRECTIONAL_LIGHT)]
     for (int k = 0; k < DirectionalLightsCount; k++)
     {
         FinalColor *= GetLightFromShadowMap(k, WorldPosition, WorldNormal);

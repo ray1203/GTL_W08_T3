@@ -8,22 +8,35 @@ class FGraphicsDevice;
 class FDXDShaderManager;
 class USpotLightComponent;
 
+struct FSpotLightShadowResource 
+{
+    ID3D11Texture2D* DepthStencilBuffer = nullptr;
+    ID3D11DepthStencilView* ShadowDSV = nullptr;
+    ID3D11ShaderResourceView* ShadowSRV = nullptr;
+    FMatrix SpotLightViewProjMatrix;
+};
+
 class FSpotLightShadowMap
 {
 public:
     void Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphic, FDXDShaderManager* InShaderManager);
-    void UpdateSpotLightViewProjMatrices(const FSpotLightInfo& Info);
+    void UpdateSpotLightViewProjMatrices(int index, const FSpotLightInfo& Info);
     void PrepareRender();
     void RenderShadowMap();
-    void UpdateConstantBuffer();
     void ClearRenderArr();
 
     void SetShadowResource(int tStart);
     void SetShadowSampler(int sStart);
 
-    ID3D11ShaderResourceView* GetShadowSRV();
+    ID3D11ShaderResourceView* GetShadowSRV(int index);
     ID3D11ShaderResourceView* GetShadowViewSRV();
+    
+    FMatrix GetViewProjMatrix(int index);
+
     void RenderLinearDepth();
+
+    void AddSpotLightResource(int num);
+    void DeleteSpotLightResource(int num);
 
 private:
     FDXDBufferManager* BufferManager = nullptr;
@@ -35,12 +48,11 @@ private:
 
     TArray<USpotLightComponent*> SpotLights;
 
-    ID3D11Texture2D* DepthStencilBuffer = nullptr;
-    ID3D11DepthStencilView* ShadowDSV = nullptr;
-    ID3D11ShaderResourceView* ShadowSRV = nullptr;
+    TArray<FSpotLightShadowResource> SpotLightShadowResources;
+    int prevSpotNum = 0;
+
     ID3D11SamplerState* ShadowSampler = nullptr;
     uint32 ShadowMapSize = 1024;
-    FMatrix SpotLightViewProjMatrix = {};
 
     // Begin ImGui Debug
     ID3D11Texture2D* DepthLinearBuffer = { nullptr };

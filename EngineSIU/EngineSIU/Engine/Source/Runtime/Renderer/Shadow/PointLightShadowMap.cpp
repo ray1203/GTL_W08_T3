@@ -14,6 +14,8 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
     Graphics = InGraphic;
     ShaderManager = InShaderManager;
 
+    // ShadowMap들은 TArray로 관리하므로 추가될때 생성
+
     for (uint32 face = 0; face < faceNum; face++) 
     {
         // Linear Depth 시각화용
