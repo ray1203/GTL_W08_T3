@@ -1,4 +1,6 @@
 ﻿#pragma once
+#define _TCHAR_DEFINED
+#include <d3dcommon.h>
 #include <filesystem>
 
 #include "Container/Array.h"
@@ -26,7 +28,7 @@ struct FFileMetadata
  */
 struct FShaderFileMetadata
 {
-    FShaderFileMetadata(FString InEntryPoint, const std::filesystem::path& InPath, TArray<FFileMetadata> InIncludePaths);
+    FShaderFileMetadata(FString InEntryPoint, const std::filesystem::path& InPath, TArray<FFileMetadata> InIncludePaths, const D3D_SHADER_MACRO* InDefines);
 
     /**
      * .hlsl파일이 변경되었는지 확인하고, 마지막으로 수정된 시간을 갱신합니다.

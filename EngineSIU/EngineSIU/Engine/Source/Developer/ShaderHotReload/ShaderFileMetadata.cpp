@@ -1,15 +1,19 @@
 ﻿#include "ShaderFileMetadata.h"
 #include <utility>
 
+#include "ShaderCompileUtility.h"
+
 namespace fs = std::filesystem;
 
 
 FShaderFileMetadata::FShaderFileMetadata(
     FString InEntryPoint,
     const fs::path& InPath,
-    TArray<FFileMetadata> InIncludePaths
+    TArray<FFileMetadata> InIncludePaths,
+    const D3D_SHADER_MACRO* InDefines
 )
     : EntryPoint(std::move(InEntryPoint))
+    , Defines(ConvertD3DMacrosToFStringPairs(InDefines))
     , FileMetadata(InPath, fs::last_write_time(InPath))
     , IncludePaths(std::move(InIncludePaths))
 {

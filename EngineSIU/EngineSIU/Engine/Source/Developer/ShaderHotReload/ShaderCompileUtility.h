@@ -11,4 +11,4 @@
  * @param Defines D3D_SHADER_MACRO 배열의 시작 포인터. nullptr일 수 있습니다.
  * @return 변환된 매크로 정의 TArray.
  */
-static TArray<TPair<FString, FString>> ConvertD3DMacrosToFStringPairs(const D3D_SHADER_MACRO* Defines);
+TArray<TPair<FString, FString>> ConvertD3DMacrosToFStringPairs(const D3D_SHADER_MACRO* Defines);

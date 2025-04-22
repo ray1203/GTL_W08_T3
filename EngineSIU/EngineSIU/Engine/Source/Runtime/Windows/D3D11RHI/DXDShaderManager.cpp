@@ -69,7 +69,7 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
         return hr;
 
     PixelShaders[Key] = NewPixelShader;
-    PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), nullptr));
 
     return S_OK;
 }
@@ -122,7 +122,7 @@ HRESULT FDXDShaderManager::AddPixelShader(
         return hr;
 
     PixelShaders[Key] = NewPixelShader;
-    PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
 
     return S_OK;
 }
@@ -157,7 +157,7 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     }
 
     VertexShaders[Key] = NewVertexShader;
-    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), nullptr));
 
     VertexShaderCSO->Release();
 
@@ -211,7 +211,7 @@ HRESULT FDXDShaderManager::AddVertexShader(
     }
 
     VertexShaders[Key] = NewVertexShader;
-    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
     VertexShaderCSO->Release();
 
     return S_OK;
@@ -263,7 +263,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     }
 
     VertexShaders[Key] = NewVertexShader;
-    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), nullptr));
     InputLayouts[Key] = NewInputLayout;
 
     VertexShaderCSO->Release();
@@ -314,7 +314,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     VertexShaderCSO->Release();
 
     VertexShaders[Key] = NewVertexShader;
-    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
     InputLayouts[Key] = NewInputLayout;
     return S_OK;
 }
