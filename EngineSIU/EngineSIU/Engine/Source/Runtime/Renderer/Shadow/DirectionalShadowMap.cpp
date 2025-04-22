@@ -39,8 +39,6 @@ void FDirectionalShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGrap
     CreateDepthStencilState();
     LoadShadowShaders();
     CreateDepthTexture();
-    CreateDepthTexture();
-
 }
 
 void FDirectionalShadowMap::CreateComparisonSampler()
