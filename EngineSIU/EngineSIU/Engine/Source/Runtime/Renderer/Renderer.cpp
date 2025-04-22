@@ -167,6 +167,22 @@ void FRenderer::CreateCommonShader()
 #pragma endregion UberShader
 }
 
+bool FRenderer::HandleHotReloadShader() const
+{
+    if (ShaderManager->HandleHotReloadShader())
+    {
+        StaticMeshRenderPass->ReloadShader();
+        GizmoRenderPass->ReloadShader();
+        WorldBillboardRenderPass->ReloadShader();
+        EditorBillboardRenderPass->ReloadShader();
+        FogRenderPass->ReloadShader();
+        EditorRenderPass->ReloadShader();
+        UE_LOG(LogLevel::Display, "[Shader Hot Reload] Succeeded Shader Hot Reload");
+        return true;
+    }
+    return false;
+}
+
 void FRenderer::PrepareRender(FViewportResource* ViewportResource)
 {
     // Setup Viewport
@@ -256,7 +272,6 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
 void FRenderer::EndRender()
 {
     ClearRenderArr();
-    ShaderManager->ReloadAllShaders(); // 
 }
 
 void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& Viewport)

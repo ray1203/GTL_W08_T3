@@ -82,6 +82,12 @@ void FLineRenderPass::DrawLineBatch(const FLinePrimitiveBatchArgs& BatchArgs) co
     Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
+void FLineRenderPass::ReloadShader()
+{
+    VertexLineShader = ShaderManager->GetVertexShaderByKey(L"VertexLineShader");
+    PixelLineShader = ShaderManager->GetPixelShaderByKey(L"PixelLineShader");
+}
+
 void FLineRenderPass::UpdateObjectConstant(const FMatrix& WorldMatrix, const FVector4& UUIDColor, bool bIsSelected) const
 {
     FObjectConstantBuffer ObjectData = {};

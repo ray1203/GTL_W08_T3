@@ -43,8 +43,10 @@ public:
     void CreateShader();
     void ReleaseShader();
 
-    void ChangeViewMode(EViewModeIndex ViewModeIndex);
-    
+    void ChangeViewMode(EViewModeIndex InViewModeIndex);
+
+    void ReloadShader();
+
 private:
     TArray<UStaticMeshComponent*> StaticMeshComponents;
 
@@ -58,4 +60,6 @@ private:
     FDXDBufferManager* BufferManager;
     FGraphicsDevice* Graphics;
     FDXDShaderManager* ShaderManager;
+
+    EViewModeIndex ViewModeIndex;
 };

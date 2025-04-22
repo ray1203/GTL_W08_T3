@@ -72,6 +72,12 @@ void FFogRenderPass::ClearRenderArr()
     FogComponents.Empty();
 }
 
+void FFogRenderPass::ReloadShader()
+{
+    VertexShader = ShaderManager->GetVertexShaderByKey(L"FogVertexShader");
+    PixelShader = ShaderManager->GetPixelShaderByKey(L"FogPixelShader");
+}
+
 void FFogRenderPass::PrepareRenderState()
 {
     // 셰이더 설정
