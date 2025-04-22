@@ -24,7 +24,7 @@
 #include "PropertyEditor/ShowFlags.h"
 
 #include "UnrealEd/EditorViewportClient.h"
-#include "Shadow/CascadeShadowMap.h"
+#include "Shadow/DirectionalShadowMap.h"
 
 
 FStaticMeshRenderPass::FStaticMeshRenderPass()
@@ -95,9 +95,8 @@ void FStaticMeshRenderPass::CreateShader()
 #pragma endregion UberShader
 
     VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
-    LightDepthOnlyVS = ShaderManager->GetVertexShaderByKey(L"LightDepthOnlyVS");
     InputLayout = ShaderManager->GetInputLayoutByKey(L"StaticMeshVertexShader");
-    InputLayoutLightDepthOnly = ShaderManager->GetInputLayoutByKey(L"LightDepthOnlyVS");
+
 
     PixelShader = ShaderManager->GetPixelShaderByKey(L"PHONG_StaticMeshPixelShader");
     DebugDepthShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderDepth");
@@ -165,39 +164,24 @@ void FStaticMeshRenderPass::PrepareRenderState(const std::shared_ptr<FEditorView
 {
     const EViewModeIndex ViewMode = Viewport->GetViewMode();
 
-    if (bIsShadowPass)
-    {
-        Graphics->DeviceContext->VSSetShader(LightDepthOnlyVS, nullptr, 0);
-        //Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
-        Graphics->DeviceContext->IASetInputLayout(InputLayoutLightDepthOnly);
-        Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    Graphics->DeviceContext->VSSetShader(VertexShader, nullptr, 0);
+    Graphics->DeviceContext->IASetInputLayout(InputLayout);
 
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        BufferManager->BindConstantBuffer(TEXT("FObjectConstantBuffer"), 12, EShaderStage::Vertex);
-        BufferManager->BindConstantBuffer(TEXT("FCameraConstantBuffer"), 13, EShaderStage::Vertex);
-    }
-    else
-    {
+    TArray<FString> PSBufferKeys = {
+        TEXT("FLightInfoBuffer"),
+        TEXT("FMaterialConstants"),
+        TEXT("FLitUnlitConstants"),
+        TEXT("FSubMeshConstants"),
+        TEXT("FTextureConstants")
+    };
 
-        Graphics->DeviceContext->VSSetShader(VertexShader, nullptr, 0);
-        Graphics->DeviceContext->IASetInputLayout(InputLayout);
+    BufferManager->BindConstantBuffers(PSBufferKeys, 0, EShaderStage::Pixel);
 
-        Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    BufferManager->BindConstantBuffer(TEXT("FLightInfoBuffer"), 0, EShaderStage::Vertex);
+    BufferManager->BindConstantBuffer(TEXT("FMaterialConstants"), 1, EShaderStage::Vertex);
 
-        TArray<FString> PSBufferKeys = {
-            TEXT("FLightInfoBuffer"),
-            TEXT("FMaterialConstants"),
-            TEXT("FLitUnlitConstants"),
-            TEXT("FSubMeshConstants"),
-            TEXT("FTextureConstants")
-        };
-
-        BufferManager->BindConstantBuffers(PSBufferKeys, 0, EShaderStage::Pixel);
-
-        BufferManager->BindConstantBuffer(TEXT("FLightInfoBuffer"), 0, EShaderStage::Vertex);
-        BufferManager->BindConstantBuffer(TEXT("FMaterialConstants"), 1, EShaderStage::Vertex);
-
-    }
 
     ChangeViewMode(ViewMode);
 
@@ -302,150 +286,59 @@ void FStaticMeshRenderPass::RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT nu
     Graphics->DeviceContext->DrawIndexed(numIndices, 0, 0);
 }
 
-void FStaticMeshRenderPass::Render(
-    const std::shared_ptr<FEditorViewportClient>& Viewport,
-    FDirectionalShadowMap* CascadeShadowMap,
-    bool IsShadow)
+void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport, FDirectionalShadowMap* DirectionalShadowMap)
 {
-    bIsShadowPass = IsShadow;
     FViewportResource* ViewportResource = Viewport->GetViewportResource();
     FRenderTargetRHI* RenderTargetRHI = ViewportResource->GetRenderTarget(EResourceType::ERT_Scene);
-    //ToDo: 리팩토링 필요
-    if (bIsShadowPass)
+
+
+    D3D11_VIEWPORT vp{};
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    vp.Width = ViewportResource->GetD3DViewport().Width;
+    vp.Height = ViewportResource->GetD3DViewport().Height;
+    vp.MinDepth = 0.0f;
+    vp.MaxDepth = 1.0f;
+
+    // 그림자 맵을 타겟으로 바인딩한 후
+    Graphics->DeviceContext->RSSetViewports(1, &vp);
+
+    Graphics->DeviceContext->OMSetRenderTargets(
+        1, &RenderTargetRHI->RTV,
+        ViewportResource->GetDepthStencilView()
+    );
+    ViewportResource->ClearRenderTarget(Graphics->DeviceContext, EResourceType::ERT_Scene);
+    Graphics->DeviceContext->ClearDepthStencilView(
+        ViewportResource->GetDepthStencilView(),
+        D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
+        1.0f, 0);
+
+    PrepareRenderState(Viewport);
+
+    for (UStaticMeshComponent* Comp : StaticMeshComponents)
     {
-        // 0) 이전 frame에 바인딩된 SRV 해제
-        ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
-        Graphics->DeviceContext->PSSetShaderResources(0, 1, nullSRV);
+        if (!Comp || !Comp->GetStaticMesh()) continue;
+        auto* RD = Comp->GetStaticMesh()->GetRenderData();
+        if (!RD) continue;
 
-        // 1) 그림자 맵 크기에 맞춰 리사이즈 & 뷰포트 설정
-        CascadeShadowMap->ResizeTexture(Viewport.get());
+        UpdateObjectConstant(Comp->GetWorldMatrix(), Comp->EncodeUUID() / 255.0f,
+            Cast<UEditorEngine>(GEngine)->GetSelectedActor() == Comp->GetOwner());
+        RenderPrimitive(RD,
+            Comp->GetStaticMesh()->GetMaterials(),
+            Comp->GetOverrideMaterials(),
+            Comp->GetselectedSubMeshIndex());
 
-
-        D3D11_VIEWPORT vp{};
-        vp.TopLeftX = 0;
-        vp.TopLeftY = 0;
-        vp.Width = 2048;
-        vp.Height = 2048;
-        vp.MinDepth = 0.0f;
-        vp.MaxDepth = 1.0f;
-
-        // 그림자 맵을 타겟으로 바인딩한 후
-        Graphics->DeviceContext->RSSetViewports(1, &vp);
-
-        //// 2) Depth-only 스텐실 상태 생성/바인딩
-        //D3D11_DEPTH_STENCIL_DESC dsDesc{};
-        //dsDesc.DepthEnable = TRUE;
-        //dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-        //dsDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-        //ID3D11DepthStencilState* dsState = nullptr;
-        //Graphics->Device->CreateDepthStencilState(&dsDesc, &dsState);
-        //Graphics->DeviceContext->OMSetDepthStencilState(dsState, 0);
-
-        // 3) DSV만 바인딩 후 클리어
-        Graphics->DeviceContext->OMSetRenderTargets(
-            0, nullptr,
-            CascadeShadowMap->ShadowDSV
-        );
-        Graphics->DeviceContext->ClearDepthStencilView(
-            CascadeShadowMap->ShadowDSV,
-            D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-            1.0f, 0);
-
-        D3D11_RASTERIZER_DESC desc = {};
-        desc.FillMode = D3D11_FILL_SOLID;
-        desc.CullMode = D3D11_CULL_BACK;            // 백페이스 컬링
-        desc.DepthClipEnable = TRUE;
-        desc.DepthBias = 5;                        // 상수 바이어스
-        desc.SlopeScaledDepthBias = 1.5f;                       // 기울기 스케일 바이어스
-        desc.DepthBiasClamp = 0.0f;
-        ID3D11RasterizerState* pRS;
-        Graphics->Device->CreateRasterizerState(&desc, &pRS);
-        Graphics->DeviceContext->RSSetState(pRS);
-
-
-        // 4) Shadow-pass 전용 셰이더 및 상수/버퍼 설정
-        PrepareRenderState(Viewport);
-        CascadeShadowMap->PrepareRender(Viewport.get());
-
-        // 5) 모든 StaticMeshComponent에 대해 Depth-only DrawIndexed
-        for (UStaticMeshComponent* Comp : StaticMeshComponents)
+        if (Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_AABB))
         {
-            if (!Comp || !Comp->GetStaticMesh()) continue;
-            auto* RD = Comp->GetStaticMesh()->GetRenderData();
-            if (!RD) continue;
-
-            // 세팅: 월드 매트릭스만 업데이트
-            UpdateObjectConstant(Comp->GetWorldMatrix(), Comp->EncodeUUID() / 255.0f, false);
-
-            // 실제로 Depth-only 드로우
-            RenderPrimitive(RD,
-                Comp->GetStaticMesh()->GetMaterials(),
-                Comp->GetOverrideMaterials(),
-                Comp->GetselectedSubMeshIndex());
+            FEngineLoop::PrimitiveDrawBatch.AddAABBToBatch(
+                Comp->GetBoundingBox(),
+                Comp->GetWorldLocation(),
+                Comp->GetWorldMatrix());
         }
-
-        // 6) DSV 언바인드 및 상태 해제
-        Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
-        // dsState->Release();
-
-         // 7) ImGui로 Depth SRV 시각화
-        ImGui::Image((ImTextureID)CascadeShadowMap->ShadowSRV,
-            ImVec2((float)512, (float)512));
-
-        Graphics->DeviceContext->PSSetShaderResources(5, 1, &CascadeShadowMap->ShadowSRV);
-        Graphics->DeviceContext->PSSetSamplers(5, 1, &CascadeShadowMap->ShadowSampler);
     }
-    else
-    {
 
-        D3D11_VIEWPORT vp{};
-        vp.TopLeftX = 0;
-        vp.TopLeftY = 0;
-        vp.Width = ViewportResource->GetD3DViewport().Width;
-        vp.Height = ViewportResource->GetD3DViewport().Height;
-        vp.MinDepth = 0.0f;
-        vp.MaxDepth = 1.0f;
+    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 
-        // 그림자 맵을 타겟으로 바인딩한 후
-        Graphics->DeviceContext->RSSetViewports(1, &vp);
-
-        // --- 기존 메인 패스 로직 유지 ---
-        Graphics->DeviceContext->OMSetRenderTargets(
-            1, &RenderTargetRHI->RTV,
-            ViewportResource->GetDepthStencilView()
-        );
-        ViewportResource->ClearRenderTarget(Graphics->DeviceContext, EResourceType::ERT_Scene);
-        Graphics->DeviceContext->ClearDepthStencilView(
-            ViewportResource->GetDepthStencilView(),
-            D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-            1.0f, 0);
-
-        PrepareRenderState(Viewport);
-
-        for (UStaticMeshComponent* Comp : StaticMeshComponents)
-        {
-            if (!Comp || !Comp->GetStaticMesh()) continue;
-            auto* RD = Comp->GetStaticMesh()->GetRenderData();
-            if (!RD) continue;
-
-            UpdateObjectConstant(Comp->GetWorldMatrix(), Comp->EncodeUUID() / 255.0f,
-                Cast<UEditorEngine>(GEngine)->GetSelectedActor() == Comp->GetOwner());
-            RenderPrimitive(RD,
-                Comp->GetStaticMesh()->GetMaterials(),
-                Comp->GetOverrideMaterials(),
-                Comp->GetselectedSubMeshIndex());
-
-            if (Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_AABB))
-            {
-                FEngineLoop::PrimitiveDrawBatch.AddAABBToBatch(
-                    Comp->GetBoundingBox(),
-                    Comp->GetWorldLocation(),
-                    Comp->GetWorldMatrix());
-            }
-        }
-
-        Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
-    }
 }
 
 void FStaticMeshRenderPass::ClearRenderArr()
