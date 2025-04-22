@@ -4,7 +4,7 @@
 
 #include "UserInterface/Console.h"
 
-using namespace NS_ShaderMetadata;
+namespace fs = std::filesystem;
 
 
 class FShaderIncludeHandler : public ID3DInclude
@@ -13,7 +13,12 @@ public:
     FShaderIncludeHandler() = default;
     virtual ~FShaderIncludeHandler() = default;
 
-    [[nodiscard]] IncludesMetadata GetIncludePaths() const
+    FShaderIncludeHandler(const FShaderIncludeHandler&) = delete;
+    FShaderIncludeHandler& operator=(const FShaderIncludeHandler&) = delete;
+    FShaderIncludeHandler(FShaderIncludeHandler&&) = delete;
+    FShaderIncludeHandler& operator=(FShaderIncludeHandler&&) = delete;
+
+    [[nodiscard]] TArray<FFileMetadata> GetIncludePaths() const
     {
         return IncludePaths;
     }
@@ -21,8 +26,8 @@ public:
 protected:
     virtual HRESULT Open(D3D_INCLUDE_TYPE IncludeType, LPCSTR pFileName, LPCVOID pParentData, LPCVOID* ppData, UINT* pBytes) noexcept override
     {
-        const fs::path AbsolutePath = absolute(fs::path("Shaders") / pFileName);
-        IncludePaths.Add(MakePair(AbsolutePath, fs::last_write_time(AbsolutePath)));
+        const fs::path AbsolutePath = fs::absolute(fs::path("Shaders") / pFileName);
+        IncludePaths.Emplace(AbsolutePath, fs::last_write_time(AbsolutePath));
 
         // 파일 열기
         std::ifstream File(AbsolutePath, std::ios::binary);
@@ -52,7 +57,7 @@ protected:
     }
 
 private:
-    IncludesMetadata IncludePaths;
+    TArray<FFileMetadata> IncludePaths;
 };
 
 
@@ -119,7 +124,7 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
         return hr;
 
     PixelShaders[Key] = NewPixelShader;
-    PixelShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
 
     return S_OK;
 }
@@ -172,7 +177,7 @@ HRESULT FDXDShaderManager::AddPixelShader(
         return hr;
 
     PixelShaders[Key] = NewPixelShader;
-    PixelShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
 
     return S_OK;
 }
@@ -207,7 +212,7 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     }
 
     VertexShaders[Key] = NewVertexShader;
-    VertexShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
 
     VertexShaderCSO->Release();
 
@@ -261,7 +266,7 @@ HRESULT FDXDShaderManager::AddVertexShader(
     }
 
     VertexShaders[Key] = NewVertexShader;
-    VertexShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
     VertexShaderCSO->Release();
 
     return S_OK;
@@ -313,7 +318,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     }
 
     VertexShaders[Key] = NewVertexShader;
-    VertexShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
     InputLayouts[Key] = NewInputLayout;
 
     VertexShaderCSO->Release();
@@ -364,7 +369,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     VertexShaderCSO->Release();
 
     VertexShaders[Key] = NewVertexShader;
-    VertexShaders[Key].SetFileMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
+    VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths()));
     InputLayouts[Key] = NewInputLayout;
     return S_OK;
 }
@@ -401,8 +406,8 @@ bool FDXDShaderManager::HandleHotReloadShader()
     bool bIsHotReloadShader = false;
     for (auto& Vs : VertexShaders)
     {
-        FShaderFileMetadata& Data = Vs.Value.GetShaderMetadata();
-        if (Vs.Value.GetShaderMetadata().IsOutdatedAndUpdateLastTime())
+        FShaderFileMetadata& Data = Vs.Value.GetMetadata();
+        if (Data.IsOutdatedAndUpdateLastTime())
         {
             ID3DBlob* VertexShaderCSO = nullptr;
             ID3DBlob* ErrorBlob = nullptr;
@@ -410,7 +415,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
             // 셰이더 컴파일
             FShaderIncludeHandler IncludesHandler;
             HRESULT Hr = D3DCompileFromFile(
-                Data.FileMetadata.Key.c_str(), nullptr, &IncludesHandler, *Data.EntryPoint,
+                Data.FileMetadata.FilePath.c_str(), nullptr, &IncludesHandler, *Data.EntryPoint,
                 "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorBlob
             );
 
@@ -454,8 +459,8 @@ bool FDXDShaderManager::HandleHotReloadShader()
 
     for (auto& Ps : PixelShaders)
     {
-        FShaderFileMetadata& Data = Ps.Value.GetShaderMetadata();
-        if (Ps.Value.GetShaderMetadata().IsOutdatedAndUpdateLastTime())
+        FShaderFileMetadata& Data = Ps.Value.GetMetadata();
+        if (Data.IsOutdatedAndUpdateLastTime())
         {
             ID3DBlob* PixelShaderCSO = nullptr;
             ID3DBlob* ErrorBlob = nullptr;
@@ -463,7 +468,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
             // 셰이더 컴파일
             FShaderIncludeHandler IncludesHandler;
             HRESULT Hr = D3DCompileFromFile(
-                Data.FileMetadata.Key.c_str(), nullptr, &IncludesHandler, *Data.EntryPoint,
+                Data.FileMetadata.FilePath.c_str(), nullptr, &IncludesHandler, *Data.EntryPoint,
                 "ps_5_0", 0, 0, &PixelShaderCSO, &ErrorBlob
             );
 
