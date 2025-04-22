@@ -184,6 +184,11 @@ void FStaticMeshRenderPass::SetPointLightShadowMap(FPointLightShadowMap* InPoint
     PointLightShadowMap = InPointLightShadowMap;
 }
 
+void FStaticMeshRenderPass::SetDirectionalShadowMap(FDirectionalShadowMap* InDirectionalShadowMap)
+{
+    DirectionalShadowMap = InDirectionalShadowMap;
+}
+
 void FStaticMeshRenderPass::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager)
 {
     BufferManager = InBufferManager;
@@ -378,13 +383,21 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
         const bool bIsSelected = (Engine && Engine->GetSelectedActor() == Comp->GetOwner());
         
         UpdateObjectConstant(WorldMatrix, UUIDColor, bIsSelected);
-        SpotLightShadowMap->UpdateConstantBuffer();
-        SpotLightShadowMap->SetShadowResource(10);
+        
+        SpotLightShadowMap->SetShadowResource(26);
         SpotLightShadowMap->SetShadowSampler(10);
         
-        PointLightShadowMap->UpdateConstantBuffer();
-        PointLightShadowMap->SetShadowResource(11);
+        PointLightShadowMap->SetShadowResource(42);
         PointLightShadowMap->SetShadowSampler(10);
+
+        DirectionalShadowMap->SetShadowResource(10);
+        DirectionalShadowMap->SetShadowSampler(10);
+
+        FShadowSettingData shadowSettingData;
+        shadowSettingData.ShadowBias = 0.005f;
+
+        BufferManager->BindConstantBuffer(TEXT("FShadowSettingData"), 6, EShaderStage::Pixel);
+        BufferManager->UpdateConstantBuffer(TEXT("FShadowSettingData"), shadowSettingData);
 
         RenderPrimitive(RenderData, Comp->GetStaticMesh()->GetMaterials(), Comp->GetOverrideMaterials(), Comp->GetselectedSubMeshIndex());
 

@@ -405,6 +405,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Launch\EngineLoop.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Launch\ImGuiManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Launch\LightDefine.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Launch\ShadowDefine.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\BillboardRenderPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\CompositingPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorBillboardRenderPass.h" />

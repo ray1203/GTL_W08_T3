@@ -8,18 +8,28 @@ class FGraphicsDevice;
 class FDXDShaderManager;
 class UPointLightComponent;
 
+struct FPointLightShadowCube 
+{
+    ID3D11Texture2D* DepthCube = nullptr;
+    ID3D11DepthStencilView* ShadowDSV[6] = { nullptr };
+    ID3D11ShaderResourceView* ShadowCubeSRV = nullptr;
+    FMatrix PointLightViewProjMatrix[6];
+};
+
 class FPointLightShadowMap
 {
 public:
     void Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphic, FDXDShaderManager* InShaderManager);
-    void UpdatePointLightViewProjMatrices(const FVector& pointLightPos, const float lightRadius);
+    void UpdatePointLightViewProjMatrices(int index, const FVector& pointLightPos, const float lightRadius);
     void PrepareRender();
     void RenderShadowMap();
-    void UpdateConstantBuffer();
     void ClearRenderArr();
 
     void SetShadowResource(int tStart);
     void SetShadowSampler(int sStart);
+
+    void AddPointLightShadowCube(int num);
+    void DeletePointLightShadowCube(int num);
 
     void RenderLinearDepth();
 
@@ -27,6 +37,8 @@ public:
 
     TArray<FVector> GetDirectionArray();
     TArray<FVector> GetUpArray();
+
+    FMatrix GetViewProjMatrix(int index, int face); // Constanc 업데이트를 LightBufferPass를 통해 진행
 
 private:
     FDXDBufferManager* BufferManager = nullptr;
@@ -38,12 +50,9 @@ private:
 
     TArray<UPointLightComponent*> PointLights;
 
-    // 일단 한 Point Light만 만들어보기
-    // TODO 여러 개의 Point Light 가능하도록 변경
-    // 아래를 구조체로 다루고 TArray로 동적 관리하도록 해야할듯
-    ID3D11Texture2D* DepthCube = nullptr;
-    ID3D11DepthStencilView* ShadowDSV[6] = { nullptr };
-    ID3D11ShaderResourceView* ShadowCubeSRV = nullptr;
+    TArray<FPointLightShadowCube> PointLightShadowCubes;
+    int prevShadowCubeNum = 0;
+
     ID3D11SamplerState* ShadowSampler = nullptr;
 
     // 시각화 하는 용의 Buffer PointLight가 여러개 이더라도
@@ -59,9 +68,11 @@ private:
     ID3D11PixelShader* DepthVisualizePS = nullptr;
 
     uint32 ShadowMapSize = 1024;
-    const uint32 faceNum = 6;
 
-    FMatrix PointLightViewProjMatrix[6];
+public:
+    static const uint32 faceNum = 6;
+
+private:
 
     const FVector Directions[6] = {
         FVector(1,0,0), FVector(-1,0,0),

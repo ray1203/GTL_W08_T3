@@ -14,20 +14,7 @@ void FSpotLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphi
     Graphics = InGraphic;
     ShaderManager = InShaderManager;
 
-    D3D11_TEXTURE2D_DESC texDesc{};
-    texDesc.Width = ShadowMapSize;
-    texDesc.Height = ShadowMapSize;
-    texDesc.MipLevels = 1;
-    texDesc.ArraySize = 1;
-    texDesc.Format = DXGI_FORMAT_R32_TYPELESS;                     // Typeless
-    texDesc.SampleDesc.Count = 1;
-    texDesc.Usage = D3D11_USAGE_DEFAULT;
-    texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-    texDesc.CPUAccessFlags = 0;
-    texDesc.MiscFlags = 0;
-
-    HRESULT hr = Graphics->Device->CreateTexture2D(&texDesc, nullptr, &DepthStencilBuffer);
-    assert(SUCCEEDED(hr));
+    
 
     // Begin Test
     D3D11_TEXTURE2D_DESC linDesc = {};
@@ -43,29 +30,15 @@ void FSpotLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphi
     linDesc.CPUAccessFlags = 0;
     linDesc.MiscFlags = 0;
 
-    hr = Graphics->Device->CreateTexture2D(&linDesc, nullptr, &DepthLinearBuffer);
+    HRESULT hr = Graphics->Device->CreateTexture2D(&linDesc, nullptr, &DepthLinearBuffer);
     assert(SUCCEEDED(hr));
     // End Test
 
-    // 2) DSV 생성 (뎁스 기록용)
-    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-    dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-    dsvDesc.Texture2D.MipSlice = 0;
-
-    hr = Graphics->Device->CreateDepthStencilView(DepthStencilBuffer, &dsvDesc, &ShadowDSV);
-    assert(SUCCEEDED(hr));
-
-    // 3) SRV 생성 (쉐이더에서 깊이 읽기)
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
     srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MostDetailedMip = 0;
     srvDesc.Texture2D.MipLevels = 1;
-
-    hr = Graphics->Device->CreateShaderResourceView(DepthStencilBuffer, &srvDesc, &ShadowSRV);
-    assert(SUCCEEDED(hr));
-
 
     hr = Graphics->Device->CreateShaderResourceView(DepthLinearBuffer, &srvDesc, &ShadowViewSRV);
     assert(SUCCEEDED(hr));
@@ -133,6 +106,18 @@ void FSpotLightShadowMap::PrepareRender()
         }
     }
 
+    int spotLightNum = SpotLights.Num();
+    if (prevSpotNum < spotLightNum) 
+    {
+        AddSpotLightResource(spotLightNum - prevSpotNum);
+    }
+    else if (prevSpotNum > spotLightNum) 
+    {
+        DeleteSpotLightResource(prevSpotNum - spotLightNum);
+    }
+
+    prevSpotNum = spotLightNum;
+
     //if (SpotLights.Num() > 0)
     //{
     //    FSpotLightInfo SpotLightInfo;
@@ -143,17 +128,17 @@ void FSpotLightShadowMap::PrepareRender()
     //}
 
     // Begin Test
-    for (auto SpotLight : SpotLights)
+    for (int i = 0; i < SpotLights.Num(); i++)
     {
         FSpotLightInfo SpotLightInfo;
-        SpotLightInfo.Position = SpotLight->GetWorldLocation();
-        SpotLightInfo.Direction = SpotLight->GetDirection();
-        UpdateSpotLightViewProjMatrices(SpotLightInfo);
+        SpotLightInfo.Position = SpotLights[i]->GetWorldLocation();
+        SpotLightInfo.Direction = SpotLights[i]->GetDirection();
+        UpdateSpotLightViewProjMatrices(i, SpotLightInfo);
     }
     // End Test
 }
 
-void FSpotLightShadowMap::UpdateSpotLightViewProjMatrices(const FSpotLightInfo& Info)
+void FSpotLightShadowMap::UpdateSpotLightViewProjMatrices(int index, const FSpotLightInfo& Info)
 {
     //float fovY = Info.OuterRad; // 외부 원뿔 각도
     float fovY = Info.OuterRad * 2.0f; // 외부 원뿔 각도
@@ -187,7 +172,7 @@ void FSpotLightShadowMap::UpdateSpotLightViewProjMatrices(const FSpotLightInfo& 
 
     FMatrix View = JungleMath::CreateViewMatrix(Info.Position, target, up);
 
-    SpotLightViewProjMatrix = View * Projection;
+    SpotLightShadowResources[index].SpotLightViewProjMatrix = View * Projection;
 }
 
 void FSpotLightShadowMap::RenderShadowMap()
@@ -204,60 +189,55 @@ void FSpotLightShadowMap::RenderShadowMap()
         }
     }
 
-    // 뎁스 타겟 설정
-    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, ShadowDSV);
-    Graphics->DeviceContext->ClearDepthStencilView(ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-    D3D11_VIEWPORT vp = { 0, 0, (FLOAT)ShadowMapSize, (FLOAT)ShadowMapSize, 0, 1 };
-    Graphics->DeviceContext->RSSetViewports(1, &vp);
-
-    // 파이프라인 세팅
-    Graphics->DeviceContext->VSSetShader(DepthVS, nullptr, 0);
-    Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
-    Graphics->DeviceContext->IASetInputLayout(DepthIL);
-    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    BufferManager->BindConstantBuffer(TEXT("FShadowViewProj"), 0, EShaderStage::Vertex);
-    BufferManager->UpdateConstantBuffer(TEXT("FShadowViewProj"), SpotLightViewProjMatrix);
-
-    // 메시 렌더
-    for (auto* Comp : MeshComps)
+    for (int i = 0; i < SpotLightShadowResources.Num(); i++) 
     {
-        if (!Comp->GetStaticMesh()) continue;
-        auto* RenderData = Comp->GetStaticMesh()->GetRenderData();
-        if (!RenderData) continue;
+        // 뎁스 타겟 설정
+        Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, SpotLightShadowResources[i].ShadowDSV);
+        Graphics->DeviceContext->ClearDepthStencilView(SpotLightShadowResources[i].ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-        // 월드 행렬 상수
-        FMatrix W = Comp->GetWorldMatrix();
-        BufferManager->BindConstantBuffer(TEXT("FShadowObjWorld"), 1, EShaderStage::Vertex);
-        BufferManager->UpdateConstantBuffer(TEXT("FShadowObjWorld"), W);
+        D3D11_VIEWPORT vp = { 0, 0, (FLOAT)ShadowMapSize, (FLOAT)ShadowMapSize, 0, 1 };
+        Graphics->DeviceContext->RSSetViewports(1, &vp);
 
-        UINT stride = sizeof(FStaticMeshVertex);
-        UINT offset = 0;
-        auto* vb = RenderData->VertexBuffer;
-        auto* ib = RenderData->IndexBuffer;
+        // 파이프라인 세팅
+        Graphics->DeviceContext->VSSetShader(DepthVS, nullptr, 0);
+        Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
+        Graphics->DeviceContext->IASetInputLayout(DepthIL);
+        Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        Graphics->DeviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-        if (ib)
+        BufferManager->BindConstantBuffer(TEXT("FShadowViewProj"), 0, EShaderStage::Vertex);
+        BufferManager->UpdateConstantBuffer(TEXT("FShadowViewProj"), SpotLightShadowResources[i].SpotLightViewProjMatrix);
+
+        // 메시 렌더
+        for (auto* Comp : MeshComps)
         {
-            Graphics->DeviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
-            Graphics->DeviceContext->DrawIndexed(RenderData->Indices.Num(), 0, 0);
-        }
-        else
-        {
-            Graphics->DeviceContext->Draw(RenderData->Vertices.Num(), 0);
+            if (!Comp->GetStaticMesh()) continue;
+            auto* RenderData = Comp->GetStaticMesh()->GetRenderData();
+            if (!RenderData) continue;
+
+            // 월드 행렬 상수
+            FMatrix W = Comp->GetWorldMatrix();
+            BufferManager->BindConstantBuffer(TEXT("FShadowObjWorld"), 1, EShaderStage::Vertex);
+            BufferManager->UpdateConstantBuffer(TEXT("FShadowObjWorld"), W);
+
+            UINT stride = sizeof(FStaticMeshVertex);
+            UINT offset = 0;
+            auto* vb = RenderData->VertexBuffer;
+            auto* ib = RenderData->IndexBuffer;
+
+            Graphics->DeviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+            if (ib)
+            {
+                Graphics->DeviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
+                Graphics->DeviceContext->DrawIndexed(RenderData->Indices.Num(), 0, 0);
+            }
+            else
+            {
+                Graphics->DeviceContext->Draw(RenderData->Vertices.Num(), 0);
+            }
         }
     }
 }
 
-void FSpotLightShadowMap::UpdateConstantBuffer()
-{
-    FSpotLightShadowData SpotLightShadowData;
-    SpotLightShadowData.SpotLightViewProj = SpotLightViewProjMatrix;
-    SpotLightShadowData.ShadowBias = 0.005f;
-    BufferManager->UpdateConstantBuffer(TEXT("FSpotLightShadowData"), SpotLightShadowData);
-    BufferManager->BindConstantBuffer(TEXT("FSpotLightShadowData"), 6, EShaderStage::Pixel);
-}
 
 void FSpotLightShadowMap::ClearRenderArr()
 {
@@ -266,7 +246,10 @@ void FSpotLightShadowMap::ClearRenderArr()
 
 void FSpotLightShadowMap::SetShadowResource(int tStart)
 {
-    Graphics->DeviceContext->PSSetShaderResources(tStart, 1, &ShadowSRV);
+    for (int i = 0; i < SpotLightShadowResources.Num(); i++) 
+    {
+        Graphics->DeviceContext->PSSetShaderResources(tStart + i, 1, &SpotLightShadowResources[i].ShadowSRV);
+    }
 }
 
 void FSpotLightShadowMap::SetShadowSampler(int sStart)
@@ -274,14 +257,17 @@ void FSpotLightShadowMap::SetShadowSampler(int sStart)
     Graphics->DeviceContext->PSSetSamplers(sStart, 1, &ShadowSampler);
 }
 
-ID3D11ShaderResourceView* FSpotLightShadowMap::GetShadowSRV()
+ID3D11ShaderResourceView* FSpotLightShadowMap::GetShadowSRV(int index)
 {
-    return ShadowSRV;
+    return SpotLightShadowResources[index].ShadowSRV;
 }
 
 void FSpotLightShadowMap::RenderLinearDepth()
 {
-    if (DepthStencilBuffer == nullptr) return;
+    // 일단 0번 Render
+    // TODO 나중에 고치기
+
+    if (SpotLightShadowResources[0].DepthStencilBuffer == nullptr) return;
 
     // ─── 0) 기존 RenderTargets, DepthStencilView, Viewports 백업 ───
     ID3D11RenderTargetView* oldRTVs[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = {};
@@ -312,12 +298,12 @@ void FSpotLightShadowMap::RenderLinearDepth()
     Graphics->DeviceContext->PSSetShader(DepthVisualizePS, nullptr, 0);
 
     // (D) 원본 Depth SRV 와 리니어 샘플러 바인딩
-    Graphics->DeviceContext->PSSetShaderResources(0, 1, &ShadowSRV);
+    Graphics->DeviceContext->PSSetShaderResources(0, 1, &SpotLightShadowResources[0].ShadowSRV);
     Graphics->DeviceContext->PSSetSamplers(0, 1, &LinearSampler);
 
     // (E) 카메라(라이트) 매트릭스 및 Near/Far/Gamma 상수 업데이트
     FDepthMapData depthMapData;
-    depthMapData.ViewProj = SpotLightViewProjMatrix;           // light ViewProj
+    depthMapData.ViewProj = SpotLightShadowResources[0].SpotLightViewProjMatrix;           // light ViewProj
     depthMapData.Params.X = 0.1f;                                     // Near plane
     // TODO Light의 범위를 저장해 뒀다가 Far Plane 값에 적용 필요함
     // 일단 임시로 20 값을 넣어 뒀음
@@ -341,7 +327,68 @@ void FSpotLightShadowMap::RenderLinearDepth()
     if (oldDSV) oldDSV->Release();
 }
 
+void FSpotLightShadowMap::AddSpotLightResource(int num)
+{
+    for (int i = 0; i < num; i++) 
+    {
+        FSpotLightShadowResource spotLightShadowResource;
+
+        D3D11_TEXTURE2D_DESC texDesc{};
+        texDesc.Width = ShadowMapSize;
+        texDesc.Height = ShadowMapSize;
+        texDesc.MipLevels = 1;
+        texDesc.ArraySize = 1;
+        texDesc.Format = DXGI_FORMAT_R32_TYPELESS;                     // Typeless
+        texDesc.SampleDesc.Count = 1;
+        texDesc.Usage = D3D11_USAGE_DEFAULT;
+        texDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+        texDesc.CPUAccessFlags = 0;
+        texDesc.MiscFlags = 0;
+
+        HRESULT hr = Graphics->Device->CreateTexture2D(&texDesc, nullptr, &spotLightShadowResource.DepthStencilBuffer);
+        assert(SUCCEEDED(hr));
+
+        // 2) DSV 생성 (뎁스 기록용)
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+        dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+        dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        dsvDesc.Texture2D.MipSlice = 0;
+
+        hr = Graphics->Device->CreateDepthStencilView(spotLightShadowResource.DepthStencilBuffer, &dsvDesc, &spotLightShadowResource.ShadowDSV);
+        assert(SUCCEEDED(hr));
+
+        // 3) SRV 생성 (쉐이더에서 깊이 읽기)
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+        srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MostDetailedMip = 0;
+        srvDesc.Texture2D.MipLevels = 1;
+
+        hr = Graphics->Device->CreateShaderResourceView(spotLightShadowResource.DepthStencilBuffer, &srvDesc, &spotLightShadowResource.ShadowSRV);
+        assert(SUCCEEDED(hr));
+
+        SpotLightShadowResources.Add(spotLightShadowResource);
+    }
+}
+
+void FSpotLightShadowMap::DeleteSpotLightResource(int num)
+{
+    for (int i = prevSpotNum - 1; i >= prevSpotNum - num; i--) 
+    {
+        SpotLightShadowResources[i].DepthStencilBuffer->Release();
+        SpotLightShadowResources[i].ShadowSRV->Release();
+        SpotLightShadowResources[i].ShadowDSV->Release();
+
+        SpotLightShadowResources.RemoveAt(i);
+    }
+}
+
 ID3D11ShaderResourceView* FSpotLightShadowMap::GetShadowViewSRV()
 {
     return ShadowViewSRV;
+}
+
+FMatrix FSpotLightShadowMap::GetViewProjMatrix(int index)
+{
+    return SpotLightShadowResources[index].SpotLightViewProjMatrix;
 }

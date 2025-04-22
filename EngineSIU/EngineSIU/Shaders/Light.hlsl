@@ -11,10 +11,6 @@
 #define DIRECTIONAL_LIGHT   3
 #define AMBIENT_LIGHT       4
 
-SamplerComparisonState ShadowSampler1 : register(s5);
-
-Texture2D<float> ShadowTexture : register(t5);
-
 #define PI 3.14159
 
 struct FAmbientLightInfo
@@ -28,6 +24,8 @@ struct FDirectionalLightInfo
 
     float3 Direction;
     float Intensity;
+    row_major matrix LightView;
+    row_major matrix LightProj;
 };
 
 struct FPointLightInfo
@@ -41,6 +39,7 @@ struct FPointLightInfo
     float Intensity;
     float Attenuation;
     float Padding;
+    row_major matrix PointLightViewProj[6];
 };
 
 struct FSpotLightInfo
@@ -57,6 +56,7 @@ struct FSpotLightInfo
     float InnerRad;
     float OuterRad;
     float Attenuation;
+    row_major matrix SpotLightViewProj;
 };
 
 cbuffer Lighting : register(b0)
@@ -72,28 +72,23 @@ cbuffer Lighting : register(b0)
     int AmbientLightsCount;
 };
 
-Texture2D ShadowMap : register(t10);
-TextureCube<float> ShadowCube : register(t11);
+// 3종류 Light에 대해서 t10부터 16개씩 texture 할당
+
+// Directional
+Texture2D<float> DirectionalShadowTexture[MAX_DIRECTIONAL_LIGHT] : register(t10);
+// Spot
+Texture2D<float> SpotShadowTexture[MAX_SPOT_LIGHT] : register(t26);
+// Point
+TextureCube<float> PointShadowCube[MAX_POINT_LIGHT] : register(t42);
 SamplerComparisonState ShadowSampler : register(s10);
 
-// Point Light 의 6개 face 뷰·프로젝션 행렬과 바이어스
-cbuffer SpotShadowData : register(b6)
-{
-    row_major matrix SpotLightViewProj;
-    float ShadowBias; // 깊이 비교 시 바이어스
-    float3 _padding; // 16바이트 정렬용
-};
 
-cbuffer PointShadowData : register(b7)
+//TODO ShadowSetting해주삼
+cbuffer ShadowSettingData : register(b6)
 {
-    row_major matrix PointLightViewProj[6];
-};
-
-cbuffer LightViewProjCB : register(b5)
-{
-    row_major matrix LightView;
-    row_major matrix LightProj;
-};
+    float ShadowBias;
+    float3 _padding;
+}
 
 
 float CalculateAttenuation(float Distance, float AttenuationFactor, float Radius)
@@ -135,7 +130,7 @@ float CalculateSpecular(float3 WorldNormal, float3 ToLightDir, float3 ViewDir, f
     return Spec * SpecularStrength;
 }
 
-float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir, float spotOuterAngle)
+float SampleSpotShadow(int Index, float3 worldPos, float3 spotLightPos, float3 spotLightDir, float spotOuterAngle)
 {
     //float3 toFragment = worldPos - spotLightPos;
     //float distToFragment = length(toFragment);
@@ -147,7 +142,7 @@ float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir
     //if (cosAngle < cosOuterCone)
     //    return 0.0f;
     
-    float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLightViewProj);
+    float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLights[Index].SpotLightViewProj);
     
     float2 uv = lightSpacePos.xy / lightSpacePos.w * 0.5f + 0.5f;
     uv.y = 1 - uv.y;
@@ -159,7 +154,7 @@ float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir
     // pcf
     float shadow = 0.0f;
     uint width, height;
-    ShadowMap.GetDimensions(width, height);
+    SpotShadowTexture[Index].GetDimensions(width, height);
     float2 texelSize = float2(1.0 / width, 1.0 / height);
 
     for (int x = -1; x <= 1; ++x)
@@ -167,7 +162,7 @@ float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir
         for (int y = -1; y <= 1; ++y)
         {
             float2 offset = float2(x, y) * texelSize;
-            shadow += ShadowMap.SampleCmpLevelZero(
+            shadow += SpotShadowTexture[Index].SampleCmpLevelZero(
                 ShadowSampler,
                 uv.xy + offset,
                 depth
@@ -178,7 +173,7 @@ float SampleSpotShadow(float3 worldPos, float3 spotLightPos, float3 spotLightDir
     return shadow;
 }
 // ——— 그림자 샘플링 헬퍼 ———
-float SamplePointShadow(float3 ToLight, float3 worldPos)
+float SamplePointShadow(int Index, float3 ToLight, float3 worldPos)
 {
     int faceIdx = 0;
     float3 absToL = abs(ToLight);
@@ -190,7 +185,7 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
         faceIdx = (ToLight.z > 0) ? 5 : 4;
     
     // 뷰·프로젝션 변환
-    float4 proj = mul(float4(worldPos, 1), PointLightViewProj[faceIdx]);
+    float4 proj = mul(float4(worldPos, 1), PointLights[Index].PointLightViewProj[faceIdx]);
     proj.xyz /= proj.w;
     
     float depth = proj.z - ShadowBias;
@@ -212,7 +207,7 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
     
     for (int i = 0; i < 20; i++)
     {
-        shadow += ShadowCube.SampleCmpLevelZero(
+        shadow += PointShadowCube[Index].SampleCmpLevelZero(
             ShadowSampler,
             normalize(-1.0f * sampleDirections[i]),
             depth
@@ -284,7 +279,7 @@ float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wo
     float3 Lit = ((DiffuseFactor * DiffuseColor) + (SpecularFactor * Material.SpecularColor)) * LightInfo.LightColor.rgb;
 #endif
 
-    float shadow = SamplePointShadow(ToLight, WorldPosition);
+    float shadow = SamplePointShadow(Index, ToLight, WorldPosition);
     
     //return float4(shadow, 0, 0, 1);
     
@@ -322,7 +317,7 @@ float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wor
 #endif
     
     //return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity, 1.0);
-    float shadow = SampleSpotShadow(WorldPosition, LightInfo.Position, LightInfo.Direction, LightInfo.OuterRad);
+    float shadow = SampleSpotShadow(Index, WorldPosition, LightInfo.Position, LightInfo.Direction, LightInfo.OuterRad);
     //float shadow = SampleSpotShadow(WorldNormal, WorldPosition, LightInfo.Position, LightInfo.Direction, LightInfo.OuterRad);
     
     return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity * shadow, 1.0);
@@ -364,8 +359,8 @@ float GetLightFromShadowMap(int idx, float3 WorldPos, float3 WorldNorm)
     bias *= pow(angle / (0.5f * 3.14159265f), 2.0f);
     
 
-    float4 lp = mul(float4(WorldPos, 1), LightView);
-    float4 cp = mul(lp, LightProj);
+    float4 lp = mul(float4(WorldPos, 1), Directional[idx].LightView);
+    float4 cp = mul(lp, Directional[idx].LightProj);
     
     float2 uv = cp.xy / cp.w * 0.5f + 0.5f;
     float dist = cp.z / cp.w - bias;
@@ -386,7 +381,7 @@ float GetLightFromShadowMap(int idx, float3 WorldPos, float3 WorldNorm)
         {
             float2 off = uv + float2(i, j) * (1.0f / 2048);
             float s = InRange(off.x, 0, 1) && InRange(off.y, 0, 1)
-                ? ShadowTexture.SampleCmpLevelZero(ShadowSampler, off, dist).r
+                ? DirectionalShadowTexture[idx].SampleCmpLevelZero(ShadowSampler, off, dist).r
                 : 1.0f;
             sum += s * kernel[i + R][j + R];
         }
@@ -430,7 +425,7 @@ float4 Lighting(float3 WorldPosition, float3 WorldNormal, float3 WorldViewPositi
         FinalColor.a = 1.0;
     }
     
-        [unroll(MAX_DIRECTIONAL_LIGHT)]
+    [unroll(MAX_DIRECTIONAL_LIGHT)]
     for (int k = 0; k < DirectionalLightsCount; k++)
     {
         FinalColor *= GetLightFromShadowMap(k, WorldPosition, WorldNormal);

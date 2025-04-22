@@ -21,7 +21,6 @@
 
 #include "CompositingPass.h"
 #include "PostProcessCompositingPass.h"
-#include "SlateRenderPass.h"
 #include "UnrealClient.h"
 #include "GameFrameWork/Actor.h"
 
@@ -74,12 +73,18 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     
     SlateRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
 
-    DirectionalShadowMap->Initialize(BufferManager, Graphics, ShaderManager);
+    //Shadow Map
     SpotLightShadowMapPass->Initialize(BufferManager, Graphics, ShaderManager);
-    StaticMeshRenderPass->SetSpotLightShadowMap(SpotLightShadowMapPass);
-
+    DirectionalShadowMap->Initialize(BufferManager, Graphics, ShaderManager);
     PointLightShadowMapPass->Initialize(BufferManager, Graphics, ShaderManager);
+    
+    StaticMeshRenderPass->SetSpotLightShadowMap(SpotLightShadowMapPass);
     StaticMeshRenderPass->SetPointLightShadowMap(PointLightShadowMapPass);
+    StaticMeshRenderPass->SetDirectionalShadowMap(DirectionalShadowMap);
+
+	UpdateLightBufferPass->SetSpotLightShadowMap(SpotLightShadowMapPass);
+	UpdateLightBufferPass->SetPointLightShadowMap(PointLightShadowMapPass);
+	UpdateLightBufferPass->SetDirectionalShadowMap(DirectionalShadowMap);
 }
 
 void FRenderer::Release()
@@ -150,20 +155,16 @@ void FRenderer::CreateConstantBuffers()
     UINT LightInfoBufferSize = sizeof(FLightInfoBuffer);
     BufferManager->CreateBufferGeneric<FLightInfoBuffer>("FLightInfoBuffer", nullptr, LightInfoBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
+	// Light 시점에서 Depth에 그릴 때 사용하는 ViewProj
     UINT ShadowViewProjSize = sizeof(FShadowViewProj);
     BufferManager->CreateBufferGeneric<FShadowViewProj>("FShadowViewProj", nullptr, ShadowViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+    
+	// Light에 Bias 값 전달해주는 CBuffer
+	UINT ShadowSettingSize = sizeof(FShadowSettingData);
+	BufferManager->CreateBufferGeneric<FShadowViewProj>("FShadowSettingData", nullptr, ShadowSettingSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     UINT ShadowObjWorld = sizeof(FShadowObjWorld);
     BufferManager->CreateBufferGeneric<FShadowObjWorld>("FShadowObjWorld", nullptr, ShadowObjWorld, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-
-    UINT SpotLightShadowData = sizeof(struct FSpotLightShadowData);
-    BufferManager->CreateBufferGeneric<struct FSpotLightShadowData>("FSpotLightShadowData", nullptr, SpotLightShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-
-    UINT PointlIghtShadowData = sizeof(struct FPointLightShadowData);
-    BufferManager->CreateBufferGeneric<struct FPointLightShadowData>("FPointLightShadowData", nullptr, PointlIghtShadowData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
-
-  UINT FLightViewProjSize = sizeof(FLightViewProj);
-    BufferManager->CreateBufferGeneric<FLightViewProj>("FLightViewProj", nullptr, FLightViewProjSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
     UINT DepthMapData = sizeof(struct FDepthMapData);
     BufferManager->CreateBufferGeneric<struct FDepthMapData>("FDepthMapData", nullptr, DepthMapData, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
@@ -363,6 +364,7 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
      *   2. 렌더 타겟의 생명주기와 용도가 명확함
      *   3. RTV -> SRV 전환 타이밍이 정확히 지켜짐
      */
+   
     RenderWorldScene(Viewport);
     RenderPostProcess(Viewport);
     RenderEditorOverlay(Viewport);
@@ -385,7 +387,10 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     if (ShowFlag & EEngineShowFlags::SF_Primitives)
     {
         UpdateLightBufferPass->Render(Viewport);
-        DirectionalShadowMap->Render(Viewport.get());
+
+        DirectionalShadowMap->PrepareRender(Viewport);
+        DirectionalShadowMap->RenderShadowMap();
+
         StaticMeshRenderPass->Render(Viewport);
     }
     

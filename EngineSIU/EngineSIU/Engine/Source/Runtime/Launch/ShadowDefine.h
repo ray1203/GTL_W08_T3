@@ -1,31 +1,24 @@
 #pragma once
 #include "Math/Matrix.h"
 
-struct FShadowViewProj 
+struct FShadowViewProj
 {
     FMatrix ViewProj;
 };
 
-struct FShadowObjWorld 
+struct FShadowObjWorld
 {
     FMatrix World;
 };
 
-struct FSpotLightShadowData
+struct FShadowSettingData
 {
-    FMatrix SpotLightViewProj;
-    float ShadowBias;
-    FVector _padding;
-};
-struct FPointLightShadowData
-{
-    FMatrix PointLightViewProj[6];
     float ShadowBias;
     FVector _padding;
 };
 
 
-struct FDepthMapData 
+struct FDepthMapData
 {
     FMatrix ViewProj;
     FVector4 Params;

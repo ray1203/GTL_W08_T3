@@ -14,6 +14,7 @@ class USpotLightComponent;
 class UDirectionalLightComponent;
 class UAmbientLightComponent;
 class FDirectionalShadowMap;
+class FSpotLightShadowMap;
 class FUpdateLightBufferPass : public IRenderPass
 {
 public:
@@ -26,14 +27,22 @@ public:
     virtual void ClearRenderArr() override;
     void UpdateLightBuffer() const;
 
+    void SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap);
+    void SetDirectionalShadowMap(FDirectionalShadowMap* InDirectionalShadowMap);
+    void SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap);
+
 private:
     TArray<USpotLightComponent*> SpotLights;
     TArray<UPointLightComponent*> PointLights;
     TArray<UDirectionalLightComponent*> DirectionalLights;
     TArray<UAmbientLightComponent*> AmbientLights;
-    FDirectionalShadowMap* CascadShadowMap = nullptr;
+    
     FEditorViewportClient* CurrentViewport = nullptr;
     FDXDBufferManager* BufferManager;
     FGraphicsDevice* Graphics;
     FDXDShaderManager* ShaderManager;
+
+    FPointLightShadowMap* PointLightShadowMap = nullptr;
+    FDirectionalShadowMap* DirectionalShadowMap = nullptr;
+    FSpotLightShadowMap* SpotLightShadowMap = nullptr;
 };
