@@ -11,10 +11,6 @@
 #define DIRECTIONAL_LIGHT   3
 #define AMBIENT_LIGHT       4
 
-SamplerComparisonState ShadowSampler1 : register(s5);
-
-
-
 #define PI 3.14159
 
 struct FAmbientLightInfo

@@ -20,8 +20,10 @@
 #include "GameFramework/Actor.h"
 #include "Engine/AssetManager.h"
 #include "UObject/UObjectIterator.h"
+
 #include "Renderer/Shadow/SpotLightShadowMap.h"
 #include "Renderer/Shadow/PointLightShadowMap.h"
+#include "Renderer/Shadow/DirectionalShadowMap.h"
 
 void PropertyEditorPanel::Render()
 {
@@ -227,6 +229,11 @@ void PropertyEditorPanel::Render()
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
+          
+            // Shadow Depth Map 시각화
+            ID3D11ShaderResourceView* shaderSRV = FEngineLoop::Renderer.DirectionalShadowMap->GetShadowViewSRV();
+
+
             if (ImGui::TreeNodeEx("DirectionalLight Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
             {
                 DrawColorProperty("Light Color",
@@ -239,6 +246,17 @@ void PropertyEditorPanel::Render()
 
                 LightDirection = dirlightObj->GetDirection();
                 FImGuiWidget::DrawVec3Control("Direction", LightDirection, 0, 85);
+
+                // ─ Shadow Map 미리보기 (1열) ─
+                ImGui::Separator();
+                ImGui::Text("Directional Light Shadow SRV:");
+
+                const float imgSize = 256.0f; // 원하는 크기로 조정
+
+                ImGui::Text("Direction %.01f %.01f %.01f", LightDirection.X, LightDirection.Y, LightDirection.Z);
+                ImTextureID texID = (ImTextureID)shaderSRV;
+                ImGui::Image(texID, ImVec2(imgSize, imgSize));
+                ImGui::Spacing(); // 이미지 사이에 약간의 여백
 
                 ImGui::TreePop();
             }

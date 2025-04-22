@@ -1,12 +1,12 @@
 #pragma once
 #include "Math/Matrix.h"
 
-struct FShadowViewProj 
+struct FShadowViewProj
 {
     FMatrix ViewProj;
 };
 
-struct FShadowObjWorld 
+struct FShadowObjWorld
 {
     FMatrix World;
 };
@@ -18,8 +18,15 @@ struct ShadowSettingData
 };
 
 
-struct FDepthMapData 
+struct FDepthMapData
 {
     FMatrix ViewProj;
     FVector4 Params;
 };
+
+struct  FDirectionalLightViewProj
+{
+    FMatrix DirectionalLightView;
+    FMatrix DirectionalLightProj;
+};
+
