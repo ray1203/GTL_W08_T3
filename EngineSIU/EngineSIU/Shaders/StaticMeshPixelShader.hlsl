@@ -3,12 +3,10 @@
 
 SamplerState DiffuseSampler : register(s0);
 SamplerState NormalSampler : register(s1);
-SamplerComparisonState ShadowSampler : register(s5);
 
 
 Texture2D DiffuseTexture : register(t0);
 Texture2D NormalTexture : register(t1);
-Texture2D<float> ShadowTexture : register(t5);
 
 
 cbuffer MaterialConstants : register(b1)
@@ -34,29 +32,8 @@ cbuffer TextureConstants : register(b4)
     float2 TexturePad0;
 }
 
-cbuffer LightViewProjCB : register(b5)
-{
-    row_major matrix LightView;
-    row_major matrix LightProj;
-};
-
 #include "Light.hlsl"
 
-
-//float CalcShadowHW(float4 worldPos)
-//{
-//    // 라이트 클립 공간으로 변환
-//    float4 lightSpacePos = mul(worldPos, LightView);
-
-//    float4 lsPos = mul(worldPos, LightViewProj);
-//    float2 uv = lsPos.xy / lsPos.w * 0.5f + 0.5f;
-//    // 0  ~ 1
-//    uv.y = 1 - uv.y;
-//    float depth = lsPos.z / lsPos.w;
-    
-//    // 레벨 0 비교 샘플링
-//    return ShadowTexture.SampleCmpLevelZero(ShadowSampler, uv, depth);
-//}
 
 float4 mainPS(PS_INPUT_StaticMesh Input) : SV_Target
 {
@@ -94,7 +71,7 @@ float4 mainPS(PS_INPUT_StaticMesh Input) : SV_Target
         FinalColor = float4(DiffuseColor, 1);
     }
     
-    if (bIsSelected)
+    if (IsSelectedSubMesh)
     {
         FinalColor += float4(0.01, 0.01, 0.0, 1);
     }

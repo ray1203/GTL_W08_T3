@@ -11,6 +11,10 @@
 #define DIRECTIONAL_LIGHT   3
 #define AMBIENT_LIGHT       4
 
+SamplerComparisonState ShadowSampler : register(s5);
+
+Texture2D<float> ShadowTexture : register(t5);
+
 struct FAmbientLightInfo
 {
     float4 AmbientColor;
@@ -66,6 +70,13 @@ cbuffer Lighting : register(b0)
     int AmbientLightsCount;
 };
 
+cbuffer LightViewProjCB : register(b5)
+{
+    row_major matrix LightView;
+    row_major matrix LightProj;
+};
+
+
 float CalculateAttenuation(float Distance, float AttenuationFactor, float Radius)
 {
     if (Distance > Radius)
@@ -105,7 +116,7 @@ float CalculateSpecular(float3 WorldNormal, float3 ToLightDir, float3 ViewDir, f
     return Spec * SpecularStrength;
 }
 
-float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float WorldViewPosition, float3 DiffuseColor)
+float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
 {
     FPointLightInfo LightInfo = PointLights[Index];
     
@@ -195,14 +206,15 @@ float GetLightFromShadowMap(int idx, float3 WorldPos, float3 WorldNorm)
     float bias = saturate(slopeScale * (1 - NdotL));
     bias = clamp(bias, minBias, maxBias);
 
-
     float angle = acos(NdotL);
     bias *= pow(angle / (0.5f * 3.14159265f), 2.0f);
     
-    float4 lp = mul(float4(WorldPos,1), LightView);
+
+    float4 lp = mul(float4(WorldPos, 1), LightView);
     float4 cp = mul(lp, LightProj);
+    
     float2 uv = cp.xy / cp.w * 0.5f + 0.5f;
-    float dist = cp.z/cp.w - bias;
+    float dist = cp.z / cp.w - bias;
     uv.y = 1 - uv.y;
     uv = saturate(uv);
     
@@ -225,13 +237,15 @@ float GetLightFromShadowMap(int idx, float3 WorldPos, float3 WorldNorm)
             sum += s * kernel[i + R][j + R];
         }
     }
-    float Light = sum / weightSum;
+    float Light = 0;
+    Light = sum / weightSum;
+    return Light;
 
     
-    // Ambient 및 감마 보정
-    //const float ambient = 1.f;
-   // Light = pow(Light, 1/2.2f);
-    return Light;
+   // // Ambient 및 감마 보정
+   // //const float ambient = 1.f;
+   //// Light = pow(Light, 1/2.2f);
+   // return Light;
 }
 
 float4 Lighting(float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
@@ -243,7 +257,7 @@ float4 Lighting(float3 WorldPosition, float3 WorldNormal, float3 WorldViewPositi
     for (int i = 0; i < PointLightsCount; i++)
     {
         FinalColor += PointLight(i, WorldPosition, WorldNormal, WorldViewPosition, DiffuseColor);
-    }    
+    }
     [unroll(MAX_SPOT_LIGHT)]
     for (int j = 0; j < SpotLightsCount; j++)
     {
@@ -261,6 +275,7 @@ float4 Lighting(float3 WorldPosition, float3 WorldNormal, float3 WorldViewPositi
         FinalColor.a = 1.0;
     }
     
+        [unroll(MAX_DIRECTIONAL_LIGHT)]
     for (int k = 0; k < DirectionalLightsCount; k++)
     {
         FinalColor *= GetLightFromShadowMap(k, WorldPosition, WorldNormal);
