@@ -123,7 +123,7 @@ void FPointLightShadowMap::PrepareRender()
 
     for (int i = 0; i < PointLights.Num(); i++) 
     {
-        UpdatePointLightViewProjMatrices(i, PointLights[0]->GetWorldLocation(), PointLights[0]->GetRadius());
+        UpdatePointLightViewProjMatrices(i, PointLights[i]->GetWorldLocation(), PointLights[i]->GetRadius());
     }
 }
 
