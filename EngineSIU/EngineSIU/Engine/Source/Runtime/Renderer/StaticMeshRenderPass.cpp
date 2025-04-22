@@ -164,9 +164,6 @@ void FStaticMeshRenderPass::ReloadShader()
             assert(0); // Invalid ViewModeIndex
             break;
     }
-    VertexShader = ShaderManager->GetVertexShaderByKey(L"StaticMeshVertexShader");
-    PixelShader = ShaderManager->GetPixelShaderByKey(L"PHONG_StaticMeshPixelShader");
-
     DebugDepthShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderDepth");
     DebugWorldNormalShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderWorldNormal");
 }
