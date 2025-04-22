@@ -43,6 +43,7 @@ class FCascadeShadowMap;
 
 
 class FSpotLightShadowMap;
+class FPointLightShadowMap;
 
 class FRenderer
 {
@@ -94,8 +95,6 @@ public:
     void CreateDepthOnlyShader();
     void CreateDepthVisualShader();
 
-    void CreateDepthVisualShader();
-
 public:
     FGraphicsDevice* Graphics;
     FDXDBufferManager* BufferManager;
@@ -116,6 +115,7 @@ public:
     FSlateRenderPass* SlateRenderPass = nullptr;
 
     FSpotLightShadowMap* SpotLightShadowMapPass = nullptr;
+    FPointLightShadowMap* PointLightShadowMapPass = nullptr;
 };
 
 template<typename T>

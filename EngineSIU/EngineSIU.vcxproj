@@ -266,6 +266,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcessCompositingPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Renderer.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\CascadeShadowMap.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\PointLightShadowMap.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\SpotLightShadowMap.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\SlateRenderPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\StaticMeshRenderPass.cpp" />
@@ -418,6 +419,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\RenderResources.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\ShaderConstants.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\CascadeShadowMap.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\PointLightShadowMap.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\SpotLightShadowMap.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\SlateRenderPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\StaticMeshRenderPass.h" />

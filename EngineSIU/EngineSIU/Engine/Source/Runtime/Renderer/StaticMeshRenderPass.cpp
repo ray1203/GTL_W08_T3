@@ -25,7 +25,8 @@
 
 #include "UnrealEd/EditorViewportClient.h"
 
-#include "Engine/Source/Runtime/Renderer/Shadow/SpotLightShadowMap.h"
+#include "Renderer/Shadow/SpotLightShadowMap.h"
+#include "Renderer/Shadow/PointLightShadowMap.h"
 
 
 FStaticMeshRenderPass::FStaticMeshRenderPass()
@@ -143,6 +144,11 @@ void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex ViewModeIndex)
 void FStaticMeshRenderPass::SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap)
 {
     SpotLightShadowMap = InSpotLightShadowMap;
+}
+
+void FStaticMeshRenderPass::SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap)
+{
+    PointLightShadowMap = InPointLightShadowMap;
 }
 
 void FStaticMeshRenderPass::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager)
@@ -325,6 +331,11 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
         SpotLightShadowMap->UpdateConstantBuffer();
         SpotLightShadowMap->SetShadowResource(10);
         SpotLightShadowMap->SetShadowSampler(10);
+        
+        PointLightShadowMap->UpdateConstantBuffer();
+        PointLightShadowMap->SetShadowResource(11);
+        PointLightShadowMap->SetShadowSampler(10);
+
         RenderPrimitive(RenderData, Comp->GetStaticMesh()->GetMaterials(), Comp->GetOverrideMaterials(), Comp->GetselectedSubMeshIndex());
 
         if (Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_AABB))
