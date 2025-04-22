@@ -34,28 +34,29 @@ cbuffer TextureConstants : register(b4)
     float2 TexturePad0;
 }
 
-#include "Light.hlsl"
-
 cbuffer LightViewProjCB : register(b5)
 {
-    row_major matrix LightViewProj;
+    row_major matrix LightView;
+    row_major matrix LightProj;
 };
 
-float CalcShadowHW(float4 worldPos)
-{
-    // 라이트 클립 공간으로 변환
-    float4 lightSpacePos = mul(worldPos, LightViewProj);
+#include "Light.hlsl"
 
-    float4 lsPos = mul(worldPos, LightViewProj);
-    float2 uv = lsPos.xy / lsPos.w * 0.5f + 0.5f;
-    // 0  ~ 1
-    uv.y = 1 - uv.y;
-    float depth = lsPos.z / lsPos.w;
+
+//float CalcShadowHW(float4 worldPos)
+//{
+//    // 라이트 클립 공간으로 변환
+//    float4 lightSpacePos = mul(worldPos, LightView);
+
+//    float4 lsPos = mul(worldPos, LightViewProj);
+//    float2 uv = lsPos.xy / lsPos.w * 0.5f + 0.5f;
+//    // 0  ~ 1
+//    uv.y = 1 - uv.y;
+//    float depth = lsPos.z / lsPos.w;
     
-    // 레벨 0 비교 샘플링
-    return ShadowTexture.SampleCmpLevelZero(ShadowSampler, uv, depth);
-}
-
+//    // 레벨 0 비교 샘플링
+//    return ShadowTexture.SampleCmpLevelZero(ShadowSampler, uv, depth);
+//}
 
 float4 mainPS(PS_INPUT_StaticMesh Input) : SV_Target
 {
@@ -85,8 +86,7 @@ float4 mainPS(PS_INPUT_StaticMesh Input) : SV_Target
         FinalColor = float4(Input.Color.rgb * DiffuseColor, 1.0);
 #else
         float3 LitColor = Lighting(Input.WorldPosition, WorldNormal, Input.WorldViewPosition, DiffuseColor).rgb;
-        float ShadowColor = CalcShadowHW(float4(Input.WorldPosition, 1));
-        FinalColor = float4(LitColor * ShadowColor, 1);
+        FinalColor = float4(LitColor, 1);
 #endif
     }
     else

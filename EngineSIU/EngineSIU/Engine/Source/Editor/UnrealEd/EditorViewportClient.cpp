@@ -332,7 +332,7 @@ TArray<FVector> FEditorViewportClient::GetFrustumCorners()
     FrustumCorners.Empty();
     FrustumCorners.Reserve(8);
 
-     const FMatrix InvViewProj = FMatrix::Inverse(Projection) * FMatrix::Inverse(View);
+    const FMatrix InvViewProj = FMatrix::Inverse(View) * FMatrix::Inverse(Projection);
 
     // 3) NDC 8코너를 homogeneous 4D로 만든 뒤 변환·분할
     for (int ix = -1; ix <= 1; ix += 2)

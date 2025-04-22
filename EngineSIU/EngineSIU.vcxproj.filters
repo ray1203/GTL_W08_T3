@@ -1158,10 +1158,10 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldBillboardRenderPass.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
     </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\CascadeShadowMap.cpp">
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\DirectionalShadowMap.cpp">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer\Shadow</Filter>
     </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\CascadeShadowMap.h">
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\DirectionalShadowMap.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer\Shadow</Filter>
     </ClInclude>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Serialization\Serializer.h">

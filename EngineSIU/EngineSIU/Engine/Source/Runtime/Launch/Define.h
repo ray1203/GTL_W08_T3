@@ -291,6 +291,25 @@ struct FBoundingBox
 
         return FBoundingBox(worldCenter - worldExtents, worldCenter + worldExtents);
     }
+    void Expand(const FVector& point)
+    {
+        min.X = std::min(min.X, point.X);
+        min.Y = std::min(min.Y, point.Y);
+        min.Z = std::min(min.Z, point.Z);
+
+        max.X = std::max(max.X, point.X);
+        max.Y = std::max(max.Y, point.Y);
+        max.Z = std::max(max.Z, point.Z);
+    }
+
+    FVector GetCorner(int index) const
+    {
+        return FVector(
+            (index & 1) ? max.X : min.X,
+            (index & 2) ? max.Y : min.Y,
+            (index & 4) ? max.Z : min.Z
+        );
+    }
 
 };
 

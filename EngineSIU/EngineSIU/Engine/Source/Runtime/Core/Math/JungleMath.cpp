@@ -84,28 +84,18 @@ FMatrix JungleMath::CreateOrthoProjectionMatrix(float width, float height, float
     return Projection;
 }
 
-FMatrix JungleMath::CreateOrthoOffCenterProjectionMatrix(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+FMatrix JungleMath::CreateOrthoOffCenterProjectionMatrix( float left, float right, float bottom, float top, float nearPlane, float farPlane)
 {
-    float invW = 2.0f / (right - left);
-    float invH = 2.0f / (top - bottom);
-    float invD = 1.0f / (farPlane - nearPlane);
-
-    FMatrix proj = {};
-    // row 0
-    proj.M[0][0] = invW;   proj.M[0][1] = 0.0f; proj.M[0][2] = 0.0f;    proj.M[0][3] = 0.0f;
-    // row 1
-    proj.M[1][0] = 0.0f;   proj.M[1][1] = invH; proj.M[1][2] = 0.0f;    proj.M[1][3] = 0.0f;
-    // row 2
-    proj.M[2][0] = 0.0f;   proj.M[2][1] = 0.0f; proj.M[2][2] = invD;    proj.M[2][3] = 0.0f;
-    // row 3 (translation)
-    proj.M[3][0] = (left + right) / (left - right);
-    proj.M[3][1] = (top + bottom) / (bottom - top);
-    proj.M[3][2] = -nearPlane * invD;
-    proj.M[3][3] = 1.0f;
-
-    return proj;
+    FMatrix Projection = {};
+    Projection.M[0][0] = 2.0f / (right - left);
+    Projection.M[1][1] = 2.0f / (top - bottom);
+    Projection.M[2][2] = 1.0f / (farPlane - nearPlane);
+    Projection.M[3][0] = (left + right) / (left - right);
+    Projection.M[3][1] = (top + bottom) / (bottom - top);
+    Projection.M[3][2] = nearPlane / (nearPlane - farPlane);
+    Projection.M[3][3] = 1.0f;
+    return Projection;
 }
-
 FVector JungleMath::FVectorRotate(FVector& origin, const FVector& InRotation)
 {
     FQuat quaternion = JungleMath::EulerToQuaternion(InRotation);
@@ -138,33 +128,26 @@ FQuat JungleMath::EulerToQuaternion(const FVector& eulerDegrees)
     quat.Normalize();
     return quat;
 }
-FMatrix JungleMath::CreateLightViewMatrix(const FVector& center, const FVector& lightDir, float distance)
+
+FMatrix JungleMath::CreateLookAtMatrix(const FVector& eye, const FVector& target, const FVector& up)
 {
-    // 라이트 위치 계산
-    FVector lightPos = center - lightDir.GetSafeNormal() * distance;
+    FVector zAxis = (target - eye).GetSafeNormal();
+    FVector xAxis = up.Cross(zAxis).GetSafeNormal();
+    FVector yAxis = zAxis.Cross(xAxis);
 
-    // worldUp & 평행 체크
-    FVector worldUp(0, 0, 1);
-    FVector zAxis = (center - lightPos).GetSafeNormal();
-    if (FMath::Abs(zAxis.Dot(worldUp)) > 0.99f)
-        worldUp = FVector(1, 0, 0);
-
-    // 직교 축 생성
-    FVector xAxis = worldUp.Cross(zAxis).GetSafeNormal();
-    FVector yAxis = zAxis.Cross(xAxis).GetSafeNormal();
-
-    // 행 우선 + 행 벡터(v×M) 컨벤션
     FMatrix view = {};
     view.M[0][0] = xAxis.X; view.M[0][1] = yAxis.X; view.M[0][2] = zAxis.X; view.M[0][3] = 0.0f;
     view.M[1][0] = xAxis.Y; view.M[1][1] = yAxis.Y; view.M[1][2] = zAxis.Y; view.M[1][3] = 0.0f;
     view.M[2][0] = xAxis.Z; view.M[2][1] = yAxis.Z; view.M[2][2] = zAxis.Z; view.M[2][3] = 0.0f;
-    view.M[3][0] = -xAxis.Dot(lightPos);
-    view.M[3][1] = -yAxis.Dot(lightPos);
-    view.M[3][2] = -zAxis.Dot(lightPos);
+    // 5) 위치 보정
+    view.M[3][0] = -FVector::DotProduct(xAxis, eye);
+    view.M[3][1] = -FVector::DotProduct(yAxis, eye);
+    view.M[3][2] = -FVector::DotProduct(zAxis, eye);
     view.M[3][3] = 1.0f;
 
     return view;
 }
+
 FVector JungleMath::QuaternionToEuler(const FQuat& quat)
 {
     FVector euler;

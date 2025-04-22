@@ -4,7 +4,8 @@
 
 cbuffer LightViewProjCB : register(b1)
 {
-    row_major matrix LightViewProj;
+    row_major matrix LightView;
+    row_major matrix LightProj;
 };
 
 
@@ -26,7 +27,9 @@ VS_OUT mainVS(VS_IN input)
 
     float4 worldPos = mul(float4(input.Position, 1.0f), WorldMatrix);
 
-    output.Position = mul(worldPos, LightViewProj);
+  
+    float4 ViewPos = mul(worldPos, LightView);
+    output.Position = mul(ViewPos, LightProj);
 
     return output;
 }

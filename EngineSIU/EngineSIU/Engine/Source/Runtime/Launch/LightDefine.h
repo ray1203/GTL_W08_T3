@@ -63,6 +63,7 @@ struct FLightInfoBuffer
 
 struct  FLightViewProj
 {
-    FMatrix LightViewProj;
+    FMatrix LightView;
+    FMatrix LightProj;
 };
 

@@ -26,7 +26,7 @@
 #include "GameFrameWork/Actor.h"
 
 #include "PropertyEditor/ShowFlags.h"
-#include "Shadow/CascadeShadowMap.h"
+#include "Shadow/DirectionalShadowMap.h"
 //------------------------------------------------------------------------------
 // 초기화 및 해제 관련 함수
 //------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
-    CascadeShadowMap = new FDirectionalShadowMap();
+    DirectionalShadowMap = new FDirectionalShadowMap();
 
 
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -65,7 +65,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     
     CompositingPass->Initialize(BufferManager, Graphics, ShaderManager);
     PostProcessCompositingPass->Initialize(BufferManager, Graphics, ShaderManager);
-    CascadeShadowMap->Initialize(BufferManager, Graphics, ShaderManager);
+    DirectionalShadowMap->Initialize(BufferManager, Graphics, ShaderManager);
     SlateRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
 }
 
@@ -275,8 +275,8 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     if (ShowFlag & EEngineShowFlags::SF_Primitives)
     {
         UpdateLightBufferPass->Render(Viewport);
-        StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, true);
-        StaticMeshRenderPass->Render(Viewport,CascadeShadowMap, false);
+        DirectionalShadowMap->Render(Viewport.get());
+        StaticMeshRenderPass->Render(Viewport,DirectionalShadowMap);
     }
     
     // Render World Billboard
