@@ -50,6 +50,7 @@ public:
 
     void SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap);
     void SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap);
+    void SetDirectionalShadowMap(FDirectionalShadowMap* InDirectionalShadowMap);
 
     void ReloadShader();
 
@@ -71,4 +72,5 @@ private:
     EViewModeIndex ViewModeIndex;
     FSpotLightShadowMap* SpotLightShadowMap;
     FPointLightShadowMap* PointLightShadowMap;
+    FDirectionalShadowMap* DirectionalShadowMap;
 };

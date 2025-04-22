@@ -92,24 +92,22 @@ void FDirectionalShadowMap::CreateDepthStencilState()
 
 void FDirectionalShadowMap::LoadShadowShaders()
 {
-    LightDepthOnlyVS = ShaderManager->GetVertexShaderByKey(L"LightDepthOnlyVS");
-    InputLayoutLightDepthOnly = ShaderManager->GetInputLayoutByKey(L"LightDepthOnlyVS");
+    DepthVS = ShaderManager->GetVertexShaderByKey(L"DepthOnlyVS");
+    DepthIL = ShaderManager->GetInputLayoutByKey(L"DepthOnlyVS");
 }
 
 
-void FDirectionalShadowMap::PrepareRenderState(FEditorViewportClient* Viewport)
+void FDirectionalShadowMap::PrepareRenderState()
 {
-    const EViewModeIndex ViewMode = Viewport->GetViewMode();
 
-    Graphics->DeviceContext->VSSetShader(LightDepthOnlyVS, nullptr, 0);
-    Graphics->DeviceContext->IASetInputLayout(InputLayoutLightDepthOnly);
+    Graphics->DeviceContext->VSSetShader(DepthVS, nullptr, 0);
     Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
-
+    Graphics->DeviceContext->IASetInputLayout(DepthIL);
     Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    ID3D11Buffer* LightViewProj = BufferManager->GetConstantBuffer(TEXT("FLightViewProj"));
-    Graphics->DeviceContext->VSSetConstantBuffers(1, 1, &LightViewProj);
-    Graphics->DeviceContext->PSSetConstantBuffers(5, 1, &LightViewProj);
+
+    BufferManager->BindConstantBuffer(TEXT("FShadowViewProj"), 0, EShaderStage::Vertex);
+    BufferManager->BindConstantBuffer(TEXT("FDirectionalLightViewProj"), 5, EShaderStage::Pixel);
 
 }
 
@@ -144,6 +142,7 @@ void FDirectionalShadowMap::CollectDirectionalLights()
 
 void FDirectionalShadowMap::UpdateViewProjMatrices(FEditorViewportClient& ViewCamera, const FVector& LightDir)
 {
+
     TArray<FVector> points = ViewCamera.GetFrustumCorners();
 
     for (auto* Comp : StaticMeshComponents)
@@ -166,20 +165,20 @@ void FDirectionalShadowMap::UpdateViewProjMatrices(FEditorViewportClient& ViewCa
         radius = FMath::Max(radius, proj);
     }
 
-   
+
     FVector Eye = FVector(
         center.X - LightDir.X * radius,
         center.Y - LightDir.Y * radius,
         center.Z - LightDir.Z * radius
     );
-   
-    FMatrix lightView = JungleMath::CreateLookAtMatrix(Eye, center, FVector(0,0,1));
-    
+
+    FMatrix LightView = JungleMath::CreateLookAtMatrix(Eye, center, FVector(0, 0, 1));
+
     FVector minB{ FLT_MAX,  FLT_MAX,  FLT_MAX };
     FVector maxB{ -FLT_MAX, -FLT_MAX, -FLT_MAX };
     for (auto& p : points)
     {
-        FVector ls = lightView.TransformPosition(p);
+        FVector ls = LightView.TransformPosition(p);
         minB.X = FMath::Min(minB.X, ls.X); maxB.X = FMath::Max(maxB.X, ls.X);
         minB.Y = FMath::Min(minB.Y, ls.Y); maxB.Y = FMath::Max(maxB.Y, ls.Y);
         minB.Z = FMath::Min(minB.Z, ls.Z); maxB.Z = FMath::Max(maxB.Z, ls.Z);
@@ -187,11 +186,14 @@ void FDirectionalShadowMap::UpdateViewProjMatrices(FEditorViewportClient& ViewCa
 
     const float nearZ = 0.0f;
     const float farZ = maxB.Z;
-    FMatrix lightProj =JungleMath::CreateOrthoOffCenterProjectionMatrix(minB.X, maxB.X, minB.Y, maxB.Y, nearZ, farZ);
-   
-  
-    FLightViewProj vp{ lightView, lightProj };
-    BufferManager->UpdateConstantBuffer(TEXT("FLightViewProj"), vp);
+    FMatrix LightProj = JungleMath::CreateOrthoOffCenterProjectionMatrix(minB.X, maxB.X, minB.Y, maxB.Y, nearZ, farZ);
+
+    DirectionalLightViewProjMatrix = LightView * LightProj;
+
+    FDirectionalLightViewProj vp{ LightView, LightProj };
+    FShadowViewProj LightVP{ DirectionalLightViewProjMatrix };
+    BufferManager->UpdateConstantBuffer(TEXT("FDirectionalLightViewProj"), vp);
+    BufferManager->UpdateConstantBuffer(TEXT("FShadowViewProj"), LightVP);
 }
 
 void FDirectionalShadowMap::UpdateObjectConstant(const FMatrix& WorldMatrix, const FVector4& UUIDColor, bool bIsSelected) const
@@ -205,104 +207,68 @@ void FDirectionalShadowMap::UpdateObjectConstant(const FMatrix& WorldMatrix, con
     BufferManager->UpdateConstantBuffer(TEXT("FObjectConstantBuffer"), ObjectData);
 }
 
-void FDirectionalShadowMap::RenderPrimitive(OBJ::FStaticMeshRenderData* RenderData, TArray<FStaticMaterial*> Materials, TArray<UMaterial*> OverrideMaterials, int SelectedSubMeshIndex) const
+void FDirectionalShadowMap::RenderShadowMap()
 {
-    UINT Stride = sizeof(FStaticMeshVertex);
-    UINT Offset = 0;
 
-    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &RenderData->VertexBuffer, &Stride, &Offset);
+    if (DirectionalLights.Num() <= 0) return;
 
-    if (RenderData->IndexBuffer)
+    // 모든 스태틱 메시 컴포넌트 수집
+    TArray<UStaticMeshComponent*> MeshComps;
+    for (auto* Comp : TObjectRange<UStaticMeshComponent>())
     {
-        Graphics->DeviceContext->IASetIndexBuffer(RenderData->IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-    }
-
-    if (RenderData->MaterialSubsets.Num() == 0)
-    {
-        Graphics->DeviceContext->DrawIndexed(RenderData->Indices.Num(), 0, 0);
-        return;
-    }
-
-    for (int SubMeshIndex = 0; SubMeshIndex < RenderData->MaterialSubsets.Num(); SubMeshIndex++)
-    {
-        uint32 MaterialIndex = RenderData->MaterialSubsets[SubMeshIndex].MaterialIndex;
-
-        FSubMeshConstants SubMeshData = (SubMeshIndex == SelectedSubMeshIndex) ? FSubMeshConstants(true) : FSubMeshConstants(false);
-
-        BufferManager->UpdateConstantBuffer(TEXT("FSubMeshConstants"), SubMeshData);
-
-        if (OverrideMaterials[MaterialIndex] != nullptr)
+        if (Comp->GetWorld() == GEngine->ActiveWorld)
         {
-            MaterialUtils::UpdateMaterial(BufferManager, Graphics, OverrideMaterials[MaterialIndex]->GetMaterialInfo());
+            MeshComps.Add(Comp);
+        }
+    }
+
+    // 뎁스 타겟 설정
+    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, ShadowDSV);
+    Graphics->DeviceContext->ClearDepthStencilView(ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+    D3D11_VIEWPORT vp = { 0, 0, (FLOAT)ShadowResolution, (FLOAT)ShadowResolution, 0, 1 };
+    Graphics->DeviceContext->RSSetViewports(1, &vp);
+
+    PrepareRenderState();
+
+
+    // 메시 렌더
+    for (auto* Comp : MeshComps)
+    {
+        if (!Comp->GetStaticMesh()) continue;
+        auto* RenderData = Comp->GetStaticMesh()->GetRenderData();
+        if (!RenderData) continue;
+
+        // 월드 행렬 상수
+        FMatrix W = Comp->GetWorldMatrix();
+        BufferManager->BindConstantBuffer(TEXT("FShadowObjWorld"), 1, EShaderStage::Vertex);
+        BufferManager->UpdateConstantBuffer(TEXT("FShadowObjWorld"), W);
+
+        UINT stride = sizeof(FStaticMeshVertex);
+        UINT offset = 0;
+        auto* vb = RenderData->VertexBuffer;
+        auto* ib = RenderData->IndexBuffer;
+
+        Graphics->DeviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
+        if (ib)
+        {
+            Graphics->DeviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
+            Graphics->DeviceContext->DrawIndexed(RenderData->Indices.Num(), 0, 0);
         }
         else
         {
-            MaterialUtils::UpdateMaterial(BufferManager, Graphics, Materials[MaterialIndex]->Material->GetMaterialInfo());
+            Graphics->DeviceContext->Draw(RenderData->Vertices.Num(), 0);
         }
-
-        uint32 StartIndex = RenderData->MaterialSubsets[SubMeshIndex].IndexStart;
-        uint32 IndexCount = RenderData->MaterialSubsets[SubMeshIndex].IndexCount;
-        Graphics->DeviceContext->DrawIndexed(IndexCount, StartIndex, 0);
     }
 }
-
-void FDirectionalShadowMap::Render(FEditorViewportClient* Viewport)
+void FDirectionalShadowMap::SetShadowResource(int tStart)
 {
+    Graphics->DeviceContext->PSSetShaderResources(tStart, 1, &ShadowSRV);
+}
 
-    FViewportResource* ViewportResource = Viewport->GetViewportResource();
-    FRenderTargetRHI* RenderTargetRHI = ViewportResource->GetRenderTarget(EResourceType::ERT_Scene);
-
-    ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
-    Graphics->DeviceContext->PSSetShaderResources(0, 1, nullSRV);
-
-
-  
-    Graphics->DeviceContext->OMSetDepthStencilState(dsState, 0);
-
-    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, ShadowDSV);
-    Graphics->DeviceContext->ClearDepthStencilView(ShadowDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-
-
-    ChangeViewportSize();
-    Graphics->DeviceContext->RSSetState(ShadowRasterizer);
-    // 4) Shadow-pass 전용 셰이더 및 상수/버퍼 설정
-    PrepareRenderState(Viewport);
-    PrepareRender(Viewport);
-
-    // 5) 모든 StaticMeshComponent에 대해 Depth-only DrawIndexed
-    for (UStaticMeshComponent* Comp : StaticMeshComponents)
-    {
-        if (!Comp || !Comp->GetStaticMesh()) continue;
-        auto* RD = Comp->GetStaticMesh()->GetRenderData();
-        if (!RD) continue;
-
-        // 세팅: 월드 매트릭스만 업데이트
-        UpdateObjectConstant(Comp->GetWorldMatrix(), Comp->EncodeUUID() / 255.0f, false);
-
-        // 실제로 Depth-only 드로우
-        RenderPrimitive(RD,
-            Comp->GetStaticMesh()->GetMaterials(),
-            Comp->GetOverrideMaterials(),
-            Comp->GetselectedSubMeshIndex());
-    }
-
-    // 6) DSV 언바인드 및 상태 해제
-    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
-    D3D11_VIEWPORT vp{};
-    vp.TopLeftX = 0;
-    vp.TopLeftY = 0;
-    vp.Width = ViewportResource->GetD3DViewport().Width;
-    vp.Height = ViewportResource->GetD3DViewport().Height;
-    vp.MinDepth = 0.0f;
-    vp.MaxDepth = 1.0f;
-
-    Graphics->DeviceContext->RSSetViewports(1, &vp);
-    ImGui::Image((ImTextureID)ShadowSRV, ImVec2((float)512, (float)512));
-
-    Graphics->DeviceContext->PSSetShaderResources(5, 1, &ShadowSRV);
-    Graphics->DeviceContext->PSSetSamplers(5, 1, &ShadowSampler);
-    Graphics->DeviceContext->RSSetState(nullptr);
-
+void FDirectionalShadowMap::SetShadowSampler(int sStart)
+{
+    Graphics->DeviceContext->PSSetSamplers(sStart, 1, &ShadowSampler);
 }
 
 void FDirectionalShadowMap::ChangeViewportSize()
@@ -361,7 +327,7 @@ void FDirectionalShadowMap::CreateDepthTexture()
 
 }
 
-void FDirectionalShadowMap::PrepareRender(FEditorViewportClient* Viewport)
+void FDirectionalShadowMap::PrepareRender(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
     CollectStaticMeshes();
     CollectDirectionalLights();
@@ -377,4 +343,9 @@ void FDirectionalShadowMap::PrepareRender(FEditorViewportClient* Viewport)
         }
     }
 
+}
+
+ID3D11ShaderResourceView* FDirectionalShadowMap::GetShadowViewSRV()
+{
+    return ShadowSRV;
 }

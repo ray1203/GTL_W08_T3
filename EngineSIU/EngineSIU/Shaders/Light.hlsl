@@ -11,10 +11,6 @@
 #define DIRECTIONAL_LIGHT   3
 #define AMBIENT_LIGHT       4
 
-SamplerComparisonState ShadowSampler1 : register(s5);
-
-Texture2D<float> ShadowTexture : register(t5);
-
 #define PI 3.14159
 
 struct FAmbientLightInfo
@@ -74,6 +70,7 @@ cbuffer Lighting : register(b0)
 
 Texture2D ShadowMap : register(t10);
 TextureCube<float> ShadowCube : register(t11);
+Texture2D<float> ShadowTexture : register(t12);
 SamplerComparisonState ShadowSampler : register(s10);
 
 // Point Light 의 6개 face 뷰·프로젝션 행렬과 바이어스
@@ -386,7 +383,7 @@ float GetLightFromShadowMap(int idx, float3 WorldPos, float3 WorldNorm)
         {
             float2 off = uv + float2(i, j) * (1.0f / 2048);
             float s = InRange(off.x, 0, 1) && InRange(off.y, 0, 1)
-                ? ShadowTexture.SampleCmpLevelZero(ShadowSampler, off, dist).r
+                ? ShadowMap.SampleCmpLevelZero(ShadowSampler, off, dist).r
                 : 1.0f;
             sum += s * kernel[i + R][j + R];
         }

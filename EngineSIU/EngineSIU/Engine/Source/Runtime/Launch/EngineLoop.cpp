@@ -129,8 +129,8 @@ void FEngineLoop::Tick()
 
         GEngine->Tick(DeltaTime);
         LevelEditor->Tick(DeltaTime);
-        UIMgr->BeginFrame();
         Render();
+        UIMgr->BeginFrame();
         UnrealEditor->Render();
 
         Console::GetInstance().Draw();

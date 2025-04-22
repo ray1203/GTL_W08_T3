@@ -41,14 +41,17 @@ public:
     void UpdateViewProjMatrices(FEditorViewportClient& ViewCamera, const FVector& LightDir);
     void ChangeViewportSize();
     void CreateDepthTexture();
-    void PrepareRender(FEditorViewportClient* Viewport);
-    void PrepareRenderState(FEditorViewportClient* Viewport);
+    void PrepareRender(const std::shared_ptr<FEditorViewportClient>& Viewport);
+    void PrepareRenderState();
     void CollectStaticMeshes();
     void CollectDirectionalLights();
     void UpdateObjectConstant(const FMatrix& WorldMatrix, const FVector4& UUIDColor, bool bIsSelected) const;
-    void RenderPrimitive(OBJ::FStaticMeshRenderData* RenderData, TArray<FStaticMaterial*> Materials, TArray<UMaterial*> OverrideMaterials, int SelectedSubMeshIndex) const;
-    void Render(FEditorViewportClient* Viewport);
- 
+    void RenderShadowMap();
+    void SetShadowResource(int tStart);
+    void SetShadowSampler(int sStart);
+
+    ID3D11ShaderResourceView* GetShadowViewSRV();
+private:
     ID3D11Texture2D* DepthStencilTexture = nullptr;
 
     ID3D11DepthStencilView* ShadowDSV = nullptr;
@@ -56,7 +59,6 @@ public:
     ID3D11SamplerState* ShadowSampler = nullptr;
 
     float ShadowResolution = 4096;
-private:
     ID3D11RasterizerState* ShadowRasterizer;
     ID3D11DepthStencilState* dsState;
     TArray<UDirectionalLightComponent*> DirectionalLights;
@@ -66,7 +68,7 @@ private:
     FGraphicsDevice* Graphics = nullptr;
     FDXDShaderManager* ShaderManager = nullptr;
 
-    ID3D11VertexShader* LightDepthOnlyVS;
-    ID3D11InputLayout* InputLayoutLightDepthOnly;
-
+    ID3D11VertexShader* DepthVS;
+    ID3D11InputLayout* DepthIL;
+    FMatrix DirectionalLightViewProjMatrix;
 };
