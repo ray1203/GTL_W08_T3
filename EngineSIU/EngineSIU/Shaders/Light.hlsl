@@ -11,6 +11,8 @@
 #define DIRECTIONAL_LIGHT   3
 #define AMBIENT_LIGHT       4
 
+#define PI 3.14159
+
 struct FAmbientLightInfo
 {
     float4 AmbientColor;
@@ -181,8 +183,71 @@ float SamplePointShadow(float3 ToLight, float3 worldPos)
     proj.xyz /= proj.w;
     
     float depth = proj.z - ShadowBias;
+    float shadow = 0.0f;
     
-    return ShadowCube.SampleCmpLevelZero(ShadowSampler, normalize(-1.0f * ToLight), depth);
+    // Begin Sphere PCF Sampling
+    float3 sampleDirections[20];
+    
+    for (int i = 0; i < 20; i++)
+    {
+        float offset = 0.002 * (i / 20.0);
+        
+        float theta = i * (PI * 2) / 20;
+        sampleDirections[i] = normalize(ToLight) +
+                             float3(cos(theta) * offset,
+                                    sin(theta) * offset,
+                                    (i % 5) * 0.001 - 0.002);
+    }
+    
+    for (int i = 0; i < 20; i++)
+    {
+        shadow += ShadowCube.SampleCmpLevelZero(
+            ShadowSampler,
+            normalize(-1.0f * sampleDirections[i]),
+            depth
+        );
+    }
+    
+    return shadow / 20.0;
+    
+    // End Sphere PCF Sampling
+    
+    //// Begin Disk PCF Sampling
+    //float diskRadius = 0.005;
+    
+    //float3 lightDir = normalize(ToLight);
+    //float3 tangent, bitangent;
+    
+    //if (abs(lightDir.x) < 0.99)
+    //    tangent = normalize(cross(float3(1, 0, 0), lightDir));
+    //else
+    //    tangent = normalize(cross(float3(0, 1, 0), lightDir));
+        
+    //bitangent = normalize(cross(lightDir, tangent));
+    
+    //for (int i = 0; i < 12; i++)
+    //{
+    //    float angle = i * (PI * 2) / 12;
+    //    float r = diskRadius * (i % 3) / 3.0; 
+        
+    //    float3 offset = tangent * (r * cos(angle)) +
+    //                   bitangent * (r * sin(angle));
+                        
+    //    float3 sampleDir = normalize(lightDir + offset);
+        
+    //    float4 proj = mul(float4(worldPos, 1), PointLightViewProj[faceIdx]);
+    //    proj.xyz /= proj.w;
+    //    float depth = proj.z - ShadowBias;
+        
+    //    shadow += ShadowCube.SampleCmpLevelZero(
+    //        ShadowSampler,
+    //        -sampleDir,
+    //        depth
+    //    );
+    //}
+    
+    //return shadow / 12.0;
+    //// End Disk PCF Sampling
 }
 
 float4 PointLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
