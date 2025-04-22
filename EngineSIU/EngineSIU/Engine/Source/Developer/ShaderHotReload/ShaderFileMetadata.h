@@ -2,6 +2,7 @@
 #include <filesystem>
 
 #include "Container/Array.h"
+#include "Container/Pair.h"
 #include "Container/String.h"
 
 
@@ -36,6 +37,9 @@ struct FShaderFileMetadata
 
     // 셰이더 호출 시작지점
     FString EntryPoint;
+
+    // 셰이더 Defines
+    TArray<TPair<FString, FString>> Defines;
 
     // 파일 경로, 마지막으로 수정된 시간
     FFileMetadata FileMetadata;
