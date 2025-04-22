@@ -302,6 +302,8 @@
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderCompileUtility.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderFileMetadata.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderMetadataPtr.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Container\Queue.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Container\TSafeQueue.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\AmbientLightActor.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\LevelEditor\SlateAppMessageHandler.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\LevelEditor\SLevelEditor.h" />
