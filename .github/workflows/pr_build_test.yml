@@ -7,6 +7,12 @@ on:
     branches:
       - main  # main 브랜치에 대한 PR만 트리거
   workflow_dispatch: # 수동으로 트리거할 수 있도록 설정
+    inputs:
+      force_clean_build:
+        description: 'Force clean build (do not use cache)'
+        required: false
+        type: boolean
+        default: false # 기본값은 캐시 사용 (false)
 
 env:
   # Path to the solution file relative to the root of the project.
@@ -25,6 +31,7 @@ env:
 
 permissions:
   contents: read
+  actions: write # actions/cache@v4 사용을 위해 필요
 
 jobs:
   build:
@@ -39,6 +46,8 @@ jobs:
     # IntDir 경로를 캐싱합니다.
     - name: Cache MSBuild intermediate files
       uses: actions/cache@v4
+      # workflow_dispatch 트리거 시 force_clean_build 입력이 true가 아닐 때만 실행
+      if: github.event.inputs.force_clean_build != 'true'
       with:
         # 캐싱할 경로: $(SolutionDir)Intermediate/Build/ 를 기반으로 설정
         # 특정 플랫폼/설정만 캐싱하려면 경로를 더 구체적으로 지정할 수 있습니다.
