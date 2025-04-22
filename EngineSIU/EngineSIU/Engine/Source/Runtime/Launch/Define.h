@@ -280,9 +280,9 @@ struct FBoundingBox
         FVector row1(worldMatrix.M[1][0], worldMatrix.M[1][1], worldMatrix.M[1][2]);
         FVector row2(worldMatrix.M[2][0], worldMatrix.M[2][1], worldMatrix.M[2][2]);
 
-        FVector::GetAbs(row0);
-        FVector::GetAbs(row1);
-        FVector::GetAbs(row2);
+        row0 = FVector::GetAbs(row0);
+        row1 = FVector::GetAbs(row1);
+        row2 = FVector::GetAbs(row2);
 
         float worldExtentX = row0.Dot(extents);
         float worldExtentY = row1.Dot(extents);
