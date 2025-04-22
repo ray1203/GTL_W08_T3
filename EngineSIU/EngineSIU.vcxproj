@@ -167,6 +167,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\BackgroundShaderCompileData.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\BackgroundShaderCompile.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderCompileUtility.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderFileMetadata.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderMetadataPtr.cpp" />
@@ -295,6 +297,8 @@
     <ClCompile Include="EngineSIU\LightGridGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\BackgroundShaderCompileData.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\BackgroundShaderCompile.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderCompileUtility.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderFileMetadata.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderHotReload\ShaderMetadataPtr.h" />
