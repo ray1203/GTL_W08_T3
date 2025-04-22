@@ -354,18 +354,19 @@ bool FDXDShaderManager::HandleHotReloadShader()
         FShaderFileMetadata& Data = Vs.Value.GetMetadata();
         if (Data.IsOutdatedAndUpdateLastTime())
         {
-            ID3DBlob* VertexShaderCSO = nullptr;
-            ID3DBlob* ErrorBlob = nullptr;
-
             // 셰이더 컴파일
-            FShaderIncludeHandler IncludesHandler;
-            HRESULT Hr = D3DCompileFromFile(
-                Data.FileMetadata.FilePath.c_str(), nullptr, &IncludesHandler, *Data.EntryPoint,
-                "vs_5_0", 0, 0, &VertexShaderCSO, &ErrorBlob
-            );
+            const FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
+                .FilePath = Data.FileMetadata.FilePath,
+                .Defines = Data.Defines,
+                .EntryPoint = Data.EntryPoint,
+                .Type = EShaderType::VertexShader,
+            });
+
+            ID3DBlob* VertexShaderCSO = CompileResult.CsoBlob;
+            ID3DBlob* ErrorBlob = CompileResult.ErrorBlob;
 
             // 셰이더 컴파일 실패시
-            if (FAILED(Hr))
+            if (!CompileResult.bSuccess)
             {
                 if (ErrorBlob)
                 {
@@ -376,7 +377,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
             }
 
             ID3D11VertexShader* NewVertexShader;
-            Hr = DXDDevice->CreateVertexShader(
+            HRESULT Hr = DXDDevice->CreateVertexShader(
                 VertexShaderCSO->GetBufferPointer(),
                 VertexShaderCSO->GetBufferSize(),
                 nullptr, &NewVertexShader
@@ -395,7 +396,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
 
             // 새로운 셰이더 할당
             Vs.Value = NewVertexShader;
-            Data.IncludePaths = IncludesHandler.GetIncludePaths();
+            Data.IncludePaths = CompileResult.IncludePaths;
 
             VertexShaderCSO->Release();
             bIsHotReloadShader = true;
@@ -407,18 +408,19 @@ bool FDXDShaderManager::HandleHotReloadShader()
         FShaderFileMetadata& Data = Ps.Value.GetMetadata();
         if (Data.IsOutdatedAndUpdateLastTime())
         {
-            ID3DBlob* PixelShaderCSO = nullptr;
-            ID3DBlob* ErrorBlob = nullptr;
-
             // 셰이더 컴파일
-            FShaderIncludeHandler IncludesHandler;
-            HRESULT Hr = D3DCompileFromFile(
-                Data.FileMetadata.FilePath.c_str(), nullptr, &IncludesHandler, *Data.EntryPoint,
-                "ps_5_0", 0, 0, &PixelShaderCSO, &ErrorBlob
-            );
+            FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
+                .FilePath = Data.FileMetadata.FilePath,
+                .Defines = Data.Defines,
+                .EntryPoint = Data.EntryPoint,
+                .Type = EShaderType::PixelShader,
+            });
+
+            ID3DBlob* PixelShaderCSO = CompileResult.CsoBlob;
+            ID3DBlob* ErrorBlob = CompileResult.ErrorBlob;
 
             // 셰이더 컴파일 실패시
-            if (FAILED(Hr))
+            if (!CompileResult.bSuccess)
             {
                 if (ErrorBlob)
                 {
@@ -429,7 +431,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
             }
 
             ID3D11PixelShader* NewPixelShader;
-            Hr = DXDDevice->CreatePixelShader(
+            HRESULT Hr = DXDDevice->CreatePixelShader(
                 PixelShaderCSO->GetBufferPointer(),
                 PixelShaderCSO->GetBufferSize(),
                 nullptr, &NewPixelShader
@@ -448,7 +450,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
 
             // 새로운 셰이더 할당
             Ps.Value = NewPixelShader;
-            Data.IncludePaths = IncludesHandler.GetIncludePaths();
+            Data.IncludePaths = CompileResult.IncludePaths;
 
             PixelShaderCSO->Release();
             bIsHotReloadShader = true;

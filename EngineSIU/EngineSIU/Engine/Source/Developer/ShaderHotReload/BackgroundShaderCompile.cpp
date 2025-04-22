@@ -56,6 +56,7 @@ FShaderCompileResult FBackgroundShaderCompile::Compile(const FShaderCompileJob& 
     {
         Defines.Emplace(*Define.Key, *Define.Value);
     }
+    Defines.Emplace(nullptr, nullptr);
 
     UINT ShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 #ifdef _DEBUG
