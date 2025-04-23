@@ -168,7 +168,7 @@ HRESULT FResourceMgr::LoadTextureFromFile(ID3D11Device* device, ID3D11DeviceCont
 
     textureMap[name] = std::make_shared<FTexture>(TextureSRV, Texture2D, SamplerState, name, width, height);
 
-    Console::GetInstance().AddLog(LogLevel::Warning, "Texture File Load Successs");
+    FConsole::GetInstance().AddLog(ELogLevel::Warning, "Texture File Load Successs");
     return hr;
 }
 
@@ -222,7 +222,7 @@ HRESULT FResourceMgr::LoadTextureFromDDS(ID3D11Device* device, ID3D11DeviceConte
 
     textureMap[name] = std::make_shared<FTexture>(textureView, texture2D, SamplerState, name, width, height);
 
-    Console::GetInstance().AddLog(LogLevel::Warning, "Texture File Load Successs");
+    FConsole::GetInstance().AddLog(ELogLevel::Warning, "Texture File Load Successs");
 
     return hr;
 }

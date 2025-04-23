@@ -46,7 +46,7 @@ void AEditorPlayer::Input()
             {
                 if (obj->GetUUID() != UUID) continue;
 
-                UE_LOG(LogLevel::Display, *obj->GetName());
+                UE_LOG(ELogLevel::Display, *obj->GetName());
             }
             */
 

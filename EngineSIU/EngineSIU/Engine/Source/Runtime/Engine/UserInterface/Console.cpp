@@ -107,7 +107,7 @@ void Console::Clear() {
 }
 
 // 로그 추가
-void Console::AddLog(LogLevel level, const char* fmt, ...)
+void FConsole::AddLog(ELogLevel level, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -121,12 +121,12 @@ void Console::AddLog(LogLevel level, const char* fmt, ...)
     va_end(args);
 }
 
-// void Console::AddLog(LogLevel level, const char* fmt, va_list args)
+// void FConsole::AddLog(ELogLevel Level, const char* fmt, va_list args)
 // {
 //     char buf[1024];
 //     vsnprintf(buf, sizeof(buf), fmt, args);
 //
-//     items.Emplace(level, std::string(buf));
+//     items.Emplace(Level, std::string(buf));
 //     scrollToBottom = true;
 // }
 
@@ -193,18 +193,23 @@ void Console::Draw() {
         if (!filter.PassFilter(*entry.message)) continue;
 
         // 로그 수준에 맞는 필터링
-        if ((entry.level == LogLevel::Display && !showLogTemp) ||
-            (entry.level == LogLevel::Warning && !showWarning) ||
-            (entry.level == LogLevel::Error && !showError)) {
+        if ((entry.Level == ELogLevel::Display && !showLogTemp) ||
+            (entry.Level == ELogLevel::Warning && !showWarning) ||
+            (entry.Level == ELogLevel::Error && !showError))
+        {
             continue;
         }
 
         // 색상 지정
         ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-        switch (entry.level) {
-        case LogLevel::Display: color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); break;  // 기본 흰색
-        case LogLevel::Warning: color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f); break; // 노란색
-        case LogLevel::Error:   color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f); break; // 빨간색
+        switch (entry.Level)
+        {
+        case ELogLevel::Display: color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+            break; // 기본 흰색
+        case ELogLevel::Warning: color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+            break; // 노란색
+        case ELogLevel::Error: color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+            break; // 빨간색
         }
 
         ImGui::TextColored(color, "%s", *entry.message);
@@ -218,13 +223,7 @@ void Console::Draw() {
     ImGui::Separator();
 
     // 입력창
-    if (ImGui::InputText("Input", inputBuf, IM_ARRAYSIZE(inputBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
-        if (inputBuf[0]) {
-            AddLog(LogLevel::Display, ">> %s", inputBuf);
-            std::string command(inputBuf);
-            ExecuteCommand(command);
-            history.Add(std::string(inputBuf));
-            historyPos = -1;
+            AddLog(ELogLevel::Display, ">> %s", inputBuf);
             scrollToBottom = true; // 자동 스크롤
         }
         inputBuf[0] = '\0';
@@ -243,18 +242,18 @@ void Console::ExecuteCommand(const std::string& command)
     }
     else if (command == "help")
     {
-        AddLog(LogLevel::Display, "Available commands:");
-        AddLog(LogLevel::Display, " - clear: Clears the console");
-        AddLog(LogLevel::Display, " - help: Shows available commands");
-        AddLog(LogLevel::Display, " - stat fps: Toggle FPS display");
-        AddLog(LogLevel::Display, " - stat memory: Toggle Memory display");
-        AddLog(LogLevel::Display, " - stat none: Hide all stat overlays");
+        AddLog(ELogLevel::Display, "Available commands:");
+        AddLog(ELogLevel::Display, " - clear: Clears the console");
+        AddLog(ELogLevel::Display, " - help: Shows available commands");
+        AddLog(ELogLevel::Display, " - stat fps: Toggle FPS display");
+        AddLog(ELogLevel::Display, " - stat memory: Toggle Memory display");
+        AddLog(ELogLevel::Display, " - stat none: Hide all stat overlays");
     }
     else if (command.starts_with("stat ")) { // stat 명령어 처리
         overlay.ToggleStat(command);
     }
     else {
-        AddLog(LogLevel::Error, "Unknown command: %s", command.c_str());
+        AddLog(ELogLevel::Error, "Unknown command: %s", command.c_str());
     }
 }
 

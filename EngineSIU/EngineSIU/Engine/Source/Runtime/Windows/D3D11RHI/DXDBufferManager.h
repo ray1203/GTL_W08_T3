@@ -270,7 +270,7 @@ HRESULT FDXDBufferManager::CreateBufferGeneric(const FString& KeyName, T* data, 
     HRESULT hr = DXDevice->CreateBuffer(&desc, data ? &initData : nullptr, &buffer);
     if (FAILED(hr))
     {
-        UE_LOG(LogLevel::Error, TEXT("Error Create Constant Buffer!"));
+        UE_LOG(ELogLevel::Error, TEXT("Error Create Constant Buffer!"));
         return hr;
     }
 
@@ -284,7 +284,7 @@ void FDXDBufferManager::UpdateConstantBuffer(const FString& key, const T& data) 
     ID3D11Buffer* buffer = GetConstantBuffer(key);
     if (!buffer)
     {
-        UE_LOG(LogLevel::Error, TEXT("UpdateConstantBuffer 호출: 키 %s에 해당하는 buffer가 없습니다."), *key);
+        UE_LOG(ELogLevel::Error, TEXT("UpdateConstantBuffer 호출: 키 %s에 해당하는 buffer가 없습니다."), *key);
         return;
     }
 
@@ -292,7 +292,7 @@ void FDXDBufferManager::UpdateConstantBuffer(const FString& key, const T& data) 
     HRESULT hr = DXDeviceContext->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
     if (FAILED(hr))
     {
-        UE_LOG(LogLevel::Error, TEXT("Buffer Map 실패, HRESULT: 0x%X"), hr);
+        UE_LOG(ELogLevel::Error, TEXT("Buffer Map 실패, HRESULT: 0x%X"), hr);
         return;
     }
 
@@ -305,7 +305,7 @@ void FDXDBufferManager::UpdateDynamicVertexBuffer(const FString& KeyName, const 
 {
     if (!VertexBufferPool.Contains(KeyName))
     {
-        UE_LOG(LogLevel::Error, TEXT("UpdateDynamicVertexBuffer 호출: 키 %s에 해당하는 버텍스 버퍼가 없습니다."), *KeyName);
+        UE_LOG(ELogLevel::Error, TEXT("UpdateDynamicVertexBuffer 호출: 키 %s에 해당하는 버텍스 버퍼가 없습니다."), *KeyName);
         return;
     }
     FVertexInfo vbInfo = VertexBufferPool[KeyName];
@@ -314,7 +314,7 @@ void FDXDBufferManager::UpdateDynamicVertexBuffer(const FString& KeyName, const 
     HRESULT hr = DXDeviceContext->Map(vbInfo.VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
     if (FAILED(hr))
     {
-        UE_LOG(LogLevel::Error, TEXT("VertexBuffer Map 실패, HRESULT: 0x%X"), hr);
+        UE_LOG(ELogLevel::Error, TEXT("VertexBuffer Map 실패, HRESULT: 0x%X"), hr);
         return;
     }
 

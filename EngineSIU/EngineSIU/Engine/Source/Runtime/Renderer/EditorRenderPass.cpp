@@ -570,7 +570,7 @@ void FEditorRenderPass::UdpateConstantbufferAABBInstanced(TArray<FConstantBuffer
     {
         // 최대개수 초과
         // 코드 잘못짠거 아니면 오면안됨
-        UE_LOG(LogLevel::Error, "Invalid Buffer Num");
+        UE_LOG(ELogLevel::Error, "Invalid Buffer Num");
         return;
     }
     if (Resources.ConstantBuffers.AABB11)
@@ -644,7 +644,7 @@ void FEditorRenderPass::UdpateConstantbufferPointlightInstanced(TArray<FConstant
     {
         // 최대개수 초과
         // 코드 잘못짠거 아니면 오면안됨
-        UE_LOG(LogLevel::Error, "Invalid Buffer Num");
+        UE_LOG(ELogLevel::Error, "Invalid Buffer Num");
         return;
     }
     if (Resources.ConstantBuffers.Sphere11)
@@ -722,7 +722,7 @@ void FEditorRenderPass::UdpateConstantbufferSpotlightInstanced(TArray<FConstantB
     {
         // 최대개수 초과
         // 코드 잘못짠거 아니면 오면안됨
-        UE_LOG(LogLevel::Error, "Invalid Buffer Num");
+        UE_LOG(ELogLevel::Error, "Invalid Buffer Num");
         return;
     }
     if (Resources.ConstantBuffers.Cone11)

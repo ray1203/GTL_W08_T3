@@ -363,7 +363,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
             if (ErrorBlob)
             {
                 UE_LOG(
-                    LogLevel::Error,
+                    ELogLevel::Error,
                     "[Shader Hot Reload] %s Compile Failed %s",
                     ToString(CompletedResult.Type),
                     ErrorBlob->GetBufferPointer()
@@ -387,7 +387,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
             // VS 만들기 실패시
             if (FAILED(Hr))
             {
-                UE_LOG(LogLevel::Error, "[Shader Hot Reload] Failed CreateVertexShader");
+                UE_LOG(ELogLevel::Error, "[Shader Hot Reload] Failed CreateVertexShader");
                 CsoBlob->Release();
                 break;
             }
@@ -416,7 +416,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
             // PS 만들기 실패시
             if (FAILED(Hr))
             {
-                UE_LOG(LogLevel::Error, "[Shader Hot Reload] Failed CreatePixelShader");
+                UE_LOG(ELogLevel::Error, "[Shader Hot Reload] Failed CreatePixelShader");
                 CsoBlob->Release();
                 break;
             }
@@ -446,7 +446,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
         {
             std::thread Th{[&Vs, &Data, &CompileResultsQueue = this->CompileResultsQueue]
             {
-                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Vs.Key));
+                UE_LOG(ELogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Vs.Key));
                 const FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
                     .ShaderKey = Vs.Key,
                     .FilePath = Data.FileMetadata.FilePath,
@@ -455,7 +455,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
                     .Type = EShaderType::VertexShader,
                 });
                 CompileResultsQueue.Enqueue(CompileResult);
-                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Vs.Key));
+                UE_LOG(ELogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Vs.Key));
             }};
             Th.detach();
         }
@@ -468,7 +468,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
         {
             std::thread Th{[&Ps, &Data, &CompileResultsQueue = this->CompileResultsQueue]
             {
-                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Ps.Key));
+                UE_LOG(ELogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Ps.Key));
                 const FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
                     .ShaderKey = Ps.Key,
                     .FilePath = Data.FileMetadata.FilePath,
@@ -477,7 +477,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
                     .Type = EShaderType::PixelShader,
                 });
                 CompileResultsQueue.Enqueue(CompileResult);
-                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Ps.Key));
+                UE_LOG(ELogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Ps.Key));
             }};
             Th.detach();
         }

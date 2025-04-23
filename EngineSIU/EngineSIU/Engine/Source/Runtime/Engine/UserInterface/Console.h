@@ -8,7 +8,7 @@
 #define UE_LOG Console::GetInstance().AddLog
 
 
-enum class LogLevel : uint8
+enum class ELogLevel : uint8
 {
     Display,
     Warning,
@@ -41,8 +41,8 @@ public:
     static Console& GetInstance(); // 참조 반환으로 변경
 
     void Clear();
-    void AddLog(LogLevel level, const char* fmt, ...);
-    // void AddLog(LogLevel level, const char* fmt, va_list args);
+    void AddLog(ELogLevel level, const char* fmt, ...);
+    // void AddLog(ELogLevel level, const char* fmt, va_list args);
     void Draw();
     void ExecuteCommand(const std::string& command);
     void OnResize(HWND hWnd);
@@ -62,7 +62,7 @@ public:
 public:
     struct LogEntry
     {
-        LogLevel level;
+        ELogLevel Level;
         FString message;
     };
 

@@ -286,7 +286,7 @@ void FEditorViewportClient::ResizeViewport(FRect Top, FRect Bottom, FRect Left, 
     }
     else
     {
-        UE_LOG(LogLevel::Error, "Viewport is nullptr");
+        UE_LOG(ELogLevel::Error, "Viewport is nullptr");
     }
     UpdateProjectionMatrix();
     UpdateViewMatrix();
