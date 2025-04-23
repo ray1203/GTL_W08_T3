@@ -262,12 +262,10 @@ ID3D11ShaderResourceView* FSpotLightShadowMap::GetShadowSRV(int index)
     return SpotLightShadowResources[index].ShadowSRV;
 }
 
-void FSpotLightShadowMap::RenderLinearDepth()
+void FSpotLightShadowMap::RenderLinearDepth(int index)
 {
-    // 일단 0번 Render
-    // TODO 나중에 고치기
 
-    if (SpotLightShadowResources[0].DepthStencilBuffer == nullptr) return;
+    if (SpotLightShadowResources[index].DepthStencilBuffer == nullptr) return;
 
     // ─── 0) 기존 RenderTargets, DepthStencilView, Viewports 백업 ───
     ID3D11RenderTargetView* oldRTVs[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = {};
@@ -298,12 +296,12 @@ void FSpotLightShadowMap::RenderLinearDepth()
     Graphics->DeviceContext->PSSetShader(DepthVisualizePS, nullptr, 0);
 
     // (D) 원본 Depth SRV 와 리니어 샘플러 바인딩
-    Graphics->DeviceContext->PSSetShaderResources(0, 1, &SpotLightShadowResources[0].ShadowSRV);
+    Graphics->DeviceContext->PSSetShaderResources(0, 1, &SpotLightShadowResources[index].ShadowSRV);
     Graphics->DeviceContext->PSSetSamplers(0, 1, &LinearSampler);
 
     // (E) 카메라(라이트) 매트릭스 및 Near/Far/Gamma 상수 업데이트
     FDepthMapData depthMapData;
-    depthMapData.ViewProj = SpotLightShadowResources[0].SpotLightViewProjMatrix;           // light ViewProj
+    depthMapData.ViewProj = SpotLightShadowResources[index].SpotLightViewProjMatrix;           // light ViewProj
     depthMapData.Params.X = 0.1f;                                     // Near plane
     // TODO Light의 범위를 저장해 뒀다가 Far Plane 값에 적용 필요함
     // 일단 임시로 20 값을 넣어 뒀음

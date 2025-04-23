@@ -92,7 +92,7 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
 
     FullscreenVS = ShaderManager->GetVertexShaderByKey(L"FullScreenVS");
     FullscreenIL = ShaderManager->GetInputLayoutByKey(L"FullScreenVS");
-    DepthVisualizePS = ShaderManager->GetPixelShaderByKey(L"DepthVisualizePS");
+    DepthVisualizePS = ShaderManager->GetPixelShaderByKey(L"DepthCubeVisualizePS");
 }
 
 void FPointLightShadowMap::PrepareRender()
@@ -290,11 +290,10 @@ void FPointLightShadowMap::DeletePointLightShadowCube(int num)
     }
 }
 
-void FPointLightShadowMap::RenderLinearDepth()
+void FPointLightShadowMap::RenderLinearDepth(int lightIndex, UPointLightComponent* pointLightComp)
 {
-    // 임시로 첫번째 PointLight 것이 나오도록 함 이후에 고른 것이 나오도록 변경 필요
 
-    if (PointLightShadowCubes[0].DepthCube == nullptr) return;
+    if (PointLightShadowCubes[lightIndex].DepthCube == nullptr) return;
 
     // ─── 0) 기존 RenderTargets, DepthStencilView, Viewports 백업 ───
     ID3D11RenderTargetView* oldRTVs[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = {};
@@ -308,43 +307,37 @@ void FPointLightShadowMap::RenderLinearDepth()
 
     BufferManager->BindConstantBuffer(TEXT("FDepthMapData"), 0, EShaderStage::Pixel);
     
-    for (uint32 face = 0; face < faceNum; ++face)
-    {
-        // (A) RTV 세팅 & 클리어
-        ID3D11RenderTargetView* rtvs[] = { ShadowViewRTV[face] };
-        Graphics->DeviceContext->OMSetRenderTargets(1, rtvs, nullptr);
-        const float clearColor[4] = { 0, 0, 0, 0 };
+    Graphics->DeviceContext->OMSetRenderTargets(6, ShadowViewRTV, nullptr);
+    const float clearColor[4] = { 0, 0, 0, 0 };
+    for (int face = 0; face < faceNum; face++) {
         Graphics->DeviceContext->ClearRenderTargetView(ShadowViewRTV[face], clearColor);
-
-        // (B) 뷰포트 설정
-        D3D11_VIEWPORT vp = { 0.f, 0.f, (float)ShadowMapSize, (float)ShadowMapSize, 0.f, 1.f };
-        Graphics->DeviceContext->RSSetViewports(1, &vp);
-
-        // (C) 풀스크린 파이프라인 바인딩
-        Graphics->DeviceContext->IASetInputLayout(FullscreenIL);
-        Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-        Graphics->DeviceContext->VSSetShader(FullscreenVS, nullptr, 0);
-        Graphics->DeviceContext->PSSetShader(DepthVisualizePS, nullptr, 0);
-
-        // (D) 원본 Depth SRV 와 리니어 샘플러 바인딩
-        // 큐브에 대한 대응 필요
-        Graphics->DeviceContext->PSSetShaderResources(0, 1, &PointLightShadowCubes[0].ShadowCubeSRV);
-        Graphics->DeviceContext->PSSetSamplers(0, 1, &LinearSampler);
-
-        // (E) 카메라(라이트) 매트릭스 및 Near/Far/Gamma 상수 업데이트
-        FDepthMapData depthMapData;
-        depthMapData.ViewProj = PointLightShadowCubes[0].PointLightViewProjMatrix[face];           // light ViewProj
-        depthMapData.Params.X = 0.1f;                                     // Near plane
-        // TODO Light의 범위를 저장해 뒀다가 Far Plane 값에 적용 필요함
-        // 일단 임시로 20 값을 넣어 뒀음
-        depthMapData.Params.Y = 20.0f;                   // Far plane = Light Radius
-        depthMapData.Params.Z = 1.0f / 2.2f;                             // invGamma (예: gamma=2.2)
-        depthMapData.Params.W = 0;
-        BufferManager->UpdateConstantBuffer(TEXT("FDepthMapData"), depthMapData);
-
-        // (F) 풀스크린 삼각형 드로우
-        Graphics->DeviceContext->Draw(3, 0);
     }
+
+    // (B) 뷰포트 설정
+    D3D11_VIEWPORT vp = { 0.f, 0.f, (float)ShadowMapSize, (float)ShadowMapSize, 0.f, 1.f };
+    Graphics->DeviceContext->RSSetViewports(1, &vp);
+
+    // (C) 풀스크린 파이프라인 바인딩
+    Graphics->DeviceContext->IASetInputLayout(FullscreenIL);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    Graphics->DeviceContext->VSSetShader(FullscreenVS, nullptr, 0);
+    Graphics->DeviceContext->PSSetShader(DepthVisualizePS, nullptr, 0);
+
+    // (D) 원본 Depth SRV 와 리니어 샘플러 바인딩
+    Graphics->DeviceContext->PSSetShaderResources(0, 1, &PointLightShadowCubes[lightIndex].ShadowCubeSRV);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &LinearSampler);
+
+    // (E) 카메라(라이트) 매트릭스 및 Near/Far/Gamma 상수 업데이트
+    FDepthMapData depthMapData;
+    depthMapData.Params.X = 0.1f;                                     // Near plane
+    depthMapData.Params.Y = pointLightComp->GetRadius();                   // Far plane = Light Radius
+    depthMapData.Params.Z = 1.0f / 2.2f;                             // invGamma (예: gamma=2.2)
+    depthMapData.Params.W = 0;
+    BufferManager->UpdateConstantBuffer(TEXT("FDepthMapData"), depthMapData);
+
+    // (F) 풀스크린 삼각형 드로우
+    Graphics->DeviceContext->Draw(3, 0);
+    
 
     // ─── 3) 이전 RTV/DSV & Viewports 복구 ───────────────
     Graphics->DeviceContext->RSSetViewports(numVP, oldVPs);

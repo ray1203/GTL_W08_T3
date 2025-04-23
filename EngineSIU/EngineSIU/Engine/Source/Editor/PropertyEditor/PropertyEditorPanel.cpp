@@ -109,7 +109,18 @@ void PropertyEditorPanel::Render()
     if(PickedActor)
         if (UPointLightComponent* pointlightObj = PickedActor->GetComponentByClass<UPointLightComponent>())
         {
-            GEngineLoop.Renderer.PointLightShadowMapPass->RenderLinearDepth();
+            int pointNum = 0;
+            for (const auto iter : TObjectRange<UPointLightComponent>())
+            {
+                if (iter != pointlightObj) {
+                    pointNum++;
+                }
+                else {
+                    break;
+                }
+            }
+
+            GEngineLoop.Renderer.PointLightShadowMapPass->RenderLinearDepth(pointNum, pointlightObj);
 
             // Shadow Depth Map 시각화
             TArray<ID3D11ShaderResourceView*> shaderSRVs = GEngineLoop.Renderer.PointLightShadowMapPass->GetShadowViewSRVArray();
@@ -158,7 +169,18 @@ void PropertyEditorPanel::Render()
     if (PickedActor)
         if (USpotLightComponent* SpotLightComp = PickedActor->GetComponentByClass<USpotLightComponent>())
         {
-            FEngineLoop::Renderer.SpotLightShadowMapPass->RenderLinearDepth();
+            int spotNum = 0;
+            for (const auto iter : TObjectRange<USpotLightComponent>())
+            {
+                if (iter != SpotLightComp) {
+                    spotNum++;
+                }
+                else {
+                    break;
+                }
+            }
+
+            FEngineLoop::Renderer.SpotLightShadowMapPass->RenderLinearDepth(spotNum);
 
             // Shadow Depth Map 시각화
             ID3D11ShaderResourceView* shaderSRV = FEngineLoop::Renderer.SpotLightShadowMapPass->GetShadowViewSRV();
@@ -229,9 +251,19 @@ void PropertyEditorPanel::Render()
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
-          
+            int directionalNum = 0;
+            for (const auto iter : TObjectRange<UDirectionalLightComponent>())
+            {
+                if (iter != dirlightObj) {
+                    directionalNum++;
+                }
+                else {
+                    break;
+                }
+            }
+
             // Shadow Depth Map 시각화
-            ID3D11ShaderResourceView* shaderSRV = FEngineLoop::Renderer.DirectionalShadowMap->GetShadowViewSRV(0);
+            ID3D11ShaderResourceView* shaderSRV = FEngineLoop::Renderer.DirectionalShadowMap->GetShadowViewSRV(directionalNum);
 
 
             if (ImGui::TreeNodeEx("DirectionalLight Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))

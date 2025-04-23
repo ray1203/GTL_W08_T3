@@ -31,7 +31,7 @@ public:
     void AddPointLightShadowCube(int num);
     void DeletePointLightShadowCube(int num);
 
-    void RenderLinearDepth();
+    void RenderLinearDepth(int lightIndex, UPointLightComponent* pointLightComp);
 
     TArray<ID3D11ShaderResourceView*> GetShadowViewSRVArray();
 

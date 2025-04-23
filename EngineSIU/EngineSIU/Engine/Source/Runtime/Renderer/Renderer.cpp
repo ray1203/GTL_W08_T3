@@ -268,6 +268,14 @@ void FRenderer::CreateDepthVisualShader()
     {
         return;
     }
+
+    hr = ShaderManager->AddPixelShader(L"DepthCubeVisualizePS", L"Shaders/DepthCubeVisualize.hlsl", "PS_DepthVisualize");
+    if (FAILED(hr))
+    {
+        return;
+    }
+
+
 }
 
 bool FRenderer::HandleHotReloadShader() const
