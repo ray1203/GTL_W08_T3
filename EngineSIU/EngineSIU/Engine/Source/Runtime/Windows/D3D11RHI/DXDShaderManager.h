@@ -5,8 +5,8 @@
 
 #include "Container/Map.h"
 #include "Container/TSafeQueue.h"
-#include "Developer/ShaderHotReload/BackgroundShaderCompileData.h"
-#include "Developer/ShaderHotReload/ShaderMetadataPtr.h"
+#include "Developer/ShaderCompileUtils/ShaderCompileData.h"
+#include "Developer/ShaderCompileUtils/ShaderMetadataPtr.h"
 
 
 struct FVertexShaderData
@@ -29,9 +29,8 @@ private:
 public:
     HRESULT AddVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint);
     HRESULT AddVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines);
-	HRESULT AddInputLayout(const std::wstring& Key, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize);
 
-	HRESULT AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize);
+    HRESULT AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize);
     HRESULT AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* Defines);
 
 	HRESULT AddPixelShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint);
@@ -43,6 +42,12 @@ public:
 
     /** 셰이더를 HotReload 합니다. */
     bool HandleHotReloadShader();
+
+    /** 모든 Vertex Shader의 크기를 가져옵니다. (Byte) */
+    uint32 GetTotalVertexShaderSize() const;
+
+    /** 모든 Pixel Shader의 크기를 가져옵니다. (Byte) */
+    uint32 GetTotalPixelShaderSize() const;
 
 private:
 	TMap<std::wstring, ID3D11InputLayout*> InputLayouts;

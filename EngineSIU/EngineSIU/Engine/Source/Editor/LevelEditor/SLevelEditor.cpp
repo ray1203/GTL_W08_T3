@@ -371,6 +371,8 @@ void SLevelEditor::Initialize(uint32 InEditorWidth, uint32 InEditorHeight)
 
     Handler->OnKeyDownDelegate.AddLambda([this](const FKeyEvent& InKeyEvent)
     {
+        const ImGuiIO& IO = ImGui::GetIO();
+        if (IO.WantCaptureKeyboard || IO.WantTextInput) return;
         ActiveViewportClient->InputKey(InKeyEvent);
     });
 

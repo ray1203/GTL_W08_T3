@@ -5,10 +5,10 @@
 #include "ImGUI/imgui.h"
 #include "PropertyEditor/IWindowToggleable.h"
 
-#define UE_LOG Console::GetInstance().AddLog
+#define UE_LOG FConsole::GetInstance().AddLog
 
 
-enum class LogLevel : uint8
+enum class ELogLevel : uint8
 {
     Display,
     Warning,
@@ -16,35 +16,41 @@ enum class LogLevel : uint8
 };
 
 
-class StatOverlay
+class FStatOverlay
 {
 public:
-    bool showFPS = false;
-    bool showMemory = false;
-    bool showRender = false;
+    // TODO: 추후에 enum 비트연산으로 바꿔도 좋을듯
+    union
+    {
+        struct  // NOLINT(clang-diagnostic-nested-anon-types)
+        {
+            uint8 bShowFps : 1;
+            uint8 bShowMemory : 1;
+            uint8 bShowLight : 1;
+            uint8 bShowRender : 1;
+        };
+        uint8 StatFlags = 0; // 기본적으로 다 끄기
+    };
 
-    void ToggleStat(const std::string& command);
-    void Render(ID3D11DeviceContext* context, UINT width, UINT height) const;
+    void ToggleStat(const std::string& Command);
+    void Render(ID3D11DeviceContext* Context, UINT InWidth, UINT InHeight) const;
 
 private:
-    float CalculateFPS() const;
-
-    void DrawTextOverlay(const std::string& text, int x, int y) const;
 };
 
-class Console : public IWindowToggleable
+class FConsole : public IWindowToggleable
 {
 private:
-    Console() = default;
+    FConsole() = default;
 
 public:
-    static Console& GetInstance(); // 참조 반환으로 변경
+    static FConsole& GetInstance(); // 참조 반환으로 변경
 
     void Clear();
-    void AddLog(LogLevel level, const char* fmt, ...);
-    // void AddLog(LogLevel level, const char* fmt, va_list args);
+    void AddLog(ELogLevel Level, const char* Fmt, ...);
+    // void AddLog(ELogLevel Level, const char* fmt, va_list args);
     void Draw();
-    void ExecuteCommand(const std::string& command);
+    void ExecuteCommand(const std::string& Command);
     void OnResize(HWND hWnd);
 
     virtual void Toggle() override
@@ -57,41 +63,34 @@ public:
         {
             bWasOpen = true;
         }
-    } // Toggle() 구현 
+    }
 
 public:
-    struct LogEntry
+    struct FLogEntry
     {
-        LogLevel level;
-        FString message;
+        ELogLevel Level;
+        FString Message;
     };
 
-    TArray<LogEntry> items;
-    TArray<FString> history;
-    int32 historyPos = -1;
-    char inputBuf[256] = "";
-    bool scrollToBottom = false;
+    TArray<FLogEntry> Items;
+    char InputBuf[256] = "";
+    bool bScrollToBottom = false;
 
-    ImGuiTextFilter filter; // 필터링을 위한 ImGuiTextFilter
+    ImGuiTextFilter Filter; // 필터링을 위한 ImGuiTextFilter
 
     // 추가된 멤버 변수들
-    bool showLogTemp = true; // LogTemp 체크박스
-    bool showWarning = true; // Warning 체크박스
-    bool showError = true;   // Error 체크박스
+    bool bShowLogTemp = true; // LogTemp 체크박스
+    bool bShowWarning = true; // Warning 체크박스
+    bool bShowError = true;   // Error 체크박스
 
     bool bWasOpen = true;
-    bool showFPS = false;
-    bool showMemory = false;
-    // 복사 방지
-    Console(const Console&) = delete;
-    Console& operator=(const Console&) = delete;
-    Console(Console&&) = delete;
-    Console& operator=(Console&&) = delete;
+    bool bShowFps = false;
+    bool bShowMemory = false;
 
-    StatOverlay overlay;
+    FStatOverlay Overlay;
 
 private:
     bool bExpand = true;
-    UINT width;
-    UINT height;
+    uint32 Width;
+    uint32 Height;
 };

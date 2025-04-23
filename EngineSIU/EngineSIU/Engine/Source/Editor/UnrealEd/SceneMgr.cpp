@@ -116,7 +116,7 @@ SceneData FSceneMgr::ParseSceneData(const FString& jsonStr)
         FString errorMessage = "Error parsing JSON: ";
         errorMessage += e.what();
 
-        UE_LOG(LogLevel::Error, "No Json file");
+        UE_LOG(ELogLevel::Error, "No Json file");
     }
 
     return sceneData;
@@ -126,7 +126,7 @@ FString FSceneMgr::LoadSceneFromFile(const FString& filename)
 {
     std::ifstream inFile(*filename);
     if (!inFile) {
-        UE_LOG(LogLevel::Error, "Failed to open file for reading: %s", *filename);
+        UE_LOG(ELogLevel::Error, "Failed to open file for reading: %s", *filename);
         return FString();
     }
 
@@ -135,7 +135,7 @@ FString FSceneMgr::LoadSceneFromFile(const FString& filename)
         inFile >> j; // JSON 파일 읽기
     }
     catch (const std::exception& e) {
-        UE_LOG(LogLevel::Error, "Error parsing JSON: %s", e.what());
+        UE_LOG(ELogLevel::Error, "Error parsing JSON: %s", e.what());
         return FString();
     }
 

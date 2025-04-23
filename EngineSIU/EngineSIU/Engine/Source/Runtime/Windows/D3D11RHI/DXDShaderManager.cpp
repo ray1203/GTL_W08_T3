@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "Container/TSafeQueue.h"
-#include "Developer/ShaderHotReload/BackgroundShaderCompile.h"
+#include "Developer/ShaderCompileUtils/ShaderCompile.h"
 #include "UserInterface/Console.h"
 
 
@@ -62,6 +62,7 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
     }
 
     ID3D11PixelShader* NewPixelShader;
+    const uint32 ShaderSize = static_cast<uint32>(PsBlob->GetBufferSize());
     hr = DXDDevice->CreatePixelShader(PsBlob->GetBufferPointer(), PsBlob->GetBufferSize(), nullptr, &NewPixelShader);
     if (PsBlob)
         PsBlob->Release();
@@ -71,6 +72,7 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
 
     PixelShaders[Key] = NewPixelShader;
     PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), nullptr));
+    PixelShaders[Key].SetShaderSize(ShaderSize);
 
     return S_OK;
 }
@@ -114,6 +116,7 @@ HRESULT FDXDShaderManager::AddPixelShader(
     }
 
     ID3D11PixelShader* NewPixelShader;
+    const uint32 ShaderSize = static_cast<uint32>(PsBlob->GetBufferSize());
     hr = DXDDevice->CreatePixelShader(PsBlob->GetBufferPointer(), PsBlob->GetBufferSize(), nullptr, &NewPixelShader);
 
     if (PsBlob)
@@ -124,6 +127,7 @@ HRESULT FDXDShaderManager::AddPixelShader(
 
     PixelShaders[Key] = NewPixelShader;
     PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
+    PixelShaders[Key].SetShaderSize(ShaderSize);
 
     return S_OK;
 }
@@ -150,6 +154,7 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     }
 
     ID3D11VertexShader* NewVertexShader;
+    const uint32 ShaderSize = static_cast<uint32>(VertexShaderCSO->GetBufferSize());
     hr = DXDDevice->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &NewVertexShader);
     if (FAILED(hr))
     {
@@ -159,6 +164,7 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
 
     VertexShaders[Key] = NewVertexShader;
     VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), nullptr));
+    VertexShaders[Key].SetShaderSize(ShaderSize);
 
     VertexShaderCSO->Release();
 
@@ -204,6 +210,7 @@ HRESULT FDXDShaderManager::AddVertexShader(
     }
 
     ID3D11VertexShader* NewVertexShader;
+    const uint32 ShaderSize = static_cast<uint32>(VertexShaderCSO->GetBufferSize());
     hr = DXDDevice->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &NewVertexShader);
     if (FAILED(hr))
     {
@@ -213,13 +220,9 @@ HRESULT FDXDShaderManager::AddVertexShader(
 
     VertexShaders[Key] = NewVertexShader;
     VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
+    VertexShaders[Key].SetShaderSize(ShaderSize);
     VertexShaderCSO->Release();
 
-    return S_OK;
-}
-
-HRESULT FDXDShaderManager::AddInputLayout(const std::wstring& Key, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize)
-{
     return S_OK;
 }
 
@@ -249,6 +252,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     }
 
     ID3D11VertexShader* NewVertexShader;
+    const uint32 ShaderSize = static_cast<uint32>(VertexShaderCSO->GetBufferSize());
     hr = DXDDevice->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &NewVertexShader);
     if (FAILED(hr))
     {
@@ -265,6 +269,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
 
     VertexShaders[Key] = NewVertexShader;
     VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), nullptr));
+    VertexShaders[Key].SetShaderSize(ShaderSize);
     InputLayouts[Key] = NewInputLayout;
 
     VertexShaderCSO->Release();
@@ -298,6 +303,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     }
 
     ID3D11VertexShader* NewVertexShader;
+    const uint32 ShaderSize = static_cast<uint32>(VertexShaderCSO->GetBufferSize());
     hr = DXDDevice->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &NewVertexShader);
     if (FAILED(hr))
     {
@@ -316,6 +322,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
 
     VertexShaders[Key] = NewVertexShader;
     VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
+    VertexShaders[Key].SetShaderSize(ShaderSize);
     InputLayouts[Key] = NewInputLayout;
     return S_OK;
 }
@@ -363,7 +370,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
             if (ErrorBlob)
             {
                 UE_LOG(
-                    LogLevel::Error,
+                    ELogLevel::Error,
                     "[Shader Hot Reload] %s Compile Failed %s",
                     ToString(CompletedResult.Type),
                     ErrorBlob->GetBufferPointer()
@@ -387,19 +394,20 @@ bool FDXDShaderManager::HandleHotReloadShader()
             // VS 만들기 실패시
             if (FAILED(Hr))
             {
-                UE_LOG(LogLevel::Error, "[Shader Hot Reload] Failed CreateVertexShader");
+                UE_LOG(ELogLevel::Error, "[Shader Hot Reload] Failed CreateVertexShader");
                 CsoBlob->Release();
                 break;
             }
 
             // 기존 셰이더 제거
-            auto& Vs = VertexShaders[CompletedResult.ShaderKey];
-            Vs->Release();
-            
+            auto& Shader = VertexShaders[CompletedResult.ShaderKey];
+            Shader->Release();
+
             // 새로운 셰이더 할당
-            Vs = NewVertexShader;
-            Vs.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
-            
+            Shader = NewVertexShader;
+            Shader.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
+            Shader.SetShaderSize(static_cast<uint32>(CsoBlob->GetBufferSize()));
+
             CsoBlob->Release();
             bIsHotReloadShader = true;
             break;
@@ -416,19 +424,20 @@ bool FDXDShaderManager::HandleHotReloadShader()
             // PS 만들기 실패시
             if (FAILED(Hr))
             {
-                UE_LOG(LogLevel::Error, "[Shader Hot Reload] Failed CreatePixelShader");
+                UE_LOG(ELogLevel::Error, "[Shader Hot Reload] Failed CreatePixelShader");
                 CsoBlob->Release();
                 break;
             }
 
             // 기존 셰이더 제거
-            auto& Vs = PixelShaders[CompletedResult.ShaderKey];
-            Vs->Release();
-            
+            auto& Shader = PixelShaders[CompletedResult.ShaderKey];
+            Shader->Release();
+
             // 새로운 셰이더 할당
-            Vs = NewPixelShader;
-            Vs.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
-            
+            Shader = NewPixelShader;
+            Shader.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
+            Shader.SetShaderSize(static_cast<uint32>(CsoBlob->GetBufferSize()));
+
             CsoBlob->Release();
             bIsHotReloadShader = true;
             break;
@@ -446,7 +455,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
         {
             std::thread Th{[&Vs, &Data, &CompileResultsQueue = this->CompileResultsQueue]
             {
-                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Vs.Key));
+                UE_LOG(ELogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Vs.Key));
                 const FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
                     .ShaderKey = Vs.Key,
                     .FilePath = Data.FileMetadata.FilePath,
@@ -455,7 +464,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
                     .Type = EShaderType::VertexShader,
                 });
                 CompileResultsQueue.Enqueue(CompileResult);
-                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Vs.Key));
+                UE_LOG(ELogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Vs.Key));
             }};
             Th.detach();
         }
@@ -468,7 +477,7 @@ bool FDXDShaderManager::HandleHotReloadShader()
         {
             std::thread Th{[&Ps, &Data, &CompileResultsQueue = this->CompileResultsQueue]
             {
-                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Ps.Key));
+                UE_LOG(ELogLevel::Display, "[Shader Hot Reload] Hot Reload %s...", *FString(Ps.Key));
                 const FShaderCompileResult CompileResult = FBackgroundShaderCompile::Compile({
                     .ShaderKey = Ps.Key,
                     .FilePath = Data.FileMetadata.FilePath,
@@ -477,10 +486,30 @@ bool FDXDShaderManager::HandleHotReloadShader()
                     .Type = EShaderType::PixelShader,
                 });
                 CompileResultsQueue.Enqueue(CompileResult);
-                UE_LOG(LogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Ps.Key));
+                UE_LOG(ELogLevel::Display, "[Shader Hot Reload] Finish Hot Reload %s", *FString(Ps.Key));
             }};
             Th.detach();
         }
     }
     return bIsHotReloadShader;
+}
+
+uint32 FDXDShaderManager::GetTotalVertexShaderSize() const
+{
+    uint32 TotalSize = 0;
+    for (auto& Vs : VertexShaders)
+    {
+        TotalSize += Vs.Value.GetShaderSize();
+    }
+    return TotalSize;
+}
+
+uint32 FDXDShaderManager::GetTotalPixelShaderSize() const
+{
+    uint32 TotalSize = 0;
+    for (auto& Ps : PixelShaders)
+    {
+        TotalSize += Ps.Value.GetShaderSize();
+    }
+    return TotalSize;
 }

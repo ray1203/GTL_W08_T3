@@ -11,7 +11,7 @@
 ATransformGizmo::ATransformGizmo()
 {
     static int a = 0;
-    UE_LOG(LogLevel::Error, "Gizmo Created %d", a++);
+    UE_LOG(ELogLevel::Error, "Gizmo Created %d", a++);
     FManagerOBJ::CreateStaticMesh("Assets/GizmoTranslationX.obj");
     FManagerOBJ::CreateStaticMesh("Assets/GizmoTranslationY.obj");
     FManagerOBJ::CreateStaticMesh("Assets/GizmoTranslationZ.obj");

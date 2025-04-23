@@ -60,17 +60,28 @@ public:
     FORCEINLINE operator bool() const { return Get(); }
 
 public:
-    void SetMetadata(std::unique_ptr<FShaderFileMetadata> InMetadata)
-    {
-        Metadata = std::move(InMetadata);
-    }
-
     [[nodiscard]] FShaderFileMetadata& GetMetadata() const
     {
         return *Metadata;
     }
 
+    void SetMetadata(std::unique_ptr<FShaderFileMetadata> InMetadata)
+    {
+        Metadata = std::move(InMetadata);
+    }
+
+    [[nodiscard]] uint32 GetShaderSize() const
+    {
+        return ShaderSize;
+    }
+
+    void SetShaderSize(uint32 InShaderSize)
+    {
+        ShaderSize = InShaderSize;
+    }
+
 private:
     ShaderType* ShaderPtr;
     std::unique_ptr<FShaderFileMetadata> Metadata;
+    uint32 ShaderSize = 0;
 };

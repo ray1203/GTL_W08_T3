@@ -183,28 +183,31 @@ void FEditorViewportClient::InputKey(const FKeyEvent& InKeyEvent)
     }
     else
     {
-        AEditorPlayer* EdPlayer = CastChecked<UEditorEngine>(GEngine)->GetEditorPlayer();
-        switch (InKeyEvent.GetCharacter())
+        if (InKeyEvent.GetInputEvent() == IE_Pressed)
         {
-        case 'W':
-        {
-            EdPlayer->SetMode(CM_TRANSLATION);
-            break;
+            AEditorPlayer* EdPlayer = CastChecked<UEditorEngine>(GEngine)->GetEditorPlayer();
+            switch (InKeyEvent.GetCharacter())
+            {
+            case 'W':
+            {
+                EdPlayer->SetMode(CM_TRANSLATION);
+                break;
+            }
+            case 'E':
+            {
+                EdPlayer->SetMode(CM_ROTATION);
+                break;
+            }
+            case 'R':
+            {
+                EdPlayer->SetMode(CM_SCALE);
+                break;
+            }
+            default:
+                break;
+            }
+            PressedKeys.Empty();
         }
-        case 'E':
-        {
-            EdPlayer->SetMode(CM_ROTATION);
-            break;
-        }
-        case 'R':
-        {
-            EdPlayer->SetMode(CM_SCALE);
-            break;
-        }
-        default:
-            break;
-        }
-        PressedKeys.Empty();
     }
 
 
@@ -286,7 +289,7 @@ void FEditorViewportClient::ResizeViewport(FRect Top, FRect Bottom, FRect Left, 
     }
     else
     {
-        UE_LOG(LogLevel::Error, "Viewport is nullptr");
+        UE_LOG(ELogLevel::Error, "Viewport is nullptr");
     }
     UpdateProjectionMatrix();
     UpdateViewMatrix();
@@ -635,7 +638,7 @@ void FEditorViewportClient::WriteIniFile(const FString& filePath, const TMap<FSt
 
 void FEditorViewportClient::SetCameraSpeed(float InValue)
 {
-    CameraSpeed = FMath::Clamp(InValue, 0.1f, 200.0f);
+    CameraSpeed = FMath::Clamp(InValue, 0.01f, 200.0f);
 }
 
 FVector FViewportCamera::GetForwardVector() const
