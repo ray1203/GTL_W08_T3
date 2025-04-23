@@ -195,10 +195,10 @@ void FUpdateLightBufferPass::UpdateLightBuffer() const
 
     BufferManager->UpdateConstantBuffer(TEXT("FLightInfoBuffer"), LightBufferData);
     
-    Graphics->DeviceContext->PSSetShaderResources(60, 1, &AmbientSRV);
-    Graphics->DeviceContext->PSSetShaderResources(61, 1, &DirectionalSRV);
-    Graphics->DeviceContext->PSSetShaderResources(62, 1, &PointSRV);
-    Graphics->DeviceContext->PSSetShaderResources(63, 1, &SpotSRV);
+    Graphics->DeviceContext->PSSetShaderResources(75, 1, &AmbientSRV);
+    Graphics->DeviceContext->PSSetShaderResources(76, 1, &DirectionalSRV);
+    Graphics->DeviceContext->PSSetShaderResources(77, 1, &PointSRV);
+    Graphics->DeviceContext->PSSetShaderResources(78, 1, &SpotSRV);
 }
 
 void FUpdateLightBufferPass::SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap)

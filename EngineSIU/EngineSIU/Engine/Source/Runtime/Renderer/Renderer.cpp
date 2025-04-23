@@ -203,7 +203,7 @@ void FRenderer::CreateCommonShader()
        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0}
     };
     hr = ShaderManager->AddVertexShaderAndInputLayout(L"LightDepthOnlyVS", L"Shaders/LightDepthOnlyVS.hlsl", "mainVS", LightDepthLayoutDesc, ARRAYSIZE(LightDepthLayoutDesc));
-
+    
 #pragma region UberShader
     D3D_SHADER_MACRO DefinesGouraud[] =
     {

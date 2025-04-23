@@ -23,6 +23,9 @@
 #define LAMBERT "LIGHTING_MODEL_LAMBERT"
 #define PHONG "LIGHTING_MODEL_BLINN_PHONG"
 
+#define PCF "SHADOW_FILTER_PDF"
+#define VSM "SHADOW_FILTER_VSM"
+
 struct FStaticMeshVertex
 {
     float X, Y, Z;    // Position
