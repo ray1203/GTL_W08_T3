@@ -385,11 +385,10 @@ void FRenderer::RenderWorldScene(const std::shared_ptr<FEditorViewportClient>& V
     
     if (ShowFlag & EEngineShowFlags::SF_Primitives)
     {
-        UpdateLightBufferPass->Render(Viewport);
-
         DirectionalShadowMap->PrepareRender(Viewport);
         DirectionalShadowMap->RenderShadowMap();
 
+        UpdateLightBufferPass->Render(Viewport);
         StaticMeshRenderPass->Render(Viewport);
     }
     
