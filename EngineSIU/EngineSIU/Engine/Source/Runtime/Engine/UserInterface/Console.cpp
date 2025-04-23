@@ -21,9 +21,9 @@ void FStatOverlay::ToggleStat(const std::string& Command)
         bShowMemory = true;
         bShowRender = true;
     }
-    else if (Command == "stat gpu")
+    else if (Command == "stat light")
     {
-        bShowGPU = true;
+        bShowLight = true;
         bShowRender = true;
     }
     else if (Command == "stat all")
@@ -80,7 +80,7 @@ void FStatOverlay::Render(ID3D11DeviceContext* Context, UINT InWidth, UINT InHei
         ImGui::Text("Allocated Container Memory: %llu Byte", FPlatformMemory::GetAllocationBytes<EAT_Container>());
     }
 
-    if (bShowGPU)
+    if (bShowLight)
     {
         ImGui::Separator();
         ImGui::Text("Num Of Point Light: %u", GetNumOfObjectsByClass(APointLight::StaticClass()));
@@ -253,6 +253,8 @@ void FConsole::ExecuteCommand(const std::string& Command)
         AddLog(ELogLevel::Display, " - help: Shows available commands");
         AddLog(ELogLevel::Display, " - stat fps: Toggle FPS display");
         AddLog(ELogLevel::Display, " - stat memory: Toggle Memory display");
+        AddLog(ELogLevel::Display, " - stat light: Toggle Light display");
+        AddLog(ELogLevel::Display, " - stat all: Show all stat overlays");
         AddLog(ELogLevel::Display, " - stat none: Hide all stat overlays");
     }
     else if (Command.starts_with("stat "))

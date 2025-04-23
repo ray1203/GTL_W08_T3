@@ -26,7 +26,7 @@ public:
         {
             uint8 bShowFps : 1;
             uint8 bShowMemory : 1;
-            uint8 bShowGPU : 1;
+            uint8 bShowLight : 1;
             uint8 bShowRender : 1;
         };
         uint8 StatFlags = 0; // 기본적으로 다 끄기
@@ -91,6 +91,6 @@ public:
 
 private:
     bool bExpand = true;
-    UINT Width;
-    UINT Height;
+    uint32 Width;
+    uint32 Height;
 };
