@@ -109,7 +109,18 @@ void PropertyEditorPanel::Render()
     if(PickedActor)
         if (UPointLightComponent* pointlightObj = PickedActor->GetComponentByClass<UPointLightComponent>())
         {
-            GEngineLoop.Renderer.PointLightShadowMapPass->RenderLinearDepth();
+            int pointNum = 0;
+            for (const auto iter : TObjectRange<UPointLightComponent>())
+            {
+                if (iter != pointlightObj) {
+                    pointNum++;
+                }
+                else {
+                    break;
+                }
+            }
+
+            GEngineLoop.Renderer.PointLightShadowMapPass->RenderLinearDepth(pointNum, pointlightObj);
 
             // Shadow Depth Map 시각화
             TArray<ID3D11ShaderResourceView*> shaderSRVs = GEngineLoop.Renderer.PointLightShadowMapPass->GetShadowViewSRVArray();
