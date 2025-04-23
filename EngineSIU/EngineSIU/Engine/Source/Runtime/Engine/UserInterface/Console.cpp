@@ -5,6 +5,7 @@
 #include "Actors/DirectionalLightActor.h"
 #include "Actors/PointLightActor.h"
 #include "Actors/SpotLightActor.h"
+#include "D3D11RHI/DXDShaderManager.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectHash.h"
 
@@ -50,7 +51,6 @@ void FStatOverlay::Render(ID3D11DeviceContext* Context, UINT InWidth, UINT InHei
     // 창을 중앙에 배치하기 위해 위치를 계산합니다.
     const ImVec2 WindowPos = {(DisplaySize.x - WindowSize.x) * 0.5f, (DisplaySize.y - WindowSize.y) * 0.5f};
 
-
     ImGui::SetNextWindowPos(WindowPos, ImGuiCond_Always);
     ImGui::SetNextWindowSize(WindowSize, ImGuiCond_Always);
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
@@ -73,19 +73,29 @@ void FStatOverlay::Render(ID3D11DeviceContext* Context, UINT InWidth, UINT InHei
 
     if (bShowMemory)
     {
-        ImGui::Separator();
+        ImGui::SeparatorText("Memory Usage");
         ImGui::Text("Allocated Object Count: %llu", FPlatformMemory::GetAllocationCount<EAT_Object>());
         ImGui::Text("Allocated Object Memory: %llu Byte", FPlatformMemory::GetAllocationBytes<EAT_Object>());
         ImGui::Text("Allocated Container Count: %llu", FPlatformMemory::GetAllocationCount<EAT_Container>());
         ImGui::Text("Allocated Container Memory: %llu Byte", FPlatformMemory::GetAllocationBytes<EAT_Container>());
+
+        ImGui::SeparatorText("Shader Usage");
+        ImGui::Text(
+            "Vertex Shader: %.2f MB",
+            static_cast<float>(FEngineLoop::Renderer.ShaderManager->GetTotalPixelShaderSize()) / 1024.0f / 1024.0f
+        );
+        ImGui::Text(
+            "Pixel Shader: %.2f MB",
+            static_cast<float>(FEngineLoop::Renderer.ShaderManager->GetTotalVertexShaderSize()) / 1024.0f / 1024.0f
+        );
     }
 
     if (bShowLight)
     {
-        ImGui::Separator();
-        ImGui::Text("Num Of Point Light: %u", GetNumOfObjectsByClass(APointLight::StaticClass()));
-        ImGui::Text("Num Of Spot Light: %u", GetNumOfObjectsByClass(ASpotLight::StaticClass()));
-        ImGui::Text("Num Of Directional Light: %u", GetNumOfObjectsByClass(ADirectionalLight::StaticClass()));
+        ImGui::SeparatorText("Light Info");
+        ImGui::Text("Num of Point Light: %u", GetNumOfObjectsByClass(APointLight::StaticClass()));
+        ImGui::Text("Num of Spot Light: %u", GetNumOfObjectsByClass(ASpotLight::StaticClass()));
+        ImGui::Text("Num of Directional Light: %u", GetNumOfObjectsByClass(ADirectionalLight::StaticClass()));
     }
 
     ImGui::PopStyleColor(2);
