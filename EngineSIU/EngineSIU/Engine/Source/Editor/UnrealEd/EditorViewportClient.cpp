@@ -183,28 +183,31 @@ void FEditorViewportClient::InputKey(const FKeyEvent& InKeyEvent)
     }
     else
     {
-        AEditorPlayer* EdPlayer = CastChecked<UEditorEngine>(GEngine)->GetEditorPlayer();
-        switch (InKeyEvent.GetCharacter())
+        if (InKeyEvent.GetInputEvent() == IE_Pressed)
         {
-        case 'W':
-        {
-            EdPlayer->SetMode(CM_TRANSLATION);
-            break;
+            AEditorPlayer* EdPlayer = CastChecked<UEditorEngine>(GEngine)->GetEditorPlayer();
+            switch (InKeyEvent.GetCharacter())
+            {
+            case 'W':
+            {
+                EdPlayer->SetMode(CM_TRANSLATION);
+                break;
+            }
+            case 'E':
+            {
+                EdPlayer->SetMode(CM_ROTATION);
+                break;
+            }
+            case 'R':
+            {
+                EdPlayer->SetMode(CM_SCALE);
+                break;
+            }
+            default:
+                break;
+            }
+            PressedKeys.Empty();
         }
-        case 'E':
-        {
-            EdPlayer->SetMode(CM_ROTATION);
-            break;
-        }
-        case 'R':
-        {
-            EdPlayer->SetMode(CM_SCALE);
-            break;
-        }
-        default:
-            break;
-        }
-        PressedKeys.Empty();
     }
 
 
