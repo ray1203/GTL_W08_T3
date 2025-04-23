@@ -226,11 +226,6 @@ HRESULT FDXDShaderManager::AddVertexShader(
     return S_OK;
 }
 
-HRESULT FDXDShaderManager::AddInputLayout(const std::wstring& Key, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize)
-{
-    return S_OK;
-}
-
 HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize)
 {
     UINT shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
