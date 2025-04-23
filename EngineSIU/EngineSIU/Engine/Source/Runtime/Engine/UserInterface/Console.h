@@ -42,7 +42,7 @@ public:
 
     void Clear();
     void AddLog(LogLevel level, const char* fmt, ...);
-    void AddLog(LogLevel level, const char* fmt, va_list args);
+    // void AddLog(LogLevel level, const char* fmt, va_list args);
     void Draw();
     void ExecuteCommand(const std::string& command);
     void OnResize(HWND hWnd);

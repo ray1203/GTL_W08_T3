@@ -117,18 +117,24 @@ void Console::AddLog(LogLevel level, const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    AddLog(level, fmt, args);
-    va_end(args);
-}
+    // AddLog(level, fmt, args);
 
-void Console::AddLog(LogLevel level, const char* fmt, va_list args)
-{
     char buf[1024];
     vsnprintf(buf, sizeof(buf), fmt, args);
 
-    items.Add({ level, std::string(buf) });
+    items.Emplace(level, std::string(buf));
     scrollToBottom = true;
+    va_end(args);
 }
+
+// void Console::AddLog(LogLevel level, const char* fmt, va_list args)
+// {
+//     char buf[1024];
+//     vsnprintf(buf, sizeof(buf), fmt, args);
+//
+//     items.Emplace(level, std::string(buf));
+//     scrollToBottom = true;
+// }
 
 
 // 콘솔 창 렌더링
