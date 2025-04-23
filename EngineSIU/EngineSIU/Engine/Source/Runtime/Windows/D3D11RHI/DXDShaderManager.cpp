@@ -400,13 +400,14 @@ bool FDXDShaderManager::HandleHotReloadShader()
             }
 
             // 기존 셰이더 제거
-            auto& Vs = VertexShaders[CompletedResult.ShaderKey];
-            Vs->Release();
-            
+            auto& Shader = VertexShaders[CompletedResult.ShaderKey];
+            Shader->Release();
+
             // 새로운 셰이더 할당
-            Vs = NewVertexShader;
-            Vs.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
-            
+            Shader = NewVertexShader;
+            Shader.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
+            Shader.SetShaderSize(static_cast<uint32>(CsoBlob->GetBufferSize()));
+
             CsoBlob->Release();
             bIsHotReloadShader = true;
             break;
@@ -429,13 +430,14 @@ bool FDXDShaderManager::HandleHotReloadShader()
             }
 
             // 기존 셰이더 제거
-            auto& Vs = PixelShaders[CompletedResult.ShaderKey];
-            Vs->Release();
-            
+            auto& Shader = PixelShaders[CompletedResult.ShaderKey];
+            Shader->Release();
+
             // 새로운 셰이더 할당
-            Vs = NewPixelShader;
-            Vs.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
-            
+            Shader = NewPixelShader;
+            Shader.GetMetadata().IncludePaths = CompletedResult.IncludePaths;
+            Shader.SetShaderSize(static_cast<uint32>(CsoBlob->GetBufferSize()));
+
             CsoBlob->Release();
             bIsHotReloadShader = true;
             break;
