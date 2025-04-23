@@ -40,28 +40,22 @@ void StatOverlay::Render(ID3D11DeviceContext* context, UINT width, UINT height) 
     ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
     ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
-    ImGui::Begin("Stat Overlay", nullptr,
-                 ImGuiWindowFlags_NoTitleBar |
-                 ImGuiWindowFlags_NoResize |
-                 ImGuiWindowFlags_NoMove |
-                 ImGuiWindowFlags_NoScrollbar);
-    if (showFPS) {
-        static float lastTime = ImGui::GetTime();
-        static int frameCount = 0;
-        static float fps = 0.0f;
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f));
+    ImGui::Begin(
+        "Stat Overlay", nullptr,
+        ImGuiWindowFlags_NoTitleBar
+        | ImGuiWindowFlags_NoResize
+        | ImGuiWindowFlags_NoMove
+        | ImGuiWindowFlags_NoInputs
+        | ImGuiWindowFlags_AlwaysAutoResize
+    );
 
-        frameCount++;
-        float currentTime = ImGui::GetTime();
-        float deltaTime = currentTime - lastTime;
-
-        if (deltaTime >= 1.0f) { // 1초마다 FPS 업데이트
-            fps = frameCount / deltaTime;
-            frameCount = 0;
-            lastTime = currentTime;
-        }
-        ImGui::Text("FPS: %.2f", fps);
+    if (showFPS)
+    {
+        // FPS 정보 출력
+        const float Fps = ImGui::GetIO().Framerate;
+        ImGui::Text("FPS: %.1f (%.1f ms)", Fps, 1000.0f / Fps);
     }
-
 
     if (showMemory)
     {
@@ -70,7 +64,7 @@ void StatOverlay::Render(ID3D11DeviceContext* context, UINT width, UINT height) 
         ImGui::Text("Allocated Container Count: %llu", FPlatformMemory::GetAllocationCount<EAT_Container>());
         ImGui::Text("Allocated Container memory: %llu B", FPlatformMemory::GetAllocationBytes<EAT_Container>());
     }
-    ImGui::PopStyleColor();
+    ImGui::PopStyleColor(2);
     ImGui::End();
 }
 
@@ -224,7 +218,6 @@ void Console::Draw() {
     ImGui::Separator();
 
     // 입력창
-    bool reclaimFocus = false;
     if (ImGui::InputText("Input", inputBuf, IM_ARRAYSIZE(inputBuf), ImGuiInputTextFlags_EnterReturnsTrue)) {
         if (inputBuf[0]) {
             AddLog(LogLevel::Display, ">> %s", inputBuf);
@@ -235,12 +228,6 @@ void Console::Draw() {
             scrollToBottom = true; // 자동 스크롤
         }
         inputBuf[0] = '\0';
-        reclaimFocus = true;
-    }
-
-    // 입력 필드에 자동 포커스
-    if (reclaimFocus) {
-        ImGui::SetKeyboardFocusHere(-1);
     }
 
     ImGui::End();
