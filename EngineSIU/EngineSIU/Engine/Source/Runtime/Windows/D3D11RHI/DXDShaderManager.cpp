@@ -62,6 +62,7 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
     }
 
     ID3D11PixelShader* NewPixelShader;
+    const uint32 ShaderSize = static_cast<uint32>(PsBlob->GetBufferSize());
     hr = DXDDevice->CreatePixelShader(PsBlob->GetBufferPointer(), PsBlob->GetBufferSize(), nullptr, &NewPixelShader);
     if (PsBlob)
         PsBlob->Release();
@@ -71,6 +72,7 @@ HRESULT FDXDShaderManager::AddPixelShader(const std::wstring& Key, const std::ws
 
     PixelShaders[Key] = NewPixelShader;
     PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), nullptr));
+    PixelShaders[Key].SetShaderSize(ShaderSize);
 
     return S_OK;
 }
@@ -114,6 +116,7 @@ HRESULT FDXDShaderManager::AddPixelShader(
     }
 
     ID3D11PixelShader* NewPixelShader;
+    const uint32 ShaderSize = static_cast<uint32>(PsBlob->GetBufferSize());
     hr = DXDDevice->CreatePixelShader(PsBlob->GetBufferPointer(), PsBlob->GetBufferSize(), nullptr, &NewPixelShader);
 
     if (PsBlob)
@@ -124,6 +127,7 @@ HRESULT FDXDShaderManager::AddPixelShader(
 
     PixelShaders[Key] = NewPixelShader;
     PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
+    PixelShaders[Key].SetShaderSize(ShaderSize);
 
     return S_OK;
 }
@@ -150,6 +154,7 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
     }
 
     ID3D11VertexShader* NewVertexShader;
+    const uint32 ShaderSize = static_cast<uint32>(VertexShaderCSO->GetBufferSize());
     hr = DXDDevice->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &NewVertexShader);
     if (FAILED(hr))
     {
@@ -159,6 +164,7 @@ HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::w
 
     VertexShaders[Key] = NewVertexShader;
     VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), nullptr));
+    PixelShaders[Key].SetShaderSize(ShaderSize);
 
     VertexShaderCSO->Release();
 
@@ -204,6 +210,7 @@ HRESULT FDXDShaderManager::AddVertexShader(
     }
 
     ID3D11VertexShader* NewVertexShader;
+    const uint32 ShaderSize = static_cast<uint32>(VertexShaderCSO->GetBufferSize());
     hr = DXDDevice->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &NewVertexShader);
     if (FAILED(hr))
     {
@@ -213,6 +220,7 @@ HRESULT FDXDShaderManager::AddVertexShader(
 
     VertexShaders[Key] = NewVertexShader;
     VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
+    PixelShaders[Key].SetShaderSize(ShaderSize);
     VertexShaderCSO->Release();
 
     return S_OK;
@@ -249,6 +257,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     }
 
     ID3D11VertexShader* NewVertexShader;
+    const uint32 ShaderSize = static_cast<uint32>(VertexShaderCSO->GetBufferSize());
     hr = DXDDevice->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &NewVertexShader);
     if (FAILED(hr))
     {
@@ -265,6 +274,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
 
     VertexShaders[Key] = NewVertexShader;
     VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), nullptr));
+    PixelShaders[Key].SetShaderSize(ShaderSize);
     InputLayouts[Key] = NewInputLayout;
 
     VertexShaderCSO->Release();
@@ -298,6 +308,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
     }
 
     ID3D11VertexShader* NewVertexShader;
+    const uint32 ShaderSize = static_cast<uint32>(VertexShaderCSO->GetBufferSize());
     hr = DXDDevice->CreateVertexShader(VertexShaderCSO->GetBufferPointer(), VertexShaderCSO->GetBufferSize(), nullptr, &NewVertexShader);
     if (FAILED(hr))
     {
@@ -316,6 +327,7 @@ HRESULT FDXDShaderManager::AddVertexShaderAndInputLayout(const std::wstring& Key
 
     VertexShaders[Key] = NewVertexShader;
     VertexShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
+    PixelShaders[Key].SetShaderSize(ShaderSize);
     InputLayouts[Key] = NewInputLayout;
     return S_OK;
 }
