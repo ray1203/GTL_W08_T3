@@ -16,7 +16,9 @@ struct FSpotLightShadowResource
 
     ID3D11Texture2D* VSMTexture = nullptr;         
     ID3D11RenderTargetView* VSMRTV = nullptr;      
-    ID3D11ShaderResourceView* VSMSRV = nullptr;
+    ID3D11ShaderResourceView* VSMSRV = nullptr;    
+    ID3D11Texture2D* VSMDepthBuffer = nullptr;     
+    ID3D11DepthStencilView* VSMDepthDSV = nullptr; 
 
     FMatrix SpotLightViewProjMatrix;
 };

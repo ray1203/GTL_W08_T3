@@ -243,12 +243,12 @@ void FSpotLightShadowMap::RenderShadowMap()
             // --- VSM Rendering Path ---
             // Set Render Target (VSM Texture) and Depth Buffer (Separate)
             ID3D11RenderTargetView* rtvs[] = { res.VSMRTV };
-            Graphics->DeviceContext->OMSetRenderTargets(1, rtvs, res.ShadowDSV);
+            Graphics->DeviceContext->OMSetRenderTargets(1, rtvs, res.VSMDepthDSV);
 
             // Clear VSM Render Target (depth=1, depth^2=1) and Depth Buffer
             const float clearColorVSM[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
             Graphics->DeviceContext->ClearRenderTargetView(res.VSMRTV, clearColorVSM);
-            Graphics->DeviceContext->ClearDepthStencilView(res.ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+            Graphics->DeviceContext->ClearDepthStencilView(res.VSMDepthDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
             // Set VSM Pixel Shader
             Graphics->DeviceContext->PSSetShader(VSMGenerationPS, nullptr, 0);
@@ -485,6 +485,29 @@ void FSpotLightShadowMap::AddSpotLightResource(int num)
         hr = Graphics->Device->CreateShaderResourceView(spotLightShadowResource.VSMTexture, &srvDescVSM, &spotLightShadowResource.VSMSRV);
         assert(SUCCEEDED(hr));
 
+        // VSM Depth Buffer (Separate)
+        D3D11_TEXTURE2D_DESC depthDescVSM = {};
+        depthDescVSM.Width = ShadowMapSize;
+        depthDescVSM.Height = ShadowMapSize;
+        depthDescVSM.MipLevels = 1;
+        depthDescVSM.ArraySize = 1;
+        depthDescVSM.Format = DXGI_FORMAT_D32_FLOAT; // Standard depth format
+        depthDescVSM.SampleDesc.Count = 1;
+        depthDescVSM.Usage = D3D11_USAGE_DEFAULT;
+        depthDescVSM.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        depthDescVSM.CPUAccessFlags = 0;
+        depthDescVSM.MiscFlags = 0;
+
+        hr = Graphics->Device->CreateTexture2D(&depthDescVSM, nullptr, &spotLightShadowResource.VSMDepthBuffer);
+        assert(SUCCEEDED(hr));
+
+        // VSM Depth Stencil View
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDescVSM = {};
+        dsvDescVSM.Format = depthDescVSM.Format;
+        dsvDescVSM.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        dsvDescVSM.Texture2D.MipSlice = 0;
+        hr = Graphics->Device->CreateDepthStencilView(spotLightShadowResource.VSMDepthBuffer, &dsvDescVSM, &spotLightShadowResource.VSMDepthDSV);
+        assert(SUCCEEDED(hr));
         // End Test
 
         SpotLightShadowResources.Add(spotLightShadowResource);
@@ -502,6 +525,8 @@ void FSpotLightShadowMap::DeleteSpotLightResource(int num)
         if (SpotLightShadowResources[i].VSMTexture) SpotLightShadowResources[i].VSMTexture->Release();
         if (SpotLightShadowResources[i].VSMRTV) SpotLightShadowResources[i].VSMRTV->Release();
         if (SpotLightShadowResources[i].VSMSRV) SpotLightShadowResources[i].VSMSRV->Release();
+        if (SpotLightShadowResources[i].VSMDepthBuffer) SpotLightShadowResources[i].VSMDepthBuffer->Release();
+        if (SpotLightShadowResources[i].VSMDepthDSV) SpotLightShadowResources[i].VSMDepthDSV->Release();
 
 
         SpotLightShadowResources.RemoveAt(i);
@@ -515,9 +540,5 @@ ID3D11ShaderResourceView* FSpotLightShadowMap::GetShadowDebugSRV()
 
 FMatrix FSpotLightShadowMap::GetViewProjMatrix(int index)
 {
-    if (SpotLightShadowResources.Num() - 1 < index) 
-    {
-        return FMatrix();
-    }
     return SpotLightShadowResources[index].SpotLightViewProjMatrix;
 }
