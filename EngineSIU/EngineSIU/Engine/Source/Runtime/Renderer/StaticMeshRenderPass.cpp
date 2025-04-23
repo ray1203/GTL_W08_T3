@@ -60,6 +60,12 @@ void FStaticMeshRenderPass::CreateShader()
     }
     // End Debug Shaders
 
+    hr = ShaderManager->AddPixelShader(L"VSMGenerationPS", L"Shaders/VSMGenerationPS.hlsl", "mainPS");
+    if (FAILED(hr))
+    {
+        return;
+    }
+
 
 #pragma region UberShader
     D3D_SHADER_MACRO DefinesGouraud[] =
@@ -108,7 +114,6 @@ void FStaticMeshRenderPass::CreateShader()
 
 void FStaticMeshRenderPass::ReleaseShader()
 {
-
 }
 
 void FStaticMeshRenderPass::ChangeViewMode(EViewModeIndex InViewModeIndex)
@@ -172,6 +177,7 @@ void FStaticMeshRenderPass::ReloadShader()
     }
     DebugDepthShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderDepth");
     DebugWorldNormalShader = ShaderManager->GetPixelShaderByKey(L"StaticMeshPixelShaderWorldNormal");
+    
 }
 
 void FStaticMeshRenderPass::SetSpotLightShadowMap(FSpotLightShadowMap* InSpotLightShadowMap)
@@ -339,7 +345,6 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
     FViewportResource* ViewportResource = Viewport->GetViewportResource();
     FRenderTargetRHI* RenderTargetRHI = ViewportResource->GetRenderTarget(EResourceType::ERT_Scene);
 
-
     D3D11_VIEWPORT vp{};
     vp.TopLeftX = 0;
     vp.TopLeftY = 0;
@@ -375,19 +380,20 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
         {
             continue;
         }
-        
+
         UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-        
+
         FMatrix WorldMatrix = Comp->GetWorldMatrix();
         FVector4 UUIDColor = Comp->EncodeUUID() / 255.0f;
         const bool bIsSelected = (Engine && Engine->GetSelectedActor() == Comp->GetOwner());
-        
+
         UpdateObjectConstant(WorldMatrix, UUIDColor, bIsSelected);
-        
-        SpotLightShadowMap->SetShadowResource(26);
+
+        SpotLightShadowMap->SetShadowResources(26, 42);
         SpotLightShadowMap->SetShadowSampler(10);
-        
-        PointLightShadowMap->SetShadowResource(42);
+        SpotLightShadowMap->SetShadowFilterSampler(11);
+
+        PointLightShadowMap->SetShadowResource(58);
         PointLightShadowMap->SetShadowSampler(10);
 
         DirectionalShadowMap->SetShadowResource(10);
@@ -395,6 +401,9 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
 
         FShadowSettingData shadowSettingData;
         shadowSettingData.ShadowBias = 0.005f;
+        shadowSettingData.VSM_MinVariance = 0.00001f; // Small value to prevent division by zero
+        shadowSettingData.VSM_LightBleedReduction = 0.2f; // Adjust between 0 (no reduction) and 1 (max reduction)
+        shadowSettingData.FilterType = 1; // 0: PCF, 1: VSM
 
         BufferManager->BindConstantBuffer(TEXT("FShadowSettingData"), 6, EShaderStage::Pixel);
         BufferManager->UpdateConstantBuffer(TEXT("FShadowSettingData"), shadowSettingData);
@@ -408,7 +417,18 @@ void FStaticMeshRenderPass::Render(const std::shared_ptr<FEditorViewportClient>&
     }
 
     Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+    // 여기 넣는거 개별로
+    ID3D11ShaderResourceView* nullSRV[1] = { nullptr };
 
+    for (int i = 0; i < MAX_SPOT_LIGHT; ++i)
+    {
+        Graphics->DeviceContext->PSSetShaderResources(42 + i, 1, nullSRV);
+    }
+
+    for (int i = 0; i < MAX_SPOT_LIGHT; ++i)
+    {
+        Graphics->DeviceContext->PSSetShaderResources(26 + i, 1, nullSRV);
+    }
 }
 
 void FStaticMeshRenderPass::ClearRenderArr()
