@@ -25,3 +25,6 @@ void RemoveFromClassMap(UObject* Object);
  * TODO: GetClassMap 사용해서 Spawn 안 된 UClass도 찾기
  */
 void GetChildOfClass(UClass* ClassToLookFor, TArray<UClass*>& Results);
+
+/** ClassToLookFor와 일치하는 모든 오브젝트를 반환합니다. */
+uint32 GetNumOfObjectsByClass(UClass* ClassToLookFor);
