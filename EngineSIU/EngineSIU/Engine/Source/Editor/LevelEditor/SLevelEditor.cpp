@@ -214,6 +214,7 @@ void SLevelEditor::Initialize(uint32 InEditorWidth, uint32 InEditorHeight)
                 static_cast<int32>(MousePinPosition.X),
                 static_cast<int32>(MousePinPosition.Y)
             );
+            ActiveViewportClient->ClearPressedKeys();
             return;
         }
 

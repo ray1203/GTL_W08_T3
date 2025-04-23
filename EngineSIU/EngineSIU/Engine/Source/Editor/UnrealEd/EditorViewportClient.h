@@ -192,6 +192,9 @@ private: // Input
     TSet<EKeys::Type> PressedKeys;
 
 public:
+    void ClearPressedKeys() { PressedKeys.Empty(); }
+
+public:
     void LoadConfig(const TMap<FString, FString>& config);
     void SaveConfig(TMap<FString, FString>& config) const;
 
