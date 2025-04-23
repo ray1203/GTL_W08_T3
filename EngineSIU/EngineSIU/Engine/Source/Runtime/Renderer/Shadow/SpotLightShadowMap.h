@@ -33,7 +33,7 @@ public:
     
     FMatrix GetViewProjMatrix(int index);
 
-    void RenderLinearDepth();
+    void RenderLinearDepth(int index);
 
     void AddSpotLightResource(int num);
     void DeleteSpotLightResource(int num);

@@ -92,7 +92,7 @@ void FPointLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraph
 
     FullscreenVS = ShaderManager->GetVertexShaderByKey(L"FullScreenVS");
     FullscreenIL = ShaderManager->GetInputLayoutByKey(L"FullScreenVS");
-    DepthVisualizePS = ShaderManager->GetPixelShaderByKey(L"DepthVisualizePS");
+    DepthVisualizePS = ShaderManager->GetPixelShaderByKey(L"DepthCubeVisualizePS");
 }
 
 void FPointLightShadowMap::PrepareRender()
