@@ -35,7 +35,7 @@ private:
     void WindowInit(HINSTANCE hInstance);
     static LRESULT CALLBACK AppWndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 
-    void UpdateUI();
+    void UpdateUI() const;
 
 public:
     static FGraphicsDevice GraphicDevice;

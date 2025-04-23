@@ -239,7 +239,7 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(HWND hWnd, uint32 Msg, WPARAM wParam, L
     return 0;
 }
 
-void FEngineLoop::UpdateUI()
+void FEngineLoop::UpdateUI() const
 {
     FConsole::GetInstance().OnResize(AppWnd);
     if (GEngineLoop.GetUnrealEditor())
