@@ -164,33 +164,31 @@ float SampleSpotShadow(int Index, float3 worldPos)
 
         // 빛 번짐 감소
         litFactor = (delta <= ShadowBias) ? 1.0f : lerp(litFactor, 0.0f, VSM_LightBleedReduction);
-
+      
         shadowFactor = saturate(litFactor);
+        
+        shadowFactor = pow(shadowFactor, 3);
     }
     else // PCF 필터링
     {
-        float depthForComparison = currentDepth - ShadowBias;
-
-        float shadowAccum = 0.0f;
+        float shadow = 0.0f;
         uint width, height;
         SpotShadowTexture[Index].GetDimensions(width, height);
         float2 texelSize = float2(1.0 / width, 1.0 / height);
-
-        [unroll]
         for (int x = -1; x <= 1; ++x)
         {
-            [unroll]
             for (int y = -1; y <= 1; ++y)
             {
                 float2 offset = float2(x, y) * texelSize;
-                shadowAccum += SpotShadowTexture[Index].SampleCmpLevelZero(
-                    ShadowSampler,
-                    uv + offset,
-                    depthForComparison 
-                );
+                shadow += SpotShadowTexture[Index].SampleCmpLevelZero(
+                ShadowSampler,
+                uv.xy + offset,
+                currentDepth
+            );
             }
         }
-        shadowFactor = shadowAccum / 9.0f;
+        shadow /= 9.0;
+        shadowFactor = shadow;
     }
     return shadowFactor;
 }

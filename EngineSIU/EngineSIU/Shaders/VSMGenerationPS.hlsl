@@ -14,7 +14,7 @@ PS_OUTPUT mainPS(VS_OUTPUT input)
     PS_OUTPUT output;
 
     // Calculate depth in the range [0, 1]
-    float depth = input.PositionCS.z / input.PositionCS.w;
+    float depth = input.PositionCS.z;
     
     // Output depth and depth squared
     output.Moments = float2(depth, depth * depth);
