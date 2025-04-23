@@ -42,6 +42,15 @@ private:
     FGraphicsDevice* Graphics;
     FDXDShaderManager* ShaderManager;
 
+    ID3D11Buffer* AmbientBuffer = nullptr;
+    ID3D11ShaderResourceView* AmbientSRV = nullptr;
+    ID3D11Buffer* DirectionalBuffer = nullptr;
+    ID3D11ShaderResourceView* DirectionalSRV = nullptr;
+    ID3D11Buffer* PointBuffer = nullptr;
+    ID3D11ShaderResourceView* PointSRV = nullptr;
+    ID3D11Buffer* SpotBuffer = nullptr;
+    ID3D11ShaderResourceView* SpotSRV = nullptr;
+
     FPointLightShadowMap* PointLightShadowMap = nullptr;
     FDirectionalShadowMap* DirectionalShadowMap = nullptr;
     FSpotLightShadowMap* SpotLightShadowMap = nullptr;

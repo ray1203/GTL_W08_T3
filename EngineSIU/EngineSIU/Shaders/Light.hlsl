@@ -60,17 +60,17 @@ struct FSpotLightInfo
 };
 
 cbuffer Lighting : register(b0)
-{
-    FAmbientLightInfo Ambient[MAX_AMBIENT_LIGHT];
-    FDirectionalLightInfo Directional[MAX_DIRECTIONAL_LIGHT];
-    FPointLightInfo PointLights[MAX_POINT_LIGHT];
-    FSpotLightInfo SpotLights[MAX_SPOT_LIGHT];
-    
+{   
     int DirectionalLightsCount;
     int PointLightsCount;
     int SpotLightsCount;
     int AmbientLightsCount;
 };
+
+StructuredBuffer<FAmbientLightInfo> AmbientLights : register(t60);
+StructuredBuffer<FDirectionalLightInfo> DirectionalLights : register(t61);
+StructuredBuffer<FPointLightInfo> PointLights : register(t62);
+StructuredBuffer<FSpotLightInfo> SpotLights : register(t63);
 
 // 3종류 Light에 대해서 t10부터 16개씩 texture 할당
 
@@ -194,7 +194,7 @@ float SamplePointShadow(int Index, float3 ToLight, float3 worldPos)
     // Begin Sphere PCF Sampling
     float3 sampleDirections[20];
     
-    for (int i = 0; i < 20; i++)
+    for (uint i = 0; i < 20; i++)
     {
         float offset = 0.002 * (i / 20.0);
         
@@ -205,7 +205,7 @@ float SamplePointShadow(int Index, float3 ToLight, float3 worldPos)
                                     (i % 5) * 0.001 - 0.002);
     }
     
-    for (int i = 0; i < 20; i++)
+    for (i = 0; i < 20; i++)
     {
         shadow += PointShadowCube[Index].SampleCmpLevelZero(
             ShadowSampler,
@@ -326,7 +326,7 @@ float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wor
 
 float4 DirectionalLight(int nIndex, float3 WorldPosition, float3 WorldNormal, float3 WorldViewPosition, float3 DiffuseColor)
 {
-    FDirectionalLightInfo LightInfo = Directional[nIndex];
+    FDirectionalLightInfo LightInfo = DirectionalLights[nIndex];
     
     float3 LightDir = normalize(-LightInfo.Direction);
     float3 ViewDir = normalize(WorldViewPosition - WorldPosition);
@@ -347,7 +347,7 @@ bool InRange(float val, float min, float max)
 
 float GetLightFromShadowMap(int idx, float3 WorldPos, float3 WorldNorm)
 {
-    float NdotL = dot(normalize(WorldNorm), Directional[idx].Direction);
+    float NdotL = dot(normalize(WorldNorm), DirectionalLights[idx].Direction);
     
     float slopeScale = 0.5f;
     float minBias = 0.0001f;
@@ -359,8 +359,8 @@ float GetLightFromShadowMap(int idx, float3 WorldPos, float3 WorldNorm)
     bias *= pow(angle / (0.5f * 3.14159265f), 2.0f);
     
 
-    float4 lp = mul(float4(WorldPos, 1), Directional[idx].LightView);
-    float4 cp = mul(lp, Directional[idx].LightProj);
+    float4 lp = mul(float4(WorldPos, 1), DirectionalLights[idx].LightView);
+    float4 cp = mul(lp, DirectionalLights[idx].LightProj);
     
     float2 uv = cp.xy / cp.w * 0.5f + 0.5f;
     float dist = cp.z / cp.w - bias;
@@ -421,12 +421,12 @@ float4 Lighting(float3 WorldPosition, float3 WorldNormal, float3 WorldViewPositi
     [unroll(MAX_AMBIENT_LIGHT)]
     for (int l = 0; l < AmbientLightsCount; l++)
     {
-        FinalColor += float4(Ambient[l].AmbientColor.rgb, 0.0);
+        FinalColor += float4(AmbientLights[l].AmbientColor.rgb, 0.0);
         FinalColor.a = 1.0;
     }
     
     [unroll(MAX_DIRECTIONAL_LIGHT)]
-    for (int k = 0; k < DirectionalLightsCount; k++)
+    for (k = 0; k < DirectionalLightsCount; k++)
     {
         FinalColor *= GetLightFromShadowMap(k, WorldPosition, WorldNormal);
     }

@@ -35,6 +35,37 @@ void FUpdateLightBufferPass::Initialize(FDXDBufferManager* InBufferManager, FGra
     BufferManager = InBufferManager;
     Graphics = InGraphics;
     ShaderManager = InShaderManager;
+
+    auto CreateSB = [&](UINT stride, UINT maxElements,
+        ID3D11Buffer*& outBuf,
+        ID3D11ShaderResourceView*& outSRV)
+        {
+            D3D11_BUFFER_DESC bd = {};
+            bd.Usage = D3D11_USAGE_DYNAMIC;
+            bd.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+            bd.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+            bd.StructureByteStride = stride;
+            bd.ByteWidth = stride * maxElements;
+            Graphics->Device->CreateBuffer(&bd, nullptr, &outBuf);
+
+            D3D11_SHADER_RESOURCE_VIEW_DESC srvd = {};
+            srvd.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+            srvd.Format = DXGI_FORMAT_UNKNOWN;
+            srvd.Buffer.FirstElement = 0;
+            srvd.Buffer.NumElements = maxElements;
+            Graphics->Device->CreateShaderResourceView(outBuf, &srvd, &outSRV);
+        };
+
+    // Ambient
+    CreateSB(sizeof(FAmbientLightInfo), MAX_AMBIENT_LIGHT, AmbientBuffer, AmbientSRV);
+    // Directional
+    CreateSB(sizeof(FDirectionalLightInfo), MAX_DIRECTIONAL_LIGHT, DirectionalBuffer, DirectionalSRV);
+    // Point
+    CreateSB(sizeof(FPointLightInfo), MAX_POINT_LIGHT, PointBuffer, PointSRV);
+    // Spot
+    CreateSB(sizeof(FSpotLightInfo), MAX_SPOT_LIGHT, SpotBuffer, SpotSRV);
+
 }
 
 void FUpdateLightBufferPass::PrepareRender()
@@ -83,60 +114,79 @@ void FUpdateLightBufferPass::ClearRenderArr()
 
 void FUpdateLightBufferPass::UpdateLightBuffer() const
 {
-    FLightInfoBuffer LightBufferData = {};
+    FLightInfoBuffer LightBufferData;
 
-    int DirectionalLightsCount=0;
-    int PointLightsCount=0;
-    int SpotLightsCount=0;
-    int AmbientLightsCount=0;
+    // --- 1) CPU 쪽 임시 Array에 Light 정보 채우기 ---
+    TArray<FAmbientLightInfo>    ambientData;    ambientData.Reserve(MAX_AMBIENT_LIGHT);
+    TArray<FDirectionalLightInfo> directionalData; directionalData.Reserve(MAX_DIRECTIONAL_LIGHT);
+    TArray<FPointLightInfo>       pointData;       pointData.Reserve(MAX_POINT_LIGHT);
+    TArray<FSpotLightInfo>        spotData;        spotData.Reserve(MAX_SPOT_LIGHT);
 
-    for (auto Light : SpotLights)
+    UINT AmbientLightsCount = 0;
+    UINT DirectionalLightsCount = 0;
+    UINT PointLightsCount = 0;
+    UINT SpotLightsCount = 0;
+
+    for (auto* L : AmbientLights)
     {
-        if (SpotLightsCount < MAX_SPOT_LIGHT)
-        {
-            LightBufferData.SpotLights[SpotLightsCount] = Light->GetSpotLightInfo();
-            LightBufferData.SpotLights[SpotLightsCount].Position = Light->GetWorldLocation();
-            LightBufferData.SpotLights[SpotLightsCount].Direction = Light->GetDirection();
-            LightBufferData.SpotLights[SpotLightsCount].SpotLightViewProj = SpotLightShadowMap->GetViewProjMatrix(SpotLightsCount);
-            SpotLightsCount++;
-        }
+        if (AmbientLightsCount >= MAX_AMBIENT_LIGHT) break;
+        auto info = L->GetAmbientLightInfo();
+        info.AmbientColor = L->GetLightColor();
+        ambientData.Add(info);
+        ++AmbientLightsCount;
+    }
+    for (auto* L : DirectionalLights)
+    {
+        if (DirectionalLightsCount >= MAX_DIRECTIONAL_LIGHT) break;
+        auto info = L->GetDirectionalLightInfo();
+        info.Direction = L->GetDirection();
+        info.LightView = DirectionalShadowMap->GetDirectionalView(DirectionalLightsCount);
+        info.LightProj = DirectionalShadowMap->GetDirectionalProj(DirectionalLightsCount);
+        directionalData.Add(info);
+        ++DirectionalLightsCount;
+    }
+    for (auto* L : PointLights)
+    {
+        if (PointLightsCount >= MAX_POINT_LIGHT) break;
+        auto info = L->GetPointLightInfo();
+        info.Position = L->GetWorldLocation();
+        for (int f = 0; f < FPointLightShadowMap::faceNum; ++f)
+            info.PointLightViewProj[f] =
+            PointLightShadowMap->GetViewProjMatrix(PointLightsCount, f);
+        pointData.Add(info);
+        ++PointLightsCount;
+    }
+    for (auto* L : SpotLights)
+    {
+        if (SpotLightsCount >= MAX_SPOT_LIGHT) break;
+        auto info = L->GetSpotLightInfo();
+        info.Position = L->GetWorldLocation();
+        info.Direction = L->GetDirection();
+        info.SpotLightViewProj =
+            SpotLightShadowMap->GetViewProjMatrix(SpotLightsCount);
+        spotData.Add(info);
+        ++SpotLightsCount;
     }
 
-    for (auto Light : PointLights)
-    {
-        if (PointLightsCount < MAX_POINT_LIGHT)
+    // ---------------------------------------------------
+    // 2) Map / Unmap으로 Structured Buffer에 복사
+    // ---------------------------------------------------
+    auto UpdateSB = [&](ID3D11Buffer* buf, const void* src, UINT64 byteSize)
         {
-            LightBufferData.PointLights[PointLightsCount] = Light->GetPointLightInfo();
-            LightBufferData.PointLights[PointLightsCount].Position = Light->GetWorldLocation();
-            for (int face = 0; face < FPointLightShadowMap::faceNum; face++) {
-                LightBufferData.PointLights[PointLightsCount].PointLightViewProj[face] = PointLightShadowMap->GetViewProjMatrix(PointLightsCount, face);
-            }
-            PointLightsCount++;
-        }
-    }
+            D3D11_MAPPED_SUBRESOURCE M = {};
+            Graphics->DeviceContext->Map(buf, 0, D3D11_MAP_WRITE_DISCARD, 0, &M);
+            memcpy(M.pData, src, byteSize);
+            Graphics->DeviceContext->Unmap(buf, 0);
+        };
 
-    for (auto Light : DirectionalLights)
-    {
-        if (DirectionalLightsCount < MAX_DIRECTIONAL_LIGHT)
-        {
-            LightBufferData.Directional[DirectionalLightsCount] = Light->GetDirectionalLightInfo();
-            LightBufferData.Directional[DirectionalLightsCount].Direction = Light->GetDirection();
-            LightBufferData.Directional[DirectionalLightsCount].LightView = DirectionalShadowMap->GetDirectionalView(DirectionalLightsCount);
-            LightBufferData.Directional[DirectionalLightsCount].LightProj = DirectionalShadowMap->GetDirectionalProj(DirectionalLightsCount);
-
-            DirectionalLightsCount++;
-        }
-    }
-
-    for (auto Light : AmbientLights)
-    {
-        if (AmbientLightsCount < MAX_DIRECTIONAL_LIGHT)
-        {
-            LightBufferData.Ambient[AmbientLightsCount] = Light->GetAmbientLightInfo();
-            LightBufferData.Ambient[AmbientLightsCount].AmbientColor = Light->GetLightColor();
-            AmbientLightsCount++;
-        }
-    }
+    if (AmbientLightsCount)
+        UpdateSB(AmbientBuffer, ambientData.GetData(), sizeof(FAmbientLightInfo) * AmbientLightsCount);
+    if (DirectionalLightsCount)
+        UpdateSB(DirectionalBuffer, directionalData.GetData(), sizeof(FDirectionalLightInfo) * DirectionalLightsCount);
+    if (PointLightsCount)
+        UpdateSB(PointBuffer, pointData.GetData(), sizeof(FPointLightInfo) * PointLightsCount);
+    if (SpotLightsCount)
+        UpdateSB(SpotBuffer, spotData.GetData(), sizeof(FSpotLightInfo) * SpotLightsCount);
     
     LightBufferData.DirectionalLightsCount = DirectionalLightsCount;
     LightBufferData.PointLightsCount = PointLightsCount;
@@ -144,7 +194,11 @@ void FUpdateLightBufferPass::UpdateLightBuffer() const
     LightBufferData.AmbientLightsCount = AmbientLightsCount;
 
     BufferManager->UpdateConstantBuffer(TEXT("FLightInfoBuffer"), LightBufferData);
-     
+    
+    Graphics->DeviceContext->PSSetShaderResources(60, 1, &AmbientSRV);
+    Graphics->DeviceContext->PSSetShaderResources(61, 1, &DirectionalSRV);
+    Graphics->DeviceContext->PSSetShaderResources(62, 1, &PointSRV);
+    Graphics->DeviceContext->PSSetShaderResources(63, 1, &SpotSRV);
 }
 
 void FUpdateLightBufferPass::SetPointLightShadowMap(FPointLightShadowMap* InPointLightShadowMap)
