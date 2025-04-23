@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "Container/TSafeQueue.h"
-#include "Developer/ShaderHotReload/BackgroundShaderCompile.h"
+#include "Developer/ShaderCompileUtils/ShaderCompile.h"
 #include "UserInterface/Console.h"
 
 

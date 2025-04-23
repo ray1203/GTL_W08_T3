@@ -5,8 +5,8 @@
 
 #include "Container/Map.h"
 #include "Container/TSafeQueue.h"
-#include "Developer/ShaderHotReload/BackgroundShaderCompileData.h"
-#include "Developer/ShaderHotReload/ShaderMetadataPtr.h"
+#include "Developer/ShaderCompileUtils/ShaderCompileData.h"
+#include "Developer/ShaderCompileUtils/ShaderMetadataPtr.h"
 
 
 struct FVertexShaderData
