@@ -19,9 +19,18 @@ enum class ELogLevel : uint8
 class FStatOverlay
 {
 public:
-    bool bShowFps = false;
-    bool bShowMemory = false;
-    bool bShowRender = false;
+    // TODO: 추후에 enum 비트연산으로 바꿔도 좋을듯
+    union
+    {
+        struct  // NOLINT(clang-diagnostic-nested-anon-types)
+        {
+            uint8 bShowFps : 1;
+            uint8 bShowMemory : 1;
+            uint8 bShowGPU : 1;
+            uint8 bShowRender : 1;
+        };
+        uint8 StatFlags = 0; // 기본적으로 다 끄기
+    };
 
     void ToggleStat(const std::string& Command);
     void Render(ID3D11DeviceContext* Context, UINT InWidth, UINT InHeight) const;

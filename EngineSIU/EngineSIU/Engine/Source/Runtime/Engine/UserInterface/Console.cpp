@@ -2,7 +2,11 @@
 #include <cstdarg>
 #include <cstdio>
 
+#include "Actors/DirectionalLightActor.h"
+#include "Actors/PointLightActor.h"
+#include "Actors/SpotLightActor.h"
 #include "UnrealEd/EditorViewportClient.h"
+#include "UObject/UObjectHash.h"
 
 
 void FStatOverlay::ToggleStat(const std::string& Command)
@@ -17,11 +21,19 @@ void FStatOverlay::ToggleStat(const std::string& Command)
         bShowMemory = true;
         bShowRender = true;
     }
+    else if (Command == "stat gpu")
+    {
+        bShowGPU = true;
+        bShowRender = true;
+    }
+    else if (Command == "stat all")
+    {
+        StatFlags = 0xFF;
+    }
     else if (Command == "stat none")
     {
-        bShowFps = false;
-        bShowMemory = false;
-        bShowRender = false;
+        // 모든 Flag 끄기
+        StatFlags = 0x00;
     }
 }
 
@@ -61,11 +73,21 @@ void FStatOverlay::Render(ID3D11DeviceContext* Context, UINT InWidth, UINT InHei
 
     if (bShowMemory)
     {
+        ImGui::Separator();
         ImGui::Text("Allocated Object Count: %llu", FPlatformMemory::GetAllocationCount<EAT_Object>());
-        ImGui::Text("Allocated Object Memory: %llu B", FPlatformMemory::GetAllocationBytes<EAT_Object>());
+        ImGui::Text("Allocated Object Memory: %llu Byte", FPlatformMemory::GetAllocationBytes<EAT_Object>());
         ImGui::Text("Allocated Container Count: %llu", FPlatformMemory::GetAllocationCount<EAT_Container>());
-        ImGui::Text("Allocated Container memory: %llu B", FPlatformMemory::GetAllocationBytes<EAT_Container>());
+        ImGui::Text("Allocated Container Memory: %llu Byte", FPlatformMemory::GetAllocationBytes<EAT_Container>());
     }
+
+    if (bShowGPU)
+    {
+        ImGui::Separator();
+        ImGui::Text("Num Of Point Light: %u", GetNumOfObjectsByClass(APointLight::StaticClass()));
+        ImGui::Text("Num Of Spot Light: %u", GetNumOfObjectsByClass(ASpotLight::StaticClass()));
+        ImGui::Text("Num Of Directional Light: %u", GetNumOfObjectsByClass(ADirectionalLight::StaticClass()));
+    }
+
     ImGui::PopStyleColor(2);
     ImGui::End();
 }
@@ -124,18 +146,14 @@ void FConsole::Draw()
     const ImVec2 WindowSize(DisplaySize.x * 0.5f, CurrentHeight); // 폭은 화면의 40%
     const ImVec2 WindowPos(0, DisplaySize.y - CurrentHeight);
 
+    // 창을 표시하고 닫힘 여부 확인
+    Overlay.Render(FEngineLoop::GraphicDevice.DeviceContext, Width, Height);
+
     // 창 위치와 크기를 고정
     ImGui::SetNextWindowPos(WindowPos, ImGuiCond_Always);
     ImGui::SetNextWindowSize(WindowSize, ImGuiCond_Always);
 
-    // 창을 표시하고 닫힘 여부 확인
-    Overlay.Render(FEngineLoop::GraphicDevice.DeviceContext, Width, Height);
     bExpand = ImGui::Begin("Console", &bWasOpen);
-    if (!bExpand)
-    {
-        ImGui::End();
-        return;
-    }
 
     // 창을 접었을 경우 UI를 표시하지 않음
     if (!bExpand)
