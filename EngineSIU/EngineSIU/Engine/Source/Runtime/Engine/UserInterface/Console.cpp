@@ -5,40 +5,42 @@
 #include "UnrealEd/EditorViewportClient.h"
 
 
-void StatOverlay::ToggleStat(const std::string& command)
+void FStatOverlay::ToggleStat(const std::string& Command)
 {
-    if (command == "stat fps")
+    if (Command == "stat fps")
     {
-        showFPS = true;
-        showRender = true;
+        bShowFps = true;
+        bShowRender = true;
     }
-    else if (command == "stat memory")
+    else if (Command == "stat memory")
     {
-        showMemory = true;
-        showRender = true;
+        bShowMemory = true;
+        bShowRender = true;
     }
-    else if (command == "stat none")
+    else if (Command == "stat none")
     {
-        showFPS = false;
-        showMemory = false;
-        showRender = false;
+        bShowFps = false;
+        bShowMemory = false;
+        bShowRender = false;
     }
 }
 
-void StatOverlay::Render(ID3D11DeviceContext* context, UINT width, UINT height) const
+void FStatOverlay::Render(ID3D11DeviceContext* Context, UINT InWidth, UINT InHeight) const
 {
-
-    if (!showRender)
+    if (!bShowRender)
+    {
         return;
-    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
-    // 창 크기를 화면의 50%로 설정합니다.
-    ImVec2 windowSize(displaySize.x * 0.5f, displaySize.y * 0.5f);
-    // 창을 중앙에 배치하기 위해 위치를 계산합니다.
-    ImVec2 windowPos((displaySize.x - windowSize.x) * 0.5f, (displaySize.y - windowSize.y) * 0.5f);
+    }
 
-    
-    ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+    const ImVec2 DisplaySize = ImGui::GetIO().DisplaySize;
+    // 창 크기를 화면의 50%로 설정합니다.
+    const ImVec2 WindowSize = {DisplaySize.x * 0.5f, DisplaySize.y * 0.5f};
+    // 창을 중앙에 배치하기 위해 위치를 계산합니다.
+    const ImVec2 WindowPos = {(DisplaySize.x - WindowSize.x) * 0.5f, (DisplaySize.y - WindowSize.y) * 0.5f};
+
+
+    ImGui::SetNextWindowPos(WindowPos, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(WindowSize, ImGuiCond_Always);
     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 1.0f, 0.0f, 1.0f));
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f));
     ImGui::Begin(
@@ -50,14 +52,14 @@ void StatOverlay::Render(ID3D11DeviceContext* context, UINT width, UINT height) 
         | ImGuiWindowFlags_AlwaysAutoResize
     );
 
-    if (showFPS)
+    if (bShowFps)
     {
         // FPS 정보 출력
         const float Fps = ImGui::GetIO().Framerate;
         ImGui::Text("FPS: %.1f (%.1f ms)", Fps, 1000.0f / Fps);
     }
 
-    if (showMemory)
+    if (bShowMemory)
     {
         ImGui::Text("Allocated Object Count: %llu", FPlatformMemory::GetAllocationCount<EAT_Object>());
         ImGui::Text("Allocated Object Memory: %llu B", FPlatformMemory::GetAllocationBytes<EAT_Object>());
@@ -68,101 +70,80 @@ void StatOverlay::Render(ID3D11DeviceContext* context, UINT width, UINT height) 
     ImGui::End();
 }
 
-float StatOverlay::CalculateFPS() const
-{
-    static int frameCount = 0;
-    static float elapsedTime = 0.0f;
-    static float lastTime = 0.0f;
-
-    float currentTime = GetTickCount64() / 1000.0f;
-    elapsedTime += (currentTime - lastTime);
-    lastTime = currentTime;
-    frameCount++;
-
-    if (elapsedTime > 1.0f) {
-        float fps = frameCount / elapsedTime;
-        frameCount = 0;
-        elapsedTime = 0.0f;
-        return fps;
-    }
-    return 0.0f;
-}
-
-void StatOverlay::DrawTextOverlay(const std::string& text, int x, int y) const
-{
-    // ImGui 사용 시
-    ImGui::SetNextWindowPos(ImVec2(x, y));
-    ImGui::Text("%s", text.c_str());
-}
-
 // 싱글톤 인스턴스 반환
-Console& Console::GetInstance() {
-    static Console instance;
-    return instance;
+FConsole& FConsole::GetInstance()
+{
+    static FConsole Instance;
+    return Instance;
 }
 
 // 로그 초기화
-void Console::Clear() {
-    items.Empty();
+void FConsole::Clear()
+{
+    Items.Empty();
 }
 
 // 로그 추가
-void FConsole::AddLog(ELogLevel level, const char* fmt, ...)
+void FConsole::AddLog(ELogLevel Level, const char* Fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
-    // AddLog(level, fmt, args);
+    va_list Args;
+    va_start(Args, Fmt);
+    // AddLog(Level, Fmt, Args);
 
-    char buf[1024];
-    vsnprintf(buf, sizeof(buf), fmt, args);
+    char Buf[1024];
+    vsnprintf(Buf, sizeof(Buf), Fmt, Args);
 
-    items.Emplace(level, std::string(buf));
-    scrollToBottom = true;
-    va_end(args);
+    Items.Emplace(Level, std::string(Buf));
+    bScrollToBottom = true;
+    va_end(Args);
 }
 
-// void FConsole::AddLog(ELogLevel Level, const char* fmt, va_list args)
+// void FConsole::AddLog(ELogLevel Level, const char* Fmt, va_list Args)
 // {
-//     char buf[1024];
-//     vsnprintf(buf, sizeof(buf), fmt, args);
+//     char Buf[1024];
+//     vsnprintf(Buf, sizeof(Buf), Fmt, Args);
 //
-//     items.Emplace(Level, std::string(buf));
-//     scrollToBottom = true;
+//     Items.Emplace(Level, std::string(Buf));
+//     bScrollToBottom = true;
 // }
 
 
 // 콘솔 창 렌더링
-void Console::Draw() {
+void FConsole::Draw()
+{
     if (!bWasOpen) return;
     // 창 크기 및 위치 계산
-    ImVec2 displaySize = ImGui::GetIO().DisplaySize;
-    
+    const ImVec2 DisplaySize = ImGui::GetIO().DisplaySize;
+
     // 콘솔 창의 크기와 위치 설정
-    float expandedHeight = displaySize.y * 0.4f; // 확장된 상태일 때 높이 (예: 화면의 40%)
-    float collapsedHeight = 30.0f;               // 축소된 상태일 때 높이
-    float currentHeight = bExpand ? expandedHeight : collapsedHeight;
-    
+    const float ExpandedHeight = DisplaySize.y * 0.4f; // 확장된 상태일 때 높이 (예: 화면의 40%)
+    constexpr float CollapsedHeight = 30.0f;           // 축소된 상태일 때 높이
+    const float CurrentHeight = bExpand ? ExpandedHeight : CollapsedHeight;
+
     // 왼쪽 하단에 위치하도록 계산 (창의 좌측 하단이 화면의 좌측 하단에 위치)
-    ImVec2 windowSize(displaySize.x * 0.5f, currentHeight); // 폭은 화면의 40%
-    ImVec2 windowPos(0, displaySize.y - currentHeight);
-    
+    const ImVec2 WindowSize(DisplaySize.x * 0.5f, CurrentHeight); // 폭은 화면의 40%
+    const ImVec2 WindowPos(0, DisplaySize.y - CurrentHeight);
+
     // 창 위치와 크기를 고정
-    ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+    ImGui::SetNextWindowPos(WindowPos, ImGuiCond_Always);
+    ImGui::SetNextWindowSize(WindowSize, ImGuiCond_Always);
+
     // 창을 표시하고 닫힘 여부 확인
-    overlay.Render(FEngineLoop::GraphicDevice.DeviceContext, width, height);
+    Overlay.Render(FEngineLoop::GraphicDevice.DeviceContext, Width, Height);
     bExpand = ImGui::Begin("Console", &bWasOpen);
-    if (!bExpand) {
+    if (!bExpand)
+    {
         ImGui::End();
         return;
     }
 
     // 창을 접었을 경우 UI를 표시하지 않음
-    if (!bExpand) {
+    if (!bExpand)
+    {
         ImGui::End();
         return;
     }
-    
+
     // 버튼 UI (로그 수준별 추가)
     if (ImGui::Button("Clear")) { Clear(); }
     ImGui::SameLine();
@@ -174,73 +155,80 @@ void Console::Draw() {
     ImGui::Text("Filter:");
     ImGui::SameLine();
 
-    filter.Draw("##Filter", 100);
-    
+    Filter.Draw("##Filter", 100);
+
     ImGui::SameLine();
 
     // 로그 수준을 선택할 체크박스
-    ImGui::Checkbox("Show Display", &showLogTemp);
+    ImGui::Checkbox("Show Display", &bShowLogTemp);
     ImGui::SameLine();
-    ImGui::Checkbox("Show Warning", &showWarning);
+    ImGui::Checkbox("Show Warning", &bShowWarning);
     ImGui::SameLine();
-    ImGui::Checkbox("Show Error", &showError);
+    ImGui::Checkbox("Show Error", &bShowError);
 
     ImGui::Separator();
     // 로그 출력 (필터 적용)
     ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetTextLineHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
-    TArray CopyItems = items;
-    for (const auto& entry : CopyItems) {
-        if (!filter.PassFilter(*entry.message)) continue;
+    TArray CopyItems = Items;
+    for (const FLogEntry& Item : CopyItems)
+    {
+        if (!Filter.PassFilter(*Item.Message)) continue;
 
         // 로그 수준에 맞는 필터링
-        if ((entry.Level == ELogLevel::Display && !showLogTemp) ||
-            (entry.Level == ELogLevel::Warning && !showWarning) ||
-            (entry.Level == ELogLevel::Error && !showError))
+        if ((Item.Level == ELogLevel::Display && !bShowLogTemp) ||
+            (Item.Level == ELogLevel::Warning && !bShowWarning) ||
+            (Item.Level == ELogLevel::Error && !bShowError))
         {
             continue;
         }
 
         // 색상 지정
-        ImVec4 color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-        switch (entry.Level)
+        ImVec4 Color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+        switch (Item.Level)
         {
-        case ELogLevel::Display: color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+        case ELogLevel::Display: Color = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
             break; // 기본 흰색
-        case ELogLevel::Warning: color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+        case ELogLevel::Warning: Color = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
             break; // 노란색
-        case ELogLevel::Error: color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+        case ELogLevel::Error: Color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
             break; // 빨간색
         }
 
-        ImGui::TextColored(color, "%s", *entry.message);
+        ImGui::TextColored(Color, "%s", *Item.Message);
     }
-    if (scrollToBottom) {
+    if (bScrollToBottom)
+    {
         ImGui::SetScrollHereY(1.0f);
-        scrollToBottom = false;
+        bScrollToBottom = false;
     }
     ImGui::EndChild();
 
     ImGui::Separator();
 
     // 입력창
-            AddLog(ELogLevel::Display, ">> %s", inputBuf);
-            scrollToBottom = true; // 자동 스크롤
+    if (ImGui::InputText("Input", InputBuf, IM_ARRAYSIZE(InputBuf), ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        if (InputBuf[0])
+        {
+            AddLog(ELogLevel::Display, ">> %s", InputBuf);
+            ExecuteCommand(InputBuf);
+            bScrollToBottom = true; // 자동 스크롤
         }
-        inputBuf[0] = '\0';
+        InputBuf[0] = '\0';
     }
 
     ImGui::End();
 }
 
-void Console::ExecuteCommand(const std::string& command)
+void FConsole::ExecuteCommand(const std::string& Command)
 {
-    AddLog(LogLevel::Display, "Executing command: %s", command.c_str());
+    AddLog(ELogLevel::Display, "Executing command: %s", Command.c_str());
 
-    if (command == "clear")
+    if (Command == "clear")
     {
         Clear();
     }
-    else if (command == "help")
+    else if (Command == "help")
     {
         AddLog(ELogLevel::Display, "Available commands:");
         AddLog(ELogLevel::Display, " - clear: Clears the console");
@@ -249,19 +237,21 @@ void Console::ExecuteCommand(const std::string& command)
         AddLog(ELogLevel::Display, " - stat memory: Toggle Memory display");
         AddLog(ELogLevel::Display, " - stat none: Hide all stat overlays");
     }
-    else if (command.starts_with("stat ")) { // stat 명령어 처리
-        overlay.ToggleStat(command);
+    else if (Command.starts_with("stat "))
+    {
+        // stat 명령어 처리
+        Overlay.ToggleStat(Command);
     }
-    else {
-        AddLog(ELogLevel::Error, "Unknown command: %s", command.c_str());
+    else
+    {
+        AddLog(ELogLevel::Error, "Unknown command: %s", Command.c_str());
     }
 }
 
-void Console::OnResize(HWND hWnd)
+void FConsole::OnResize(HWND hWnd)
 {
-    RECT clientRect;
-    GetClientRect(hWnd, &clientRect);
-    width = clientRect.right - clientRect.left;
-    height = clientRect.bottom - clientRect.top;
+    RECT ClientRect;
+    GetClientRect(hWnd, &ClientRect);
+    Width = ClientRect.right - ClientRect.left;
+    Height = ClientRect.bottom - ClientRect.top;
 }
-
