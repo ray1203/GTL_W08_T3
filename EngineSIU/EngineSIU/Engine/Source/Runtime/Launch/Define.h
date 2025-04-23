@@ -11,8 +11,6 @@
 #include "Math/Matrix.h"
 
 
-#define UE_LOG Console::GetInstance().AddLog
-
 #define _TCHAR_DEFINED
 #include <d3d11.h>
 

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #define _TCHAR_DEFINED
 #include <d3dcommon.h>
-#include "BackgroundShaderCompileData.h"
+#include "ShaderCompileData.h"
 
 struct FFileMetadata;
 

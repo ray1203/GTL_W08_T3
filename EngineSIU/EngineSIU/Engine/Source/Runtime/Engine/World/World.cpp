@@ -79,7 +79,7 @@ AActor* UWorld::SpawnActor(UClass* InClass, FName InActorName)
 {
     if (!InClass)
     {
-        UE_LOG(LogLevel::Error, TEXT("SpawnActor failed: ActorClass is null."));
+        UE_LOG(ELogLevel::Error, TEXT("SpawnActor failed: ActorClass is null."));
         return nullptr;
     }
 
@@ -98,7 +98,7 @@ AActor* UWorld::SpawnActor(UClass* InClass, FName InActorName)
         return NewActor;
     }
     
-    UE_LOG(LogLevel::Error, TEXT("SpawnActor failed: Class '%s' is not derived from AActor."), *InClass->GetName());
+    UE_LOG(ELogLevel::Error, TEXT("SpawnActor failed: Class '%s' is not derived from AActor."), *InClass->GetName());
     return nullptr;
 }
 

@@ -92,6 +92,15 @@ void GetChildOfClass(UClass* ClassToLookFor, TArray<UClass*>& Results)
     RecursivelyPopulateDerivedClasses(ThreadHash, ClassToLookFor, Results);
 }
 
+uint32 GetNumOfObjectsByClass(UClass* ClassToLookFor)
+{
+    if (const TSet<UObject*>* ObjectSet = FUObjectHashTables::Get().ClassToObjectListMap.Find(ClassToLookFor))
+    {
+        return ObjectSet->Num();
+    }
+    return 0;
+}
+
 void GetObjectsOfClass(const UClass* ClassToLookFor, TArray<UObject*>& Results, bool bIncludeDerivedClasses)
 {
     // Most classes searched for have around 10 subclasses, some have hundreds

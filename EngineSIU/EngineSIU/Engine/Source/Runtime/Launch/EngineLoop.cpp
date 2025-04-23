@@ -133,7 +133,7 @@ void FEngineLoop::Tick()
         UIMgr->BeginFrame();
         UnrealEditor->Render();
 
-        Console::GetInstance().Draw();
+        FConsole::GetInstance().Draw();
 
         UIMgr->EndFrame();
 
@@ -239,9 +239,9 @@ LRESULT CALLBACK FEngineLoop::AppWndProc(HWND hWnd, uint32 Msg, WPARAM wParam, L
     return 0;
 }
 
-void FEngineLoop::UpdateUI()
+void FEngineLoop::UpdateUI() const
 {
-    Console::GetInstance().OnResize(AppWnd);
+    FConsole::GetInstance().OnResize(AppWnd);
     if (GEngineLoop.GetUnrealEditor())
     {
         GEngineLoop.GetUnrealEditor()->OnResize(AppWnd);
