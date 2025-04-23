@@ -493,3 +493,23 @@ bool FDXDShaderManager::HandleHotReloadShader()
     }
     return bIsHotReloadShader;
 }
+
+uint32 FDXDShaderManager::GetTotalVertexShaderSize() const
+{
+    uint32 TotalSize = 0;
+    for (auto& Vs : VertexShaders)
+    {
+        TotalSize += Vs.Value.GetShaderSize();
+    }
+    return TotalSize;
+}
+
+uint32 FDXDShaderManager::GetTotalPixelShaderSize() const
+{
+    uint32 TotalSize = 0;
+    for (auto& Ps : PixelShaders)
+    {
+        TotalSize += Ps.Value.GetShaderSize();
+    }
+    return TotalSize;
+}

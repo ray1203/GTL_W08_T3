@@ -43,6 +43,12 @@ public:
     /** 셰이더를 HotReload 합니다. */
     bool HandleHotReloadShader();
 
+    /** 모든 Vertex Shader의 크기를 가져옵니다. (Byte) */
+    uint32 GetTotalVertexShaderSize() const;
+
+    /** 모든 Pixel Shader의 크기를 가져옵니다. (Byte) */
+    uint32 GetTotalPixelShaderSize() const;
+
 private:
 	TMap<std::wstring, ID3D11InputLayout*> InputLayouts;
     TMap<std::wstring, TShaderMetadataPtr<ID3D11VertexShader>> VertexShaders;
