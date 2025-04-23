@@ -38,7 +38,6 @@ void FDirectionalShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGrap
     CreateShadowRasterizer();
     CreateDepthStencilState();
     LoadShadowShaders();
-    CreateDepthTexture();
 }
 
 void FDirectionalShadowMap::CreateComparisonSampler()
@@ -290,11 +289,22 @@ void FDirectionalShadowMap::SetShadowSampler(int sStart)
 
 FMatrix FDirectionalShadowMap::GetDirectionalView(int index)
 {
+    // Resource 생성 안되었을 때 요청 받을 경우에 방어 코드
+    if (DirectionalShadowResources.Num() - 1 < index) 
+    {
+        return FMatrix();
+    }
+
     return DirectionalShadowResources[index].DirectionalView;
 }
 
 FMatrix FDirectionalShadowMap::GetDirectionalProj(int index)
 {
+    // Resource 생성 안되었을 때 요청 받을 경우에 방어 코드
+    if (DirectionalShadowResources.Num() - 1 < index)
+    {
+        return FMatrix();
+    }
     return DirectionalShadowResources[index].DirectionalProj;
 }
 
