@@ -161,7 +161,7 @@ void PropertyEditorPanel::Render()
             FEngineLoop::Renderer.SpotLightShadowMapPass->RenderLinearDepth();
 
             // Shadow Depth Map 시각화
-            ID3D11ShaderResourceView* shaderSRV = FEngineLoop::Renderer.SpotLightShadowMapPass->GetShadowViewSRV();
+            ID3D11ShaderResourceView* shaderSRV = FEngineLoop::Renderer.SpotLightShadowMapPass->GetShadowDebugSRV();
             //FVector direction = GEngineLoop.Renderer.PointLightShadowMapPass->GetDirection();
             //FVector up = GEngineLoop.Renderer.PointLightShadowMapPass->GetUp();
 

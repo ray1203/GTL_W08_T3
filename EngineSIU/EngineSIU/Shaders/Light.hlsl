@@ -78,8 +78,10 @@ cbuffer Lighting : register(b0)
 Texture2D<float> DirectionalShadowTexture[MAX_DIRECTIONAL_LIGHT] : register(t10);
 // Spot
 Texture2D<float> SpotShadowTexture[MAX_SPOT_LIGHT] : register(t26);
+Texture2D<float2> SpotVSMTexture[MAX_SPOT_LIGHT] : register(t42); // For VSM (Example register)
+SamplerState VSM_Sampler : register(s11);
 // Point
-TextureCube<float> PointShadowCube[MAX_POINT_LIGHT] : register(t42);
+TextureCube<float> PointShadowCube[MAX_POINT_LIGHT] : register(t58);
 SamplerComparisonState ShadowSampler : register(s10);
 
 
@@ -87,7 +89,9 @@ SamplerComparisonState ShadowSampler : register(s10);
 cbuffer ShadowSettingData : register(b6)
 {
     float ShadowBias;
-    float3 _padding;
+    float VSM_MinVariance; // Minimum variance to prevent division by zero in VSM
+    float VSM_LightBleedReduction; // Factor to reduce light bleeding [0, 1]
+    int FilterType;
 }
 
 
@@ -130,47 +134,65 @@ float CalculateSpecular(float3 WorldNormal, float3 ToLightDir, float3 ViewDir, f
     return Spec * SpecularStrength;
 }
 
-float SampleSpotShadow(int Index, float3 worldPos, float3 spotLightPos, float3 spotLightDir, float spotOuterAngle)
+float SampleSpotShadow(int Index, float3 worldPos)
 {
-    //float3 toFragment = worldPos - spotLightPos;
-    //float distToFragment = length(toFragment);
-    //toFragment = normalize(toFragment);
-    
-    //float cosAngle = dot(toFragment, normalize(spotLightDir));
-    //float cosOuterCone = cos(spotOuterAngle / 2);
-    
-    //if (cosAngle < cosOuterCone)
-    //    return 0.0f;
-    
     float4 lightSpacePos = mul(float4(worldPos, 1.0f), SpotLights[Index].SpotLightViewProj);
+    float3 projCoords = lightSpacePos.xyz / lightSpacePos.w; // 원근 나누기
+    float2 uv = projCoords.xy * 0.5f + 0.5f; // UV 좌표 [0, 1]
+    uv.y = 1.0f - uv.y; // Y축 뒤집기
     
-    float2 uv = lightSpacePos.xy / lightSpacePos.w * 0.5f + 0.5f;
-    uv.y = 1 - uv.y;
-    float depth = lightSpacePos.z / lightSpacePos.w - ShadowBias;
+    float currentDepth = projCoords.z;
     
-    if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f)
-        return 1.0f;
-    
-    // pcf
-    float shadow = 0.0f;
-    uint width, height;
-    SpotShadowTexture[Index].GetDimensions(width, height);
-    float2 texelSize = float2(1.0 / width, 1.0 / height);
-
-    for (int x = -1; x <= 1; ++x)
+    if (uv.x < 0.0f || uv.x > 1.0f || uv.y < 0.0f || uv.y > 1.0f || currentDepth > 1.0f)
     {
-        for (int y = -1; y <= 1; ++y)
-        {
-            float2 offset = float2(x, y) * texelSize;
-            shadow += SpotShadowTexture[Index].SampleCmpLevelZero(
-                ShadowSampler,
-                uv.xy + offset,
-                depth
-            );
-        }
+        return 1.0f;
     }
-    shadow /= 9.0;
-    return shadow;
+    
+    float shadowFactor = 1.0f;
+
+    if (FilterType == 1) // VSM 필터링
+    {
+        float2 moments = SpotVSMTexture[Index].Sample(VSM_Sampler, uv);
+        
+        float variance = moments.y - (moments.x * moments.x);
+        
+        variance = max(variance, VSM_MinVariance);
+
+        float delta = currentDepth - moments.x; // 바이어스 없는 깊이 사용
+
+        float litFactor = variance / (variance + delta * delta); // 체비셰프 부등식
+
+        // 빛 번짐 감소
+        litFactor = (delta <= ShadowBias) ? 1.0f : lerp(litFactor, 0.0f, VSM_LightBleedReduction);
+
+        shadowFactor = saturate(litFactor);
+    }
+    else // PCF 필터링
+    {
+        float depthForComparison = currentDepth - ShadowBias;
+
+        float shadowAccum = 0.0f;
+        uint width, height;
+        SpotShadowTexture[Index].GetDimensions(width, height);
+        float2 texelSize = float2(1.0 / width, 1.0 / height);
+
+        [unroll]
+        for (int x = -1; x <= 1; ++x)
+        {
+            [unroll]
+            for (int y = -1; y <= 1; ++y)
+            {
+                float2 offset = float2(x, y) * texelSize;
+                shadowAccum += SpotShadowTexture[Index].SampleCmpLevelZero(
+                    ShadowSampler,
+                    uv + offset,
+                    depthForComparison 
+                );
+            }
+        }
+        shadowFactor = shadowAccum / 9.0f;
+    }
+    return shadowFactor;
 }
 // ——— 그림자 샘플링 헬퍼 ———
 float SamplePointShadow(int Index, float3 ToLight, float3 worldPos)
@@ -317,7 +339,7 @@ float4 SpotLight(int Index, float3 WorldPosition, float3 WorldNormal, float3 Wor
 #endif
     
     //return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity, 1.0);
-    float shadow = SampleSpotShadow(Index, WorldPosition, LightInfo.Position, LightInfo.Direction, LightInfo.OuterRad);
+    float shadow = SampleSpotShadow(Index, WorldPosition);
     //float shadow = SampleSpotShadow(WorldNormal, WorldPosition, LightInfo.Position, LightInfo.Direction, LightInfo.OuterRad);
     
     return float4(Lit * Attenuation * SpotlightFactor * LightInfo.Intensity * shadow, 1.0);

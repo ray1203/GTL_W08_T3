@@ -8,51 +8,15 @@
 #include "Engine/Classes/Components/StaticMeshComponent.h"
 #include "Engine/Source/Runtime/Core/Math/JungleMath.h"
 
-void FSpotLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphic, FDXDShaderManager* InShaderManager)
+void FSpotLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphic, FDXDShaderManager* InShaderManager, EShadowFilter InShadowFilter)
 {
     BufferManager = InBufferManager;
     Graphics = InGraphic;
     ShaderManager = InShaderManager;
+    ShadowFilter = InShadowFilter;
 
-    
+    HRESULT hr;
 
-    // Begin Test
-    D3D11_TEXTURE2D_DESC linDesc = {};
-    linDesc.Width = ShadowMapSize;
-    linDesc.Height = ShadowMapSize;
-    linDesc.MipLevels = 1;
-    linDesc.ArraySize = 1;
-    linDesc.Format = DXGI_FORMAT_R32_TYPELESS;  // 또는 직접 R32_FLOAT 로 해도 무방
-    linDesc.SampleDesc = { 1,0 };
-    linDesc.Usage = D3D11_USAGE_DEFAULT;
-    // ▶ RTV 바인드를 추가해 줍니다
-    linDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-    linDesc.CPUAccessFlags = 0;
-    linDesc.MiscFlags = 0;
-
-    HRESULT hr = Graphics->Device->CreateTexture2D(&linDesc, nullptr, &DepthLinearBuffer);
-    assert(SUCCEEDED(hr));
-    // End Test
-
-    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-    srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
-    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MostDetailedMip = 0;
-    srvDesc.Texture2D.MipLevels = 1;
-
-    hr = Graphics->Device->CreateShaderResourceView(DepthLinearBuffer, &srvDesc, &ShadowViewSRV);
-    assert(SUCCEEDED(hr));
-
-    D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-    rtvDesc.Format = DXGI_FORMAT_R32_FLOAT;
-    rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-    rtvDesc.Texture2D.MipSlice = 0;
-
-    hr = Graphics->Device->CreateRenderTargetView(
-        DepthLinearBuffer, &rtvDesc, &ShadowViewRTV);
-    assert(SUCCEEDED(hr));
-
-    // 4) 비교 샘플러 생성 (쉐도우 비교 샘플링용)
     D3D11_SAMPLER_DESC sampDesc{};
     sampDesc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
     sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
@@ -69,6 +33,71 @@ void FSpotLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphi
     hr = Graphics->Device->CreateSamplerState(&sampDesc, &ShadowSampler);
     assert(SUCCEEDED(hr));
 
+    D3D11_SAMPLER_DESC sampDescVSM = {};
+    sampDescVSM.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+    sampDescVSM.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+    sampDescVSM.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+    sampDescVSM.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+    sampDescVSM.BorderColor[0] = 1.0f;
+    sampDescVSM.BorderColor[1] = 1.0f;
+    sampDescVSM.BorderColor[2] = 1.0f;
+    sampDescVSM.BorderColor[3] = 1.0f;
+    sampDescVSM.MinLOD = 0;
+    sampDescVSM.MaxLOD = D3D11_FLOAT32_MAX;
+    sampDescVSM.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+    hr = Graphics->Device->CreateSamplerState(&sampDescVSM, &ShadowSamplerVSM);
+    assert(SUCCEEDED(hr));
+
+    // 깊이 전용 버텍스 셰이더 가져오기
+    DepthVS = ShaderManager->GetVertexShaderByKey(L"DepthOnlyVS");
+    DepthIL = ShaderManager->GetInputLayoutByKey(L"DepthOnlyVS");
+
+    InitializeDebugVisualizationResources();
+}
+
+void FSpotLightShadowMap::InitializeDebugVisualizationResources()
+{
+    HRESULT hr;
+
+    D3D11_TEXTURE2D_DESC linDesc = {};
+    linDesc.Width = ShadowMapSize;
+    linDesc.Height = ShadowMapSize;
+    linDesc.MipLevels = 1;
+    linDesc.ArraySize = 1;
+    linDesc.Format = DXGI_FORMAT_R32_TYPELESS;  // 또는 직접 R32_FLOAT 로 해도 무방
+    linDesc.SampleDesc = { 1,0 };
+    linDesc.Usage = D3D11_USAGE_DEFAULT;
+    linDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    linDesc.CPUAccessFlags = 0;
+    linDesc.MiscFlags = 0;
+
+    //
+
+    hr = Graphics->Device->CreateTexture2D(&linDesc, nullptr, &DebugDepthLinearBuffer);
+    assert(SUCCEEDED(hr));
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+    srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MostDetailedMip = 0;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    hr = Graphics->Device->CreateShaderResourceView(DebugDepthLinearBuffer, &srvDesc, &ShadowDebugSRV);
+    assert(SUCCEEDED(hr));
+
+    //
+
+    D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+    rtvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+    rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+    rtvDesc.Texture2D.MipSlice = 0;
+
+    hr = Graphics->Device->CreateRenderTargetView(DebugDepthLinearBuffer, &rtvDesc, &ShadowDebugRTV);
+    assert(SUCCEEDED(hr));
+
+    //
+
     D3D11_SAMPLER_DESC sampLinearDesc = {};
     sampLinearDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
     sampLinearDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -80,17 +109,19 @@ void FSpotLightShadowMap::Initialize(FDXDBufferManager* InBufferManager, FGraphi
     sampLinearDesc.MinLOD = 0;
     sampLinearDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
-    hr = Graphics->Device->CreateSamplerState(&sampLinearDesc, &LinearSampler);
+    hr = Graphics->Device->CreateSamplerState(&sampLinearDesc, &DebugSampler);
     assert(SUCCEEDED(hr));
 
-    // 깊이 전용 버텍스 셰이더 가져오기
-    DepthVS = ShaderManager->GetVertexShaderByKey(L"DepthOnlyVS");
-    DepthIL = ShaderManager->GetInputLayoutByKey(L"DepthOnlyVS");
+    if (ShadowFilter == EShadowFilter::ESF_VSM)
+    {
+        // VSM 생성용 픽셀 셰이더 로드
+        VSMGenerationPS = ShaderManager->GetPixelShaderByKey(L"VSMGenerationPS");
+        assert(VSMGenerationPS != nullptr);
+    }
 
     FullscreenVS = ShaderManager->GetVertexShaderByKey(L"FullScreenVS");
     FullscreenIL = ShaderManager->GetInputLayoutByKey(L"FullScreenVS");
     DepthVisualizePS = ShaderManager->GetPixelShaderByKey(L"DepthVisualizePS");
-
 }
 
 void FSpotLightShadowMap::PrepareRender()
@@ -189,34 +220,55 @@ void FSpotLightShadowMap::RenderShadowMap()
         }
     }
 
-    for (int i = 0; i < SpotLightShadowResources.Num(); i++) 
+    for (int i = 0; i < SpotLightShadowResources.Num(); i++)
     {
-        // 뎁스 타겟 설정
-        Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, SpotLightShadowResources[i].ShadowDSV);
-        Graphics->DeviceContext->ClearDepthStencilView(SpotLightShadowResources[i].ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+        FSpotLightShadowResource& res = SpotLightShadowResources[i];
 
+        // Set Viewport
         D3D11_VIEWPORT vp = { 0, 0, (FLOAT)ShadowMapSize, (FLOAT)ShadowMapSize, 0, 1 };
         Graphics->DeviceContext->RSSetViewports(1, &vp);
 
-        // 파이프라인 세팅
-        Graphics->DeviceContext->VSSetShader(DepthVS, nullptr, 0);
-        Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
+        // Set Common Pipeline States
         Graphics->DeviceContext->IASetInputLayout(DepthIL);
         Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        Graphics->DeviceContext->VSSetShader(DepthVS, nullptr, 0);
 
+        // Update Constant Buffers
         BufferManager->BindConstantBuffer(TEXT("FShadowViewProj"), 0, EShaderStage::Vertex);
-        BufferManager->UpdateConstantBuffer(TEXT("FShadowViewProj"), SpotLightShadowResources[i].SpotLightViewProjMatrix);
+        BufferManager->UpdateConstantBuffer(TEXT("FShadowViewProj"), res.SpotLightViewProjMatrix);
+        BufferManager->BindConstantBuffer(TEXT("FShadowObjWorld"), 1, EShaderStage::Vertex); // Bind once outside mesh loop
 
-        // 메시 렌더
+        if (ShadowFilter == EShadowFilter::ESF_VSM)
+        {
+            // --- VSM Rendering Path ---
+            // Set Render Target (VSM Texture) and Depth Buffer (Separate)
+            ID3D11RenderTargetView* rtvs[] = { res.VSMRTV };
+            Graphics->DeviceContext->OMSetRenderTargets(1, rtvs, res.VSMDepthDSV);
+
+            // Clear VSM Render Target (depth=1, depth^2=1) and Depth Buffer
+            const float clearColorVSM[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            Graphics->DeviceContext->ClearRenderTargetView(res.VSMRTV, clearColorVSM);
+            Graphics->DeviceContext->ClearDepthStencilView(res.VSMDepthDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+            // Set VSM Pixel Shader
+            Graphics->DeviceContext->PSSetShader(VSMGenerationPS, nullptr, 0);
+        }
+        else // Standard PCF or other non-VSM filter
+        {
+            Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, res.ShadowDSV);
+            Graphics->DeviceContext->ClearDepthStencilView(res.ShadowDSV, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+            Graphics->DeviceContext->PSSetShader(nullptr, nullptr, 0);
+        }
+
+        // Render Meshes (Loop remains the same)
         for (auto* Comp : MeshComps)
         {
             if (!Comp->GetStaticMesh()) continue;
             auto* RenderData = Comp->GetStaticMesh()->GetRenderData();
-            if (!RenderData) continue;
+            if (!RenderData || RenderData->Vertices.Num() == 0) continue; // Check for valid render data
 
-            // 월드 행렬 상수
             FMatrix W = Comp->GetWorldMatrix();
-            BufferManager->BindConstantBuffer(TEXT("FShadowObjWorld"), 1, EShaderStage::Vertex);
             BufferManager->UpdateConstantBuffer(TEXT("FShadowObjWorld"), W);
 
             UINT stride = sizeof(FStaticMeshVertex);
@@ -225,17 +277,19 @@ void FSpotLightShadowMap::RenderShadowMap()
             auto* ib = RenderData->IndexBuffer;
 
             Graphics->DeviceContext->IASetVertexBuffers(0, 1, &vb, &stride, &offset);
-            if (ib)
+            if (ib && RenderData->Indices.Num() > 0) // Check for valid index buffer
             {
                 Graphics->DeviceContext->IASetIndexBuffer(ib, DXGI_FORMAT_R32_UINT, 0);
                 Graphics->DeviceContext->DrawIndexed(RenderData->Indices.Num(), 0, 0);
             }
-            else
-            {
-                Graphics->DeviceContext->Draw(RenderData->Vertices.Num(), 0);
-            }
         }
+
+        // --- Unbind Render Targets / Resources ---
+        // Important if the generated shadow map is immediately used as SRV
+        ID3D11RenderTargetView* nullRTVs[] = { nullptr };
+        Graphics->DeviceContext->OMSetRenderTargets(1, nullRTVs, nullptr);
     }
+
 }
 
 
@@ -244,6 +298,9 @@ void FSpotLightShadowMap::ClearRenderArr()
     SpotLights.Empty();
 }
 
+// 근데 지금 여기서 VSM까지 넘겨주나
+// 이거 잘못됐네 ㅇㅇ
+// SetShadowVSMResource로 하거나 따로 분기를 둬야할 것 같음.
 void FSpotLightShadowMap::SetShadowResource(int tStart)
 {
     for (int i = 0; i < SpotLightShadowResources.Num(); i++) 
@@ -251,10 +308,39 @@ void FSpotLightShadowMap::SetShadowResource(int tStart)
         Graphics->DeviceContext->PSSetShaderResources(tStart + i, 1, &SpotLightShadowResources[i].ShadowSRV);
     }
 }
+void FSpotLightShadowMap::SetShadowResources(int pcfTextureSlotStart, int vsmTextureSlotStart)
+{
+    for (int i = 0; i < SpotLightShadowResources.Num(); i++)
+    {
+        if (SpotLightShadowResources[i].ShadowSRV)
+        {
+            Graphics->DeviceContext->PSSetShaderResources(
+                pcfTextureSlotStart + i, 
+                1,
+                &SpotLightShadowResources[i].ShadowSRV
+            );
+        }
+
+        if (SpotLightShadowResources[i].VSMSRV)
+        {
+            Graphics->DeviceContext->PSSetShaderResources(
+                vsmTextureSlotStart + i, // VSM 시작 슬롯 + 오프셋
+                1,
+                &SpotLightShadowResources[i].VSMSRV
+            );
+        }
+    }
+}
+
 
 void FSpotLightShadowMap::SetShadowSampler(int sStart)
 {
     Graphics->DeviceContext->PSSetSamplers(sStart, 1, &ShadowSampler);
+}
+
+void FSpotLightShadowMap::SetShadowFilterSampler(int sStart)
+{
+    Graphics->DeviceContext->PSSetSamplers(sStart, 1, &ShadowSamplerVSM);
 }
 
 ID3D11ShaderResourceView* FSpotLightShadowMap::GetShadowSRV(int index)
@@ -282,10 +368,10 @@ void FSpotLightShadowMap::RenderLinearDepth()
     BufferManager->BindConstantBuffer(TEXT("FDepthMapData"), 0, EShaderStage::Pixel);
 
     // (A) RTV 세팅 & 클리어
-    ID3D11RenderTargetView* rtvs[] = { ShadowViewRTV };
+    ID3D11RenderTargetView* rtvs[] = { ShadowDebugRTV };
     Graphics->DeviceContext->OMSetRenderTargets(1, rtvs, nullptr);
     const float clearColor[4] = { 0, 0, 0, 0 };
-    Graphics->DeviceContext->ClearRenderTargetView(ShadowViewRTV, clearColor);
+    Graphics->DeviceContext->ClearRenderTargetView(ShadowDebugRTV, clearColor);
 
     // (B) 뷰포트 설정
     D3D11_VIEWPORT vp = { 0.f, 0.f, (float)ShadowMapSize, (float)ShadowMapSize, 0.f, 1.f };
@@ -299,7 +385,7 @@ void FSpotLightShadowMap::RenderLinearDepth()
 
     // (D) 원본 Depth SRV 와 리니어 샘플러 바인딩
     Graphics->DeviceContext->PSSetShaderResources(0, 1, &SpotLightShadowResources[0].ShadowSRV);
-    Graphics->DeviceContext->PSSetSamplers(0, 1, &LinearSampler);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &DebugSampler);
 
     // (E) 카메라(라이트) 매트릭스 및 Near/Far/Gamma 상수 업데이트
     FDepthMapData depthMapData;
@@ -367,6 +453,65 @@ void FSpotLightShadowMap::AddSpotLightResource(int num)
         hr = Graphics->Device->CreateShaderResourceView(spotLightShadowResource.DepthStencilBuffer, &srvDesc, &spotLightShadowResource.ShadowSRV);
         assert(SUCCEEDED(hr));
 
+        D3D11_TEXTURE2D_DESC texDescVSM = {};
+        texDescVSM.Width = ShadowMapSize;
+        texDescVSM.Height = ShadowMapSize;
+        texDescVSM.MipLevels = 1;
+        texDescVSM.ArraySize = 1;
+        texDescVSM.Format = DXGI_FORMAT_R32G32_FLOAT; 
+        texDescVSM.SampleDesc.Count = 1;
+        texDescVSM.Usage = D3D11_USAGE_DEFAULT;
+        texDescVSM.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE; // Bind as RT and SRV
+        texDescVSM.CPUAccessFlags = 0;
+        texDescVSM.MiscFlags = 0;
+
+        hr = Graphics->Device->CreateTexture2D(&texDescVSM, nullptr, &spotLightShadowResource.VSMTexture);
+        assert(SUCCEEDED(hr));
+
+        // Begin Test
+
+        // VSM Render Target View
+        D3D11_RENDER_TARGET_VIEW_DESC rtvDescVSM = {};
+        rtvDescVSM.Format = texDescVSM.Format;
+        rtvDescVSM.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        rtvDescVSM.Texture2D.MipSlice = 0;
+        hr = Graphics->Device->CreateRenderTargetView(spotLightShadowResource.VSMTexture, &rtvDescVSM, &spotLightShadowResource.VSMRTV);
+        assert(SUCCEEDED(hr));
+
+        // VSM Shader Resource View
+        D3D11_SHADER_RESOURCE_VIEW_DESC srvDescVSM = {};
+        srvDescVSM.Format = texDescVSM.Format;
+        srvDescVSM.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        srvDescVSM.Texture2D.MostDetailedMip = 0;
+        srvDescVSM.Texture2D.MipLevels = 1;
+        hr = Graphics->Device->CreateShaderResourceView(spotLightShadowResource.VSMTexture, &srvDescVSM, &spotLightShadowResource.VSMSRV);
+        assert(SUCCEEDED(hr));
+
+        // VSM Depth Buffer (Separate)
+        D3D11_TEXTURE2D_DESC depthDescVSM = {};
+        depthDescVSM.Width = ShadowMapSize;
+        depthDescVSM.Height = ShadowMapSize;
+        depthDescVSM.MipLevels = 1;
+        depthDescVSM.ArraySize = 1;
+        depthDescVSM.Format = DXGI_FORMAT_D32_FLOAT; // Standard depth format
+        depthDescVSM.SampleDesc.Count = 1;
+        depthDescVSM.Usage = D3D11_USAGE_DEFAULT;
+        depthDescVSM.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        depthDescVSM.CPUAccessFlags = 0;
+        depthDescVSM.MiscFlags = 0;
+
+        hr = Graphics->Device->CreateTexture2D(&depthDescVSM, nullptr, &spotLightShadowResource.VSMDepthBuffer);
+        assert(SUCCEEDED(hr));
+
+        // VSM Depth Stencil View
+        D3D11_DEPTH_STENCIL_VIEW_DESC dsvDescVSM = {};
+        dsvDescVSM.Format = depthDescVSM.Format;
+        dsvDescVSM.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        dsvDescVSM.Texture2D.MipSlice = 0;
+        hr = Graphics->Device->CreateDepthStencilView(spotLightShadowResource.VSMDepthBuffer, &dsvDescVSM, &spotLightShadowResource.VSMDepthDSV);
+        assert(SUCCEEDED(hr));
+        // End Test
+
         SpotLightShadowResources.Add(spotLightShadowResource);
     }
 }
@@ -375,17 +520,24 @@ void FSpotLightShadowMap::DeleteSpotLightResource(int num)
 {
     for (int i = prevSpotNum - 1; i >= prevSpotNum - num; i--) 
     {
-        SpotLightShadowResources[i].DepthStencilBuffer->Release();
-        SpotLightShadowResources[i].ShadowSRV->Release();
-        SpotLightShadowResources[i].ShadowDSV->Release();
+        if (SpotLightShadowResources[i].DepthStencilBuffer) SpotLightShadowResources[i].DepthStencilBuffer->Release();
+        if (SpotLightShadowResources[i].ShadowSRV) SpotLightShadowResources[i].ShadowSRV->Release();
+        if (SpotLightShadowResources[i].ShadowDSV) SpotLightShadowResources[i].ShadowDSV->Release();
+
+        if (SpotLightShadowResources[i].VSMTexture) SpotLightShadowResources[i].VSMTexture->Release();
+        if (SpotLightShadowResources[i].VSMRTV) SpotLightShadowResources[i].VSMRTV->Release();
+        if (SpotLightShadowResources[i].VSMSRV) SpotLightShadowResources[i].VSMSRV->Release();
+        if (SpotLightShadowResources[i].VSMDepthBuffer) SpotLightShadowResources[i].VSMDepthBuffer->Release();
+        if (SpotLightShadowResources[i].VSMDepthDSV) SpotLightShadowResources[i].VSMDepthDSV->Release();
+
 
         SpotLightShadowResources.RemoveAt(i);
     }
 }
 
-ID3D11ShaderResourceView* FSpotLightShadowMap::GetShadowViewSRV()
+ID3D11ShaderResourceView* FSpotLightShadowMap::GetShadowDebugSRV()
 {
-    return ShadowViewSRV;
+    return ShadowDebugSRV;
 }
 
 FMatrix FSpotLightShadowMap::GetViewProjMatrix(int index)
