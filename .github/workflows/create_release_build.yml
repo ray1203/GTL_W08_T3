@@ -81,15 +81,15 @@ jobs:
       shell: pwsh
 
     - name: Copy Assets folder
-      run: Copy-Item -Path "${{ github.workspace }}/EngineSIU/Assets" -Destination "${{ github.workspace }}/${{ env.RELEASE_DIR }}/Assets" -Recurse -Force -ErrorAction Stop
+      run: Copy-Item -Path "${{ github.workspace }}/EngineSIU/EngineSIU/Assets" -Destination "${{ github.workspace }}/${{ env.RELEASE_DIR }}/Assets" -Recurse -Force -ErrorAction Stop
       shell: pwsh
 
     - name: Copy Contents folder
-      run: Copy-Item -Path "${{ github.workspace }}/EngineSIU/Contents" -Destination "${{ github.workspace }}/${{ env.RELEASE_DIR }}/Contents" -Recurse -Force -ErrorAction Stop
+      run: Copy-Item -Path "${{ github.workspace }}/EngineSIU/EngineSIU/Contents" -Destination "${{ github.workspace }}/${{ env.RELEASE_DIR }}/Contents" -Recurse -Force -ErrorAction Stop
       shell: pwsh
 
     - name: Copy Shaders folder
-      run: Copy-Item -Path "${{ github.workspace }}/EngineSIU/Shaders" -Destination "${{ github.workspace }}/${{ env.RELEASE_DIR }}/Shaders" -Recurse -Force -ErrorAction Stop
+      run: Copy-Item -Path "${{ github.workspace }}/EngineSIU/EngineSIU/Shaders" -Destination "${{ github.workspace }}/${{ env.RELEASE_DIR }}/Shaders" -Recurse -Force -ErrorAction Stop
       shell: pwsh
 
     # 7. 압축 파일 생성
