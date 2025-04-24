@@ -604,6 +604,9 @@
     <Content Include="EngineSIU\.editorconfig" />
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="DefaultPropertySheet.props" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
