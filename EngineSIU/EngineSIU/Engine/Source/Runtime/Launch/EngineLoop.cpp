@@ -9,8 +9,7 @@
 #include "UnrealEd/EditorViewportClient.h"
 #include "UnrealEd/UnrealEd.h"
 #include "World/World.h"
-
-
+#include <sol/sol.hpp>
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 FGraphicsDevice FEngineLoop::GraphicDevice;
@@ -38,7 +37,26 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 {
     /* must be initialized before window. */
     WindowInit(hInstance);
+    if (0)
+    {
+        // Lua VM 생성 및 라이브러리 오픈
+        sol::state lua;
+        lua.open_libraries(sol::lib::base, sol::lib::math);
 
+        // Lua 스크립트 실행 (문자열 기반)
+        lua.script(R"(
+        print("[Lua] Hello from Lua!")
+        function add(a, b)
+            return a + b
+        end
+    )");
+
+        // C++에서 Lua 함수 호출
+        sol::function add = lua["add"];
+
+        int result = add(10, 20);
+
+    }
     UnrealEditor = new UnrealEd();
     BufferManager = new FDXDBufferManager();
     UIMgr = new UImGuiManager;
