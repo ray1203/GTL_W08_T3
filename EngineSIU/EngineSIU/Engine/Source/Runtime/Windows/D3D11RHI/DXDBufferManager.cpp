@@ -197,6 +197,110 @@ void FDXDBufferManager::CreateQuadBuffer()
     FIndexInfo IndexInfo;
     CreateIndexBuffer(TEXT("QuadBuffer"), Indices, IndexInfo);
 }
+//
+//void FDXDBufferManager::Draw(const FString& InName, ID3D11DeviceContext* DeviceContext)
+//{
+//    if (!VertexBufferPool.Contains(InName))
+//    {
+//        UE_LOG(ELogLevel::Error, "FDXDBufferManager::Draw Failed : invalid key");
+//        return;
+//    }
+//
+//    FVertexInfo& VertexInfo = VertexBufferPool[InName];
+//    uint32 NumVertices = VertexInfo.NumVertices;
+//
+//    if (DeviceContext)
+//    {
+//        DeviceContext->Draw(NumVertices, 0);
+//    }
+//    else
+//    {
+//        if (!DXDeviceContext)
+//        {
+//            UE_LOG(ELogLevel::Error, "FDXDBufferManager::Draw Failed : Default DeviceContext not exist");
+//        }
+//
+//        DXDeviceContext->Draw(NumVertices, 0);
+//    }
+//}
+//
+//void FDXDBufferManager::DrawIndexed(const FString& InName, ID3D11DeviceContext* DeviceContext)
+//{
+//    if (!IndexBufferPool.Contains(InName))
+//    {
+//        UE_LOG(ELogLevel::Error, "FDXDBufferManager::DrawIndexed Failed : invalid key");
+//        return;
+//    }
+//
+//    FIndexInfo& IndexInfo = IndexBufferPool[InName];
+//    uint32 NumIndices = IndexInfo.NumIndices;
+//
+//    if (DeviceContext)
+//    {
+//        DeviceContext->DrawIndexed(NumIndices, 0, 0);
+//    }
+//    else
+//    {
+//        if (!DXDeviceContext)
+//        {
+//            UE_LOG(ELogLevel::Error, "FDXDBufferManager::DrawIndexed Failed : Default DeviceContext not exist");
+//        }
+//
+//        DXDeviceContext->DrawIndexed(NumIndices, 0, 0);
+//    }
+//}
+//
+//void FDXDBufferManager::DrawInstanced(const FString& InName, uint32 InstanceCount, ID3D11DeviceContext* DeviceContext)
+//{
+//    if (!VertexBufferPool.Contains(InName))
+//    {
+//        UE_LOG(ELogLevel::Error, "FDXDBufferManager::DrawInstanced Failed : invalid key");
+//        return;
+//    }
+//
+//    FVertexInfo& VertexInfo = VertexBufferPool[InName];
+//    uint32 NumVertices = VertexInfo.NumVertices;
+//
+//    if (DeviceContext)
+//    {
+//        DeviceContext->DrawInstanced(NumVertices, InstanceCount, 0, 0);
+//    }
+//    else
+//    {
+//        if (!DXDeviceContext)
+//        {
+//            UE_LOG(ELogLevel::Error, "FDXDBufferManager::DrawInstanced Failed : Default DeviceContext not exist");
+//        }
+//
+//        DXDeviceContext->DrawInstanced(NumVertices, InstanceCount, 0, 0);
+//    }
+//}
+//
+//void FDXDBufferManager::DrawIndexedInstanced(const FString& InName, uint32 InstanceCount, ID3D11DeviceContext* DeviceContext)
+//{
+//    if (!IndexBufferPool.Contains(InName))
+//    {
+//        UE_LOG(ELogLevel::Error, "FDXDBufferManager::DrawIndexedInstanced Failed : invalid key");
+//        return;
+//    }
+//
+//    FIndexInfo& IndexInfo = IndexBufferPool[InName];
+//    uint32 NumIndices = IndexInfo.NumIndices;
+//
+//    if (DeviceContext)
+//    {
+//        DeviceContext->DrawIndexedInstanced(NumIndices, InstanceCount, 0, 0, 0);
+//    }
+//    else
+//    {
+//        if (!DXDeviceContext)
+//        {
+//            UE_LOG(ELogLevel::Error, "FDXDBufferManager::DrawIndexedInstanced Failed : Default DeviceContext not exist");
+//        }
+//
+//        DXDeviceContext->DrawIndexedInstanced(NumIndices, InstanceCount, 0, 0, 0);
+//    }
+//}
 
 void FDXDBufferManager::GetQuadBuffer(FVertexInfo& OutVertexInfo, FIndexInfo& OutIndexInfo)
 {

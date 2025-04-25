@@ -167,6 +167,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\BoxComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\CapsuleComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileData.cpp" />
@@ -301,6 +302,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\ShapeComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\BoxComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\CapsuleComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileData.h" />
@@ -406,6 +408,9 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\Texture.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\GameFramework\Actor.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Level.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\CollisionShape.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\HitResult.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\OverlapInfo.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\UnrealClient.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\UserInterface\Console.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\ViewportClient.h" />

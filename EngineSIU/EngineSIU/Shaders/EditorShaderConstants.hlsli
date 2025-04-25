@@ -23,18 +23,16 @@ cbuffer ConstantBufferDebugSphere : register(b11)
 
 struct ConeData
 {
-    float3 ApexPosition;
-    float InnerRadius;
-    
-    float OuterRadius;
+    float3 ApexPosiiton;
+    float Radius;
     float3 Direction;
-    
-    float Height;
-    float3 Padding;
+    float Angle;
+    float4 Color;
 };
+
 cbuffer ConstantBufferDebugCone : register(b11)
 {
-    ConeData DataCone[100];
+    ConeData DataCone[16];
 }
 
 cbuffer ConstantBufferDebugGrid : register(b11)
