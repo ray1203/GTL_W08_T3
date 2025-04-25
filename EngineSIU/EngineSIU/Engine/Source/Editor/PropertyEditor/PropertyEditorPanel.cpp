@@ -1,7 +1,7 @@
 #include "PropertyEditorPanel.h"
 
 #include "World/World.h"
-#include "Actors/Player.h"
+#include "Actors/EditorPlayer.h"
 #include "Components/Light/LightComponent.h"
 #include "Components/Light/PointLightComponent.h"
 #include "Components/Light/SpotLightComponent.h"

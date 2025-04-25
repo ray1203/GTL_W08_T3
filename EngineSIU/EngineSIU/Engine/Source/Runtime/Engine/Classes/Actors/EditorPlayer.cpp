@@ -1,4 +1,4 @@
-#include "Player.h"
+#include "EditorPlayer.h"
 
 #include "UnrealClient.h"
 #include "World/World.h"

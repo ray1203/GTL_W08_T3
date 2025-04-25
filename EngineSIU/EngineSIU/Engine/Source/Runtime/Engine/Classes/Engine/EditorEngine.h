@@ -1,6 +1,6 @@
 #pragma once
 #include "Engine.h"
-#include "Actors/Player.h"
+#include "Actors/EditorPlayer.h"
 
 /*
     Editor 모드에서 사용될 엔진.
