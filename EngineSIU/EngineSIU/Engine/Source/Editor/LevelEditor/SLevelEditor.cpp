@@ -381,6 +381,11 @@ void SLevelEditor::Initialize(uint32 InEditorWidth, uint32 InEditorHeight)
     {
         ActiveViewportClient->InputKey(InKeyEvent);
     });
+
+    //test
+
+    Test1Handle = Handler->OnMouseDownDelegate.AddDynamic(this, &SLevelEditor::AddDynamicTest1);
+    Test2Handle = Handler->OnMouseUpDelegate.AddDynamic(this, &SLevelEditor::AddDynamicTest2);
 }
 
 void SLevelEditor::Tick(float DeltaTime)
@@ -555,4 +560,36 @@ void SLevelEditor::WriteIniFile(const FString& FilePath, const TMap<FString, FSt
         file << *pair.Key << "=" << *pair.Value << "\n";
     }
 }
+
+void SLevelEditor::AddDynamicTest1(const FPointerEvent& PointerEvent)
+{
+    UE_LOG(ELogLevel::Warning, "Test On MouseDown");
+    RemoveTest1();
+}
+
+void SLevelEditor::AddDynamicTest2(const FPointerEvent& PointerEvent)
+{
+    UE_LOG(ELogLevel::Warning, "Test On MouseUp");
+    RemoveTest2();
+}
+
+void SLevelEditor::RemoveTest1()
+{
+    if (Test1Handle->IsValid())
+    {
+        GEngineLoop.GetAppMessageHandler()->OnMouseDownDelegate.Remove(Test1Handle.value());
+        UE_LOG(ELogLevel::Warning, "RemoveTest1 On MouseUp");
+    }
+}
+
+void SLevelEditor::RemoveTest2()
+{
+    if (Test2Handle->IsValid())
+    {
+        GEngineLoop.GetAppMessageHandler()->OnMouseUpDelegate.Remove(Test2Handle.value());
+        UE_LOG(ELogLevel::Warning, "RemoveTest2 On MouseUp");
+    }
+
+}
+
 
