@@ -167,6 +167,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\BoxComponent.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\CapsuleComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileData.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompile.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileUtility.cpp" />
@@ -295,8 +297,12 @@
     <ClCompile Include="EngineSIU\Engine\Source\ThirdParty\ImGui\include\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\ThirdParty\tinyfiledialogs\include\tinyfiledialogs.cpp" />
     <ClCompile Include="EngineSIU\LightGridGenerator.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\SphereComponent.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\ShapeComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\BoxComponent.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\CapsuleComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileData.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompile.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileUtility.h" />
@@ -481,6 +487,8 @@
     <ClInclude Include="EngineSIU\Engine\Source\ThirdParty\Json\include\Json\json.hpp" />
     <ClInclude Include="EngineSIU\Engine\Source\ThirdParty\tinyfiledialogs\include\tinyfiledialogs.h" />
     <ClInclude Include="EngineSIU\LightGridGenerator.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\SphereComponent.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\ShapeComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EngineSIU\Font\IconDefs.h" />

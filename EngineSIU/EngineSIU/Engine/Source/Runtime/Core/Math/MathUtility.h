@@ -7,7 +7,7 @@
 #define PI                   (3.1415926535897932f)
 #define SMALL_NUMBER         (1.e-8f)
 #define KINDA_SMALL_NUMBER   (1.e-4f)
-
+#define BIG_NUMBER           (3.402823466e+38f) // FLT_MAX
 #define PI_DOUBLE            (3.141592653589793238462643383279502884197169399)
 
 

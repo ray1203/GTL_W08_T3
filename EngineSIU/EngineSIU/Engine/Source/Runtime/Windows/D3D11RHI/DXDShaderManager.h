@@ -49,6 +49,7 @@ public:
     /** 모든 Pixel Shader의 크기를 가져옵니다. (Byte) */
     uint32 GetTotalPixelShaderSize() const;
 
+    
 private:
 	TMap<std::wstring, ID3D11InputLayout*> InputLayouts;
     TMap<std::wstring, TShaderMetadataPtr<ID3D11VertexShader>> VertexShaders;
