@@ -39,7 +39,7 @@ FMatrix FMatrix::operator-(const FMatrix& Other) const {
 // 행렬 곱셈
 FMatrix FMatrix::operator*(const FMatrix& Other) const {
     FMatrix Result = {};
-    SSE::VectorMatrixMultiply(&Result, this, &Other);
+    MathSSE::MatrixMultiply(&Result, this, &Other);
     return Result;
 }
 
@@ -168,7 +168,22 @@ FMatrix FMatrix::Inverse(const FMatrix& Mat)
 		Mat[2][0] * (Mat[0][1] * Mat[1][2] - Mat[0][2] * Mat[1][1])
     );
 
+    // 디버그에서 계속해서 문제가 없었을 경우에는 지워주세요
+    // 만약 assert가 걸린다면 MathSSE::InverseMatrix를 지울것.
+#ifdef DEBUG
+    FMatrix ResultSSE = MathSSE::InverseMatrix(Mat);
+    for (int i = 0; i < 16; i++)
+    {
+        assert(abs(ResultSSE.M[i / 4][i % 4] - Result.M[i / 4][i % 4]) < KINDA_SMALL_NUMBER);
+    }
+#endif // DEBUG
+
     return Result;
+}
+
+FMatrix FMatrix::InverseTransform(const FMatrix& Mat)
+{
+    return MathSSE::InverseTransform(Mat);
 }
 
 FMatrix FMatrix::CreateRotationMatrix(float roll, float pitch, float yaw)
