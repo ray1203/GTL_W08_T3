@@ -34,16 +34,28 @@ public:
     template<typename T>
     HRESULT CreateVertexBuffer(const FString& KeyName, const TArray<T>& vertices, FVertexInfo& OutVertexInfo);
     template<typename T>
+    HRESULT CreateVertexBuffer(const FString& KeyName, const TArray<T>& vertices);
+
+    template<typename T>
     HRESULT CreateVertexBuffer(const FWString& KeyName, const TArray<T>& vertices, FVertexInfo& OutVertexInfo);
+    template<typename T>
+    HRESULT CreateVertexBuffer(const FWString& KeyName, const TArray<T>& vertices);
 
     template<typename T>
     HRESULT CreateIndexBuffer(const FString& KeyName, const TArray<T>& indices, FIndexInfo& OutIndexInfo);
     template<typename T>
+    HRESULT CreateIndexBuffer(const FString& KeyName, const TArray<T>& indices);
+    template<typename T>
     HRESULT CreateIndexBuffer(const FWString& KeyName, const TArray<T>& indices, FIndexInfo& OutIndexInfo);
+    template<typename T>
+    HRESULT CreateIndexBuffer(const FWString& KeyName, const TArray<T>& indices);
 
     template<typename T>
     HRESULT CreateDynamicVertexBuffer(const FString& KeyName, const TArray<T>& vertices, FVertexInfo& OutVertexInfo);
+    template<typename T>
+    HRESULT CreateDynamicVertexBuffer(const FString& KeyName, const TArray<T>& vertices);
 
+private:
     // 템플릿 헬퍼 함수: 내부에서 버퍼 생성 로직 통합
     template<typename T>
     HRESULT CreateVertexBufferInternal(const FString& KeyName, const TArray<T>& vertices, FVertexInfo& OutVertexInfo,
@@ -53,6 +65,7 @@ public:
     HRESULT CreateVertexBufferInternal(const FWString& KeyName, const TArray<T>& vertices, FVertexInfo& OutVertexInfo,
         D3D11_USAGE usage, UINT cpuAccessFlags);
 
+public:
     HRESULT CreateUnicodeTextBuffer(const FWString& Text, FBufferInfo& OutBufferInfo, float BitmapWidth, float BitmapHeight, float ColCount, float RowCount);
 
     void SetStartUV(wchar_t hangul, FVector2D& UVOffset);
@@ -64,7 +77,14 @@ public:
     HRESULT CreateBufferGeneric(const FString& KeyName, T* data, UINT byteWidth, UINT bindFlags, D3D11_USAGE usage, UINT cpuAccessFlags);
 
     template<typename T>
+    HRESULT CreateConstantBuffer(const FString& KeyName, UINT NumElements = 1);
+
+    template<typename T>
     void UpdateConstantBuffer(const FString& key, const T& data) const;
+    
+    template<typename T>
+    void UpdateConstantBufferArray(const FString& key, const TArray<T>& data) const;
+
 
     template<typename T>
     void UpdateDynamicVertexBuffer(const FString& KeyName, const TArray<T>& vertices) const;
@@ -86,6 +106,11 @@ public:
     void SetVertexBuffer(const FString& InName, ID3D11DeviceContext* DeviceContext = nullptr);
     void SetIndexBuffer(const FString& InName, ID3D11DeviceContext* DeviceContext = nullptr);
 
+    // Index에 맞춰서 DrawCall
+    //void Draw(const FString& InName, ID3D11DeviceContext* DeviceContext = nullptr);
+    //void DrawIndexed(const FString& InName, ID3D11DeviceContext* DeviceContext = nullptr);
+    //void DrawInstanced(const FString& InName, uint32 InstanceCount, ID3D11DeviceContext* DeviceContext = nullptr);
+    //void DrawIndexedInstanced(const FString& InName, uint32 InstanceCount, ID3D11DeviceContext* DeviceContext = nullptr);
 
     void GetQuadBuffer(FVertexInfo& OutVertexInfo, FIndexInfo& OutIndexInfo);
     void GetTextBuffer(const FWString& Text, FVertexInfo& OutVertexInfo, FIndexInfo& OutIndexInfo);
@@ -170,11 +195,24 @@ HRESULT FDXDBufferManager::CreateIndexBuffer(const FString& KeyName, const TArra
 }
 
 template<typename T>
+inline HRESULT FDXDBufferManager::CreateIndexBuffer(const FString& KeyName, const TArray<T>& indices)
+{
+    FIndexInfo _temp;
+    return CreateIndexBuffer(KeyName, indices, _temp);
+}
+
+template<typename T>
 HRESULT FDXDBufferManager::CreateVertexBuffer(const FString& KeyName, const TArray<T>& vertices, FVertexInfo& OutVertexInfo)
 {
     return CreateVertexBufferInternal(KeyName, vertices, OutVertexInfo, D3D11_USAGE_DEFAULT, 0);
 }
 
+template<typename T>
+inline HRESULT FDXDBufferManager::CreateVertexBuffer(const FString& KeyName, const TArray<T>& vertices)
+{
+    FVertexInfo _temp;
+    return CreateVertexBuffer(KeyName, vertices, _temp);
+}
 
 // FWString 전용 버텍스 버퍼 생성 (내부)
 template<typename T>
@@ -240,9 +278,23 @@ HRESULT FDXDBufferManager::CreateIndexBuffer(const FWString& KeyName, const TArr
 }
 
 template<typename T>
+inline HRESULT FDXDBufferManager::CreateIndexBuffer(const FWString& KeyName, const TArray<T>& indices)
+{
+    FIndexInfo _temp;
+    return CreateIndexBuffer(KeyName, indices, _temp);
+}
+
+template<typename T>
 HRESULT FDXDBufferManager::CreateVertexBuffer(const FWString& KeyName, const TArray<T>& vertices, FVertexInfo& OutVertexInfo)
 {
     return CreateVertexBufferInternal(KeyName, vertices, OutVertexInfo, D3D11_USAGE_DEFAULT, 0);
+}
+
+template<typename T>
+inline HRESULT FDXDBufferManager::CreateVertexBuffer(const FWString& KeyName, const TArray<T>& vertices)
+{
+    FVertexInfo _temp;
+    return CreateVertexBuffer(KeyName, vertices, _temp);
 }
 
 
@@ -250,6 +302,13 @@ template<typename T>
 HRESULT FDXDBufferManager::CreateDynamicVertexBuffer(const FString& KeyName, const TArray<T>& vertices, FVertexInfo& OutVertexInfo)
 {
     return CreateVertexBufferInternal(KeyName, vertices, OutVertexInfo, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
+}
+
+template<typename T>
+inline HRESULT FDXDBufferManager::CreateDynamicVertexBuffer(const FString& KeyName, const TArray<T>& vertices)
+{
+    auto _temp;
+    return CreateDynamicVertexBuffer(KeyName, vertices, _temp);
 }
 
 template<typename T>
@@ -284,6 +343,37 @@ HRESULT FDXDBufferManager::CreateBufferGeneric(const FString& KeyName, T* data, 
 }
 
 template<typename T>
+inline HRESULT FDXDBufferManager::CreateConstantBuffer(const FString& KeyName, UINT NumElements)
+{
+    if (NumElements == 0)
+    {
+        UE_LOG(ELogLevel::Error, TEXT("CreateConstantBuffer 호출: NumElements가 0입니다."));
+        return E_FAIL;
+    }
+    if (ConstantBufferPool.Contains(KeyName))
+    {
+        return S_OK;
+    }
+
+    D3D11_BUFFER_DESC desc = {};
+    desc.ByteWidth = sizeof(T) * NumElements;
+    desc.Usage = D3D11_USAGE_DYNAMIC;
+    desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+    ID3D11Buffer* buffer = nullptr;
+    HRESULT hr = DXDevice->CreateBuffer(&desc, nullptr, &buffer);
+    if (FAILED(hr))
+    {
+        UE_LOG(ELogLevel::Error, TEXT("Error Create Constant Buffer!"));
+        return hr;
+    }
+
+    ConstantBufferPool.Add(KeyName, buffer);
+    return S_OK;
+}
+
+template<typename T>
 void FDXDBufferManager::UpdateConstantBuffer(const FString& key, const T& data) const
 {
     ID3D11Buffer* buffer = GetConstantBuffer(key);
@@ -302,6 +392,28 @@ void FDXDBufferManager::UpdateConstantBuffer(const FString& key, const T& data) 
     }
 
     memcpy(mappedResource.pData, &data, sizeof(T));
+    DXDeviceContext->Unmap(buffer, 0);
+}
+
+template<typename T>
+inline void FDXDBufferManager::UpdateConstantBufferArray(const FString& key, const TArray<T>& data) const
+{
+    ID3D11Buffer* buffer = GetConstantBuffer(key);
+    if (!buffer)
+    {
+        UE_LOG(ELogLevel::Error, TEXT("UpdateConstantBuffer 호출: 키 %s에 해당하는 buffer가 없습니다."), *key);
+        return;
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    HRESULT hr = DXDeviceContext->Map(buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    if (FAILED(hr))
+    {
+        UE_LOG(ELogLevel::Error, TEXT("Buffer Map 실패, HRESULT: 0x%X"), hr);
+        return;
+    }
+
+    memcpy(mappedResource.pData, data.GetData(), sizeof(T) * data.Num());
     DXDeviceContext->Unmap(buffer, 0);
 }
 
