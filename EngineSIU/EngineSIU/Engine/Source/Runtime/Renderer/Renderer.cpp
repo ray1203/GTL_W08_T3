@@ -61,12 +61,15 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
 
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     WorldBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
-    EditorBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
-    GizmoRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     UpdateLightBufferPass->Initialize(BufferManager, Graphics, ShaderManager);
     LineRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     FogRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+
+#if !GAME_BUILD
+    GizmoRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+    EditorBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     EditorRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+#endif
     
     CompositingPass->Initialize(BufferManager, Graphics, ShaderManager);
     PostProcessCompositingPass->Initialize(BufferManager, Graphics, ShaderManager);

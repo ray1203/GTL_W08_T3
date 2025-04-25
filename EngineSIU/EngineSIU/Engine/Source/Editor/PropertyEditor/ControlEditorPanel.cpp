@@ -522,6 +522,11 @@ void ControlEditorPanel::CreatePIEButton(ImVec2 ButtonSize, ImFont* IconFont) co
 void ControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
 {
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+    if (!Engine)
+    {
+        ImGui::End();
+        return;
+    }
     AEditorPlayer* Player = Engine->GetEditorPlayer();
 
     ImVec4 ActiveColor = ImVec4(0.00f, 0.00f, 0.85f, 1.0f);

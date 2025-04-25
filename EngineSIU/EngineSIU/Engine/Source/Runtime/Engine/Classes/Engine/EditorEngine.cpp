@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "Classes/Engine/AssetManager.h"
 #include "Components/Light/DirectionalLightComponent.h"
+#include "Editor/LevelEditor/SLevelEditor.h"
+
 
 namespace PrivateEditorSelection
 {
@@ -26,12 +28,8 @@ void UEditorEngine::Init()
 
     FWorldContext& EditorWorldContext = CreateNewWorldContext(EWorldType::Editor);
 
-    EditorWorld = UWorld::CreateWorld(this, EWorldType::Editor, FString("EditorWorld"));
+    InitEditorWorld(EditorWorldContext);
 
-    EditorWorldContext.SetCurrentWorld(EditorWorld);
-    ActiveWorld = EditorWorld;
-
-    EditorPlayer = FObjectFactory::ConstructObject<AEditorPlayer>(this);
 
     if (AssetManager == nullptr)
     {
@@ -105,11 +103,12 @@ void UEditorEngine::StartPIE()
         return;
     }
 
+    GEngineLoop.GetLevelEditor()->UnbindEditorInput();
     FWorldContext& PIEWorldContext = CreateNewWorldContext(EWorldType::PIE);
 
     PIEWorld = Cast<UWorld>(EditorWorld->Duplicate(this));
     PIEWorld->WorldType = EWorldType::PIE;
-
+    
     PIEWorldContext.SetCurrentWorld(PIEWorld);
     ActiveWorld = PIEWorld;
     
@@ -242,4 +241,18 @@ void UEditorEngine::HoverComponent(USceneComponent* InComponent) const
 AEditorPlayer* UEditorEngine::GetEditorPlayer() const
 {
     return EditorPlayer;
+}
+
+void UEditorEngine::InitEditorWorld(FWorldContext& EditorWorldContext)
+{
+    if (bEditorWorldInit)
+    {
+        return;
+    }
+    EditorWorld = UWorld::CreateWorld(this, EWorldType::Editor, FString("EditorWorld"));
+
+    EditorWorldContext.SetCurrentWorld(EditorWorld);
+    ActiveWorld = EditorWorld;
+    EditorPlayer = FObjectFactory::ConstructObject<AEditorPlayer>(this);
+    bEditorWorldInit = true;
 }
