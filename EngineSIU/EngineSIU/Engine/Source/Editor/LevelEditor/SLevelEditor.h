@@ -2,11 +2,15 @@
 #include <sstream>
 #include "Define.h"
 #include "Container/Map.h"
+#include "Delegates/Delegate.h"
+#include <optional>
 
 class SSplitterH;
 class SSplitterV;
 class UWorld;
 class FEditorViewportClient;
+
+struct FPointerEvent;
 
 
 class SLevelEditor
@@ -72,6 +76,14 @@ private:
 public:
     void LoadConfig();
     void SaveConfig();
+
+private:
+    void AddDynamicTest1(const FPointerEvent& PointerEvent);
+    std::optional<FDelegateHandle> Test1Handle;
+    void AddDynamicTest2(const FPointerEvent& PointerEvent);
+    std::optional<FDelegateHandle> Test2Handle;
+    void RemoveTest1();
+    void RemoveTest2();
 
 private:
     TMap<FString, FString> ReadIniFile(const FString& FilePath);
