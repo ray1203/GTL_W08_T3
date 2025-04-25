@@ -1,4 +1,6 @@
 #pragma once
+#include <sol/table.hpp>
+
 #include "Components/SceneComponent.h"
 #include "Container/Set.h"
 #include "Engine/EngineTypes.h"
@@ -90,6 +92,8 @@ public:
     bool SetActorRotation(const FRotator& NewRotation);
     bool SetActorScale(const FVector& NewScale);
 
+    FVector GetVelocity();
+    void SetVelocity(const FVector& InVelocity);
 protected:
     UPROPERTY
     (USceneComponent*, RootComponent, = nullptr)
@@ -129,6 +133,14 @@ public:
 
 private:
     bool bTickInEditor = false;
+
+public:
+
+    FString LuaScriptPath="template";
+    sol::table LuaScriptTable;
+    void LoadLuaScript();
+    void CallLuaFunction(const char* FunctionName, float DeltaTime = 0.0f, AActor* Other = nullptr);
+
 
 };
 

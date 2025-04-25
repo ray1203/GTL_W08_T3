@@ -9,6 +9,8 @@ ACube::ACube()
 {
     // Begin Test
     //StaticMeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/helloBlender.obj"));
+    // 임시 Lua 스크립트 자동 로딩
+    //LuaScriptPath = TEXT("TestLuaActor"); // 확장자 없이
     StaticMeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Reference/Reference.obj"));
     // End Test
 }

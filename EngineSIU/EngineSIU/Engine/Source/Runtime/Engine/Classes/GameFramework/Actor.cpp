@@ -1,4 +1,7 @@
 #include "Actor.h"
+
+#include "Components/ProjectileMovementComponent.h"
+#include "Lua/FLuaScriptSystem.h"
 #include "World/World.h"
 
 
@@ -8,6 +11,8 @@ UObject* AActor::Duplicate(UObject* InOuter)
 
     NewActor->Owner = Owner;
     NewActor->bTickInEditor = bTickInEditor;
+    NewActor->LuaScriptPath = LuaScriptPath; // 경로 복사
+
     // 기본적으로 있던 컴포넌트 제거
     TSet CopiedComponents = NewActor->OwnedComponents;
     for (UActorComponent* Components : CopiedComponents)
@@ -64,6 +69,8 @@ UObject* AActor::Duplicate(UObject* InOuter)
 
 void AActor::BeginPlay()
 {
+    LoadLuaScript();
+    CallLuaFunction("BeginPlay");
     // TODO: 나중에 삭제를 Pending으로 하던가 해서 복사비용 줄이기
     const auto CopyComponents = OwnedComponents;
     for (UActorComponent* Comp : CopyComponents)
@@ -74,6 +81,7 @@ void AActor::BeginPlay()
 
 void AActor::Tick(float DeltaTime)
 {
+    CallLuaFunction("Tick", DeltaTime);
     // TODO: 임시로 Actor에서 Tick 돌리기
     // TODO: 나중에 삭제를 Pending으로 하던가 해서 복사비용 줄이기
     const auto CopyComponents = OwnedComponents;
@@ -92,6 +100,7 @@ void AActor::Destroyed()
 
 void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    CallLuaFunction("EndPlay");
     // 본인이 소유하고 있는 모든 컴포넌트의 EndPlay 호출
     for (UActorComponent* Component : GetComponents())
     {
@@ -264,8 +273,98 @@ bool AActor::SetActorScale(const FVector& NewScale)
     }
     return false;
 }
+FVector AActor::GetVelocity()
+{
+    if (auto* MoveComp = GetComponentByClass<UProjectileMovementComponent>())
+    {
+        return MoveComp->GetVelocity();
+    }
+    return FVector::ZeroVector;
+}
+
+void AActor::SetVelocity(const FVector& InVelocity)
+{
+    if (auto* MoveComp = GetComponentByClass<UProjectileMovementComponent>())
+    {
+        MoveComp->SetVelocity(InVelocity);
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Warning,"Warning: SetVelocity called on Actor without UProjectileMovementComponent\n");
+    }
+}
 
 void AActor::SetActorTickInEditor(bool InbInTickInEditor)
 {
     bTickInEditor = InbInTickInEditor;
+}
+#include <filesystem>
+
+void AActor::LoadLuaScript()
+{
+    if (LuaScriptPath.IsEmpty())
+    {
+        UE_LOG(ELogLevel::Warning, TEXT("LuaScriptPath is empty."));
+        return;
+    }
+
+    //FString FullPath = FString::Printf(TEXT("Scripts/%s.lua"), *LuaScriptPath);
+    FString FullPath = FLuaScriptSystem::GetScriptFullPath(LuaScriptPath);
+    std::string PathUTF8 = TCHAR_TO_UTF8(*FullPath);
+
+    if (!std::filesystem::exists(PathUTF8))
+    {
+        UE_LOG(ELogLevel::Error, *FString::Printf(TEXT("Lua script file not found: %s"), *FullPath));
+        return;
+    }
+
+    sol::state& lua = FLuaScriptSystem::Get().GetLuaState();
+
+    lua["obj"] = this;
+    lua.script_file(PathUTF8); // 파일 존재가 보장되었으므로 예외 거의 없음
+    LuaScriptTable = lua.globals();
+
+    UE_LOG(ELogLevel::Display, *FString::Printf(TEXT("Lua script loaded: %s"), *FullPath));
+}
+
+
+
+void AActor::CallLuaFunction(const char* FunctionName, float DeltaTime, AActor* Other)
+{
+    if (!LuaScriptTable.valid())
+    {
+        UE_LOG(ELogLevel::Warning, TEXT("LuaScriptTable is invalid for Actor %s"), *GetActorLabel());
+        return;
+    }
+
+    sol::function Func = LuaScriptTable[FunctionName];
+    if (!Func.valid())
+    {
+        UE_LOG(ELogLevel::Warning, TEXT("Lua function '%s' not found in script: %s"), *FString(FunctionName), *LuaScriptPath);
+        return;
+    }
+
+    sol::protected_function SafeFunc = Func;
+
+    sol::protected_function_result Result;
+
+    if (strcmp(FunctionName, "Tick") == 0)
+    {
+        Result = SafeFunc(DeltaTime);
+    }
+    else if (strcmp(FunctionName, "OnOverlap") == 0)
+    {
+        Result = SafeFunc(Other);
+    }
+    else
+    {
+        Result = SafeFunc();
+    }
+
+    if (!Result.valid())
+    {
+        sol::error Err = Result;
+        FString ErrorMessage = FString::Printf(TEXT("Lua error in function '%s': %s"), *FString(FunctionName), Err.what());
+        UE_LOG(ELogLevel::Error, *ErrorMessage);
+    }
 }
