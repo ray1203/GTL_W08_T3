@@ -21,7 +21,14 @@ void UCapsuleComponent::TickComponent(float DeltaTime)
 
 int UCapsuleComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
 {
-    return 0;
+    FRay Ray(rayOrigin, rayDirection);
+
+    FCapsule Capsule;
+    Capsule.A = GetWorldLocation() + GetForwardVector() * CapsuleHalfHeight;
+    Capsule.B = GetWorldLocation() - GetForwardVector() * CapsuleHalfHeight;
+    Capsule.Radius = CapsuleRadius;
+
+    return JungleCollision::RayIntersectsCapsule(Ray, Capsule, &pfNearHitDistance);
 }
 
 void UCapsuleComponent::GetProperties(TMap<FString, FString>& OutProperties) const

@@ -21,7 +21,15 @@ void UBoxComponent::TickComponent(float DeltaTime)
 
 int UBoxComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
 {
-    return 0;
+    FBox Box = FBox(FVector(-BoxExtent), FVector(BoxExtent));
+
+    FMatrix InverseTransform = FMatrix::Inverse(GetWorldMatrix());
+
+    FVector RayOriginModel = InverseTransform.TransformPosition(rayOrigin);
+    FVector RayDirModel = InverseTransform.TransformPosition(rayDirection);
+
+    FRay Ray = FRay(RayOriginModel, RayDirModel);
+    return JungleCollision::RayIntersectsAABB(Ray, Box, &pfNearHitDistance);
 }
 
 void UBoxComponent::GetProperties(TMap<FString, FString>& OutProperties) const

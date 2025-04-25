@@ -21,7 +21,10 @@ void USphereComponent::TickComponent(float DeltaTime)
 
 int USphereComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
 {
-    return 0;
+    FRay Ray = FRay(rayOrigin, rayDirection);
+    FSphere Sphere = FSphere(GetWorldLocation(), SphereRadius);
+
+    return JungleCollision::RayIntersectsSphere(Ray, Sphere, &pfNearHitDistance);
 }
 
 void USphereComponent::GetProperties(TMap<FString, FString>& OutProperties) const

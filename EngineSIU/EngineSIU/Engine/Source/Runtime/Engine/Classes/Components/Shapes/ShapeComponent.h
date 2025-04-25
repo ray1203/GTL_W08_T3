@@ -1,5 +1,6 @@
 #include "Components/PrimitiveComponent.h"
-
+#include "Math/JungleCollision.h"
+#include "Math/JungleMath.h"
 #include "Math/Color.h"
 
 class UShapeComponent : public UPrimitiveComponent
@@ -14,7 +15,7 @@ public:
     virtual void InitializeComponent() override;
     virtual void TickComponent(float DeltaTime) override;
     virtual int CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) override;
-
+ 
     virtual void GetProperties(TMap<FString, FString>& OutProperties) const override;
     virtual void SetProperties(const TMap<FString, FString>& InProperties) override;
 
