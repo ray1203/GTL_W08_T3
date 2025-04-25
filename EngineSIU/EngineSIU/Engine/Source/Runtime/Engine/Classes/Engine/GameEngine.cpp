@@ -38,6 +38,18 @@ void UGameEngine::Tick(float DeltaTime)
             if (UWorld* World = WorldContext->World())
             {
                 World->Tick(DeltaTime);
+                ULevel* Level = World->GetActiveLevel();
+                if (Level)
+                {
+                    TArray CachedActors = Level->Actors;
+                    for (AActor* Actor : CachedActors)
+                    {
+                        if (Actor)
+                        {
+                            Actor->Tick(DeltaTime);
+                        }
+                    }
+                }
             }
         }
     }
