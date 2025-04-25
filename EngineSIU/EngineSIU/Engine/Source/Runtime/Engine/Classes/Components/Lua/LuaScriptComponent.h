@@ -24,6 +24,7 @@ public:
 
     /** Lua 스크립트 경로 지정 */
     void SetScriptPath(const FString& Path) { LuaScriptPath = Path; }
+    const FString& GetScriptPath() const { return LuaScriptPath; }
 private:
     FVector Velocity;
 

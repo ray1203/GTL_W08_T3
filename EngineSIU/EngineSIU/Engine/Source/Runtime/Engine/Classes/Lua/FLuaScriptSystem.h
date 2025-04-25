@@ -13,6 +13,9 @@ public:
     static FString GetScriptFullPath(const FString& ScriptName);
 
     static FLuaScriptSystem& Get();
+
+    static bool CopyTemplateScriptIfNeeded(const FString& SceneName, const FString& ActorName);
+    static void OpenLuaScriptEditor(const FString& ScriptFilePath);
 private:
     sol::state Lua;
 };

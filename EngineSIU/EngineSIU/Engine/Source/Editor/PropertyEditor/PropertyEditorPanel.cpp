@@ -17,8 +17,10 @@
 #include "Engine/Engine.h"
 #include "Components/HeightFogComponent.h"
 #include "Components/ProjectileMovementComponent.h"
+#include "Components/Lua/LuaScriptComponent.h"
 #include "GameFramework/Actor.h"
 #include "Engine/AssetManager.h"
+#include "Lua/FLuaScriptSystem.h"
 #include "UObject/UObjectIterator.h"
 
 #include "Renderer/Shadow/SpotLightShadowMap.h"
@@ -95,6 +97,54 @@ void PropertyEditorPanel::Render()
         }
         ImGui::PopStyleColor();
     }
+    if (PickedActor)
+    {
+        if (ULuaScriptComponent* LuaComp = PickedActor->GetComponentByClass<ULuaScriptComponent>())
+        {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+            if (ImGui::TreeNodeEx("Lua Script", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                // 1. 현재 Lua 스크립트 이름 표시 및 수정
+                FString CurrentScriptName = LuaComp->GetScriptPath(); // 복사본
+                char ScriptBuf[256];
+                strcpy_s(ScriptBuf, TCHAR_TO_UTF8(*CurrentScriptName));
+
+                if (ImGui::InputText("Script Name", ScriptBuf, IM_ARRAYSIZE(ScriptBuf)))
+                {
+                    FString NewScriptName(ScriptBuf);
+                    LuaComp->SetScriptPath(NewScriptName); // 수정 적용
+                }
+
+                FString SceneName = TEXT("DefaultScene"); // TODO: 실제 현재 씬 이름으로 교체
+                FString ActorName = PickedActor->GetActorLabel();
+
+                // 2. Create Script 버튼 (template.lua 복제)
+                if (ImGui::Button("Create Script"))
+                {
+                    bool bSuccess = FLuaScriptSystem::CopyTemplateScriptIfNeeded(SceneName, ActorName);
+                    if (bSuccess)
+                    {
+                        FString NewScriptName = FString::Printf(TEXT("%s_%s"), *SceneName, *ActorName);
+                        LuaComp->SetScriptPath(NewScriptName);
+                    }
+                }
+
+                ImGui::SameLine();
+
+                // 3. Edit Script 버튼 (기본 텍스트 에디터로 열기)
+                if (ImGui::Button("Edit Script"))
+                {
+                    FString ScriptFilePath = FLuaScriptSystem::GetScriptFullPath(LuaComp->GetScriptPath());
+                    FLuaScriptSystem::OpenLuaScriptEditor(ScriptFilePath);
+                }
+
+                ImGui::TreePop();
+            }
+            ImGui::PopStyleColor();
+        }
+    }
+
+
 
     if (PickedActor)
     {

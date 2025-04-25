@@ -271,6 +271,12 @@ bool AActor::SetActorScale(const FVector& NewScale)
 }
 void AActor::SetLuaComponent(ULuaScriptComponent* InComp)
 {
+    if (LuaComp)
+    {
+        UE_LOG(ELogLevel::Warning, TEXT("LuaComp is already bound to Actor %s. Skipping rebind."), *GetActorLabel());
+        InComp->DestroyComponent();
+        return;
+    }
     LuaComp = InComp;
 }
 

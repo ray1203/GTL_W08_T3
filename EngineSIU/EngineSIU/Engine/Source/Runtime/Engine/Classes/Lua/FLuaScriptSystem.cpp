@@ -1,8 +1,13 @@
 #include "FLuaScriptSystem.h"
 
+#include <filesystem>
+#include <tchar.h>
+
 #include "Components/Lua/LuaScriptComponent.h"
 #include "GameFramework/Actor.h"
 #include "Math/Vector.h"
+#include <shellapi.h>
+
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
 {
@@ -66,4 +71,50 @@ void FLuaScriptSystem::Initialize()
 FString FLuaScriptSystem::GetScriptFullPath(const FString& ScriptName)
 {
     return FString::Printf(TEXT("GameContent/Scripts/%s.lua"), *ScriptName);
+}
+bool FLuaScriptSystem::CopyTemplateScriptIfNeeded(const FString& SceneName, const FString& ActorName)
+{
+    FString TargetScript = FString::Printf(TEXT("GameContent/Scripts/%s_%s.lua"), *SceneName, *ActorName);
+    FString TemplateScript = TEXT("GameContent/Scripts/template.lua");
+
+    if (std::filesystem::exists(TCHAR_TO_UTF8(*TargetScript)))
+    {
+        return true; // 이미 존재함
+    }
+
+    if (!std::filesystem::exists(TCHAR_TO_UTF8(*TemplateScript)))
+    {
+        UE_LOG(ELogLevel::Error, TEXT("template.lua가 존재하지 않습니다."));
+        return false;
+    }
+
+    try
+    {
+        std::filesystem::copy_file(
+            TCHAR_TO_UTF8(*TemplateScript),
+            TCHAR_TO_UTF8(*TargetScript),
+            std::filesystem::copy_options::overwrite_existing
+        );
+        return true;
+    }
+    catch (const std::exception& e)
+    {
+        UE_LOG(ELogLevel::Error, TEXT("Lua 스크립트 복사 실패: %s"), *FString(e.what()));
+        return false;
+    }
+}
+
+void FLuaScriptSystem::OpenLuaScriptEditor(const FString& ScriptFilePath)
+{
+    std::string UTF8Path = TCHAR_TO_UTF8(*ScriptFilePath);
+    std::filesystem::path AbsolutePath = std::filesystem::absolute(UTF8Path);
+    std::wstring WPath = AbsolutePath.wstring(); // ✅ 여기서 .wstring() 명시적으로 사용
+    HINSTANCE hInst = ShellExecute(
+        NULL, _T("open"), WPath.c_str(), NULL, NULL, SW_SHOWNORMAL
+    );
+
+    if ((INT_PTR)hInst <= 32)
+    {
+        MessageBox(NULL, _T("파일 열기에 실패했습니다."), _T("Lua Script"), MB_OK | MB_ICONERROR);
+    }
 }

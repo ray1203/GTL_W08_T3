@@ -1,8 +1,6 @@
 function BeginPlay()
     print("[BeginPlay] " .. obj.UUID)
-    print("TestLuaActor")
     obj:PrintLocation()
-    obj.Velocity = Vector(1,0,0)
 end
 
 function EndPlay()
