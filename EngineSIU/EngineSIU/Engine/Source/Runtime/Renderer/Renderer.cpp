@@ -36,7 +36,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     Graphics = InGraphics;
     BufferManager = InBufferManager;
 
-    ShaderManager = new FDXDShaderManager(Graphics->Device);
+    ShaderManager = new FDXDShaderManager(Graphics->Device, Graphics->DeviceContext);
 
     CreateConstantBuffers();
     CreateCommonShader();
@@ -464,7 +464,7 @@ void FRenderer::RenderEditorOverlay(const std::shared_ptr<FEditorViewportClient>
 
     EditorRenderPass->Render(Viewport); // TODO: 임시로 이전에 작성되었던 와이어 프레임 렌더 패스로, 이후 개선 필요.
 
-    LineRenderPass->Render(Viewport); // 기존 뎁스를 그대로 사용하지만 뎁스를 클리어하지는 않음
+    //LineRenderPass->Render(Viewport); // 기존 뎁스를 그대로 사용하지만 뎁스를 클리어하지는 않음
     
     GizmoRenderPass->Render(Viewport); // 기존 뎁스를 SRV로 전달해서 샘플 후 비교하기 위해 기즈모 전용 DSV 사용
 

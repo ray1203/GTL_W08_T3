@@ -19,12 +19,13 @@ class FDXDShaderManager
 {
 public:
 	FDXDShaderManager() = default;
-	FDXDShaderManager(ID3D11Device* Device);
+	FDXDShaderManager(ID3D11Device* Device, ID3D11DeviceContext* DeviceContext);
 
     void ReleaseAllShader();
 
 private:
 	ID3D11Device* DXDDevice;
+    ID3D11DeviceContext* DefaultDXDeviceContext;
 
 public:
     HRESULT AddVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint);
@@ -39,6 +40,10 @@ public:
 	ID3D11InputLayout* GetInputLayoutByKey(const std::wstring& Key) const;
 	ID3D11VertexShader* GetVertexShaderByKey(const std::wstring& Key) const;
 	ID3D11PixelShader* GetPixelShaderByKey(const std::wstring& Key) const;
+
+    void SetVertexShader(const std::wstring& Key, ID3D11DeviceContext* Context) const;
+    void SetVertexShaderAndInputLayout(const std::wstring& Key, ID3D11DeviceContext* Context) const;
+    void SetPixelShader(const std::wstring& Key, ID3D11DeviceContext* Context) const;
 
     /** 셰이더를 HotReload 합니다. */
     bool HandleHotReloadShader();

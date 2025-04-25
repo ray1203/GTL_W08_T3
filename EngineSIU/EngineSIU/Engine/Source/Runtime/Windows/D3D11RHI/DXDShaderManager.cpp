@@ -7,8 +7,8 @@
 #include "UserInterface/Console.h"
 
 
-FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device)
-    : DXDDevice(Device)
+FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device, ID3D11DeviceContext* DeviceContext = nullptr)
+    : DXDDevice(Device), DefaultDXDeviceContext(DeviceContext)
 {
     VertexShaders.Empty();
     PixelShaders.Empty();
@@ -352,6 +352,93 @@ ID3D11PixelShader* FDXDShaderManager::GetPixelShaderByKey(const std::wstring& Ke
         return *PixelShaders.Find(Key);
     }
     return nullptr;
+}
+
+void FDXDShaderManager::SetVertexShader(const std::wstring& Key, ID3D11DeviceContext* Context = nullptr) const
+{
+    ID3D11VertexShader* Shader = this->GetVertexShaderByKey(Key);
+    if (!Shader)
+    {
+        UE_LOG(ELogLevel::Error, "Failed to set vertex shader : invalid key");
+        return;
+    }
+    // context가 지정되어 있으면 해당 context로 실행
+    if (Context)
+    {
+        Context->VSSetShader(Shader, nullptr, 0);
+    }
+    // 없을 경우 기본 context 이용
+    else
+    {
+        if (!DefaultDXDeviceContext)
+        {
+            UE_LOG(ELogLevel::Error, "Failed to set vertex shader : DeviceContext not exist");
+            return;
+        }
+
+        DefaultDXDeviceContext->VSSetShader(Shader, nullptr, 0);
+    }
+}
+
+void FDXDShaderManager::SetVertexShaderAndInputLayout(const std::wstring& Key, ID3D11DeviceContext* Context = nullptr) const
+{
+    ID3D11VertexShader* Shader = this->GetVertexShaderByKey(Key);
+    if (!Shader)
+    {
+        UE_LOG(ELogLevel::Error, "Failed to set vertex shader : invalid key");
+        return;
+    }
+    ID3D11InputLayout* Layout = this->GetInputLayoutByKey(Key);
+    if (!Layout)
+    {
+        UE_LOG(ELogLevel::Error, "Failed to set input layout : invalid key");
+        return;
+    }
+
+    // context가 지정되어 있으면 해당 context로 실행
+    if (Context)
+    {
+        Context->VSSetShader(Shader, nullptr, 0);
+        Context->IASetInputLayout(Layout);
+    }
+    // 없을 경우 기본 context 이용
+    else
+    {
+        if (!DefaultDXDeviceContext)
+        {
+            UE_LOG(ELogLevel::Error, "Failed to set vertex shader : Default DeviceContext not exist");
+            return;
+        }
+
+        DefaultDXDeviceContext->VSSetShader(Shader, nullptr, 0);
+        DefaultDXDeviceContext->IASetInputLayout(Layout);
+    }
+}
+
+void FDXDShaderManager::SetPixelShader(const std::wstring& Key, ID3D11DeviceContext* Context = nullptr) const
+{
+    ID3D11PixelShader* Shader = this->GetPixelShaderByKey(Key);
+    if (!Shader)
+    {
+        UE_LOG(ELogLevel::Error, "Failed to set pixel shader : invalid key");
+        return;
+    }
+    // context가 지정되어 있으면 해당 context로 실행
+    if (Context)
+    {
+        Context->PSSetShader(Shader, nullptr, 0);
+    }
+    // 없을 경우 기본 context 이용
+    else
+    {
+        if (!DefaultDXDeviceContext)
+        {
+            UE_LOG(ELogLevel::Error, "Failed to set pixel shader : Default DeviceContext not exist");
+            return;
+        }
+
+        DefaultDXDeviceContext->PSSetShader(Shader, nullptr, 0);
+    }
 }
 
 bool FDXDShaderManager::HandleHotReloadShader()
