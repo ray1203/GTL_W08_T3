@@ -9,6 +9,8 @@ class SSplitterV;
 class UWorld;
 class FEditorViewportClient;
 
+struct FPointerEvent;
+
 
 class SLevelEditor
 {
