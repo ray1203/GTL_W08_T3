@@ -354,7 +354,7 @@ ID3D11PixelShader* FDXDShaderManager::GetPixelShaderByKey(const std::wstring& Ke
     return nullptr;
 }
 
-void FDXDShaderManager::SetVertexShader(const std::wstring& Key, ID3D11DeviceContext* Context = nullptr) const
+void FDXDShaderManager::SetVertexShader(const std::wstring& Key, ID3D11DeviceContext* Context) const
 {
     ID3D11VertexShader* Shader = this->GetVertexShaderByKey(Key);
     if (!Shader)
@@ -380,7 +380,7 @@ void FDXDShaderManager::SetVertexShader(const std::wstring& Key, ID3D11DeviceCon
     }
 }
 
-void FDXDShaderManager::SetVertexShaderAndInputLayout(const std::wstring& Key, ID3D11DeviceContext* Context = nullptr) const
+void FDXDShaderManager::SetVertexShaderAndInputLayout(const std::wstring& Key, ID3D11DeviceContext* Context) const
 {
     ID3D11VertexShader* Shader = this->GetVertexShaderByKey(Key);
     if (!Shader)
@@ -415,7 +415,7 @@ void FDXDShaderManager::SetVertexShaderAndInputLayout(const std::wstring& Key, I
     }
 }
 
-void FDXDShaderManager::SetPixelShader(const std::wstring& Key, ID3D11DeviceContext* Context = nullptr) const
+void FDXDShaderManager::SetPixelShader(const std::wstring& Key, ID3D11DeviceContext* Context) const
 {
     ID3D11PixelShader* Shader = this->GetPixelShaderByKey(Key);
     if (!Shader)

@@ -82,6 +82,11 @@ public:
     FIndexInfo GetTextIndexBuffer(const FWString& InName) const;
     ID3D11Buffer* GetConstantBuffer(const FString& InName) const;
 
+    // Device Context에 버퍼 바인딩
+    void SetVertexBuffer(const FString& InName, ID3D11DeviceContext* DeviceContext = nullptr);
+    void SetIndexBuffer(const FString& InName, ID3D11DeviceContext* DeviceContext = nullptr);
+
+
     void GetQuadBuffer(FVertexInfo& OutVertexInfo, FIndexInfo& OutIndexInfo);
     void GetTextBuffer(const FWString& Text, FVertexInfo& OutVertexInfo, FIndexInfo& OutIndexInfo);
     void CreateQuadBuffer();

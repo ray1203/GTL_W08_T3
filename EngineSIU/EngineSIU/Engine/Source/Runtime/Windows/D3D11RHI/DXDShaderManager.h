@@ -41,9 +41,9 @@ public:
 	ID3D11VertexShader* GetVertexShaderByKey(const std::wstring& Key) const;
 	ID3D11PixelShader* GetPixelShaderByKey(const std::wstring& Key) const;
 
-    void SetVertexShader(const std::wstring& Key, ID3D11DeviceContext* Context) const;
-    void SetVertexShaderAndInputLayout(const std::wstring& Key, ID3D11DeviceContext* Context) const;
-    void SetPixelShader(const std::wstring& Key, ID3D11DeviceContext* Context) const;
+    void SetVertexShader(const std::wstring& Key, ID3D11DeviceContext* Context = nullptr) const;
+    void SetVertexShaderAndInputLayout(const std::wstring& Key, ID3D11DeviceContext* Context = nullptr) const;
+    void SetPixelShader(const std::wstring& Key, ID3D11DeviceContext* Context = nullptr) const;
 
     /** 셰이더를 HotReload 합니다. */
     bool HandleHotReloadShader();
