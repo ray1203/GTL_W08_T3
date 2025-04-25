@@ -1,5 +1,6 @@
 #include "FLuaScriptSystem.h"
 
+#include "Components/Lua/LuaScriptComponent.h"
 #include "GameFramework/Actor.h"
 #include "Math/Vector.h"
 
@@ -21,6 +22,7 @@ void FLuaScriptSystem::Initialize()
         sol::meta_function::addition, [](const FVector& a, const FVector& b) { return a + b; },
         sol::meta_function::multiplication, [](const FVector& a, float f) { return a * f; }
     );
+    Lua["Vector"] = [](float x, float y, float z) { return FVector(x, y, z); };
     Lua.new_usertype<FRotator>("Rotator",
         sol::constructors<FRotator(), FRotator(float, float, float)>(),
         "Pitch", &FRotator::Pitch,
@@ -43,7 +45,7 @@ void FLuaScriptSystem::Initialize()
         "Rotation",
         sol::property(&AActor::GetActorRotation, &AActor::SetActorRotation),
         "Velocity",
-        sol::property(&AActor::GetVelocity, &AActor::SetVelocity),
+        sol::property(&AActor::GetLuaVelocity, &AActor::SetLuaVelocity),
         "UUID",
         sol::readonly_property(&AActor::GetUUID),
 
@@ -52,7 +54,10 @@ void FLuaScriptSystem::Initialize()
             UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
         }
     );
-
+    Lua.set_function("print", [](const std::string& msg)
+        {
+            UE_LOG(ELogLevel::Display, TEXT("[Lua Print] %s"), *FString(msg));
+        });
 
 
 

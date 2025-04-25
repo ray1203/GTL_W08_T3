@@ -10,6 +10,7 @@
 #include "UObject/ObjectMacros.h"
 
 
+class ULuaScriptComponent;
 class UActorComponent;
 
 class AActor : public UObject
@@ -92,8 +93,11 @@ public:
     bool SetActorRotation(const FRotator& NewRotation);
     bool SetActorScale(const FVector& NewScale);
 
-    FVector GetVelocity();
-    void SetVelocity(const FVector& InVelocity);
+    FVector GetLuaVelocity() const;
+    void SetLuaVelocity(const FVector& InVelocity);
+    void SetLuaComponent(ULuaScriptComponent* InComp);
+    ULuaScriptComponent* GetLuaComponent() const { return LuaComp; }
+
 protected:
     UPROPERTY
     (USceneComponent*, RootComponent, = nullptr)
@@ -105,7 +109,7 @@ private:
 
     /** 본인이 소유하고 있는 컴포넌트들의 정보 */
     TSet<UActorComponent*> OwnedComponents;
-
+    ULuaScriptComponent* LuaComp = nullptr;
 
     /** 현재 Actor가 삭제 처리중인지 여부 */
     uint8 bActorIsBeingDestroyed : 1 = false;
@@ -133,15 +137,6 @@ public:
 
 private:
     bool bTickInEditor = false;
-
-public:
-
-    FString LuaScriptPath="template";
-    sol::table LuaScriptTable;
-    void LoadLuaScript();
-    void CallLuaFunction(const char* FunctionName, float DeltaTime = 0.0f, AActor* Other = nullptr);
-
-
 };
 
 template <typename T>

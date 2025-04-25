@@ -1353,6 +1353,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderFileMetadata.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderMetadataPtr.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1416,6 +1417,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderFileMetadata.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderMetadataPtr.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultPropertySheet.props" />

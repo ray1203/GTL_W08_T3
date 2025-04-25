@@ -1,19 +1,20 @@
 function BeginPlay()
-    print("[Lua] BeginPlay for " .. obj:GetActorLabel())
-    obj:SetActorLocation(Vector(300, 100, 0))
-end
-
-function Tick(dt)
-    local loc = obj:GetActorLocation()
-    loc.x = loc.x + dt * 50.0
-    obj:SetActorLocation(loc)
-    print(string.format("[Lua] Tick: %.2f, Location = (%.1f, %.1f, %.1f)", dt, loc.x, loc.y, loc.z))
+    print("[BeginPlay] " .. obj.UUID)
+    print("TestLuaActor")
+    obj:PrintLocation()
+    obj.Velocity = Vector(1,1,1)
 end
 
 function EndPlay()
-    print("[Lua] EndPlay for " .. obj:GetActorLabel())
+    print("[EndPlay] " .. obj.UUID)
+    obj:PrintLocation()
 end
 
-function OnOverlap(other)
-    print("[Lua] OnOverlap with " .. other:GetActorLabel())
+function OnOverlap(OtherActor)
+    OtherActor:PrintLocation();
+end
+
+function Tick(dt)
+    obj.Location = obj.Location + obj.Velocity * dt
+    obj:PrintLocation()
 end

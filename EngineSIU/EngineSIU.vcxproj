@@ -229,6 +229,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\LightComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\PointLightComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\SpotLightComponent.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Material\Material.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\MeshComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Mesh\StaticMesh.cpp" />
@@ -378,6 +379,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\LightComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\PointLightComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\SpotLightComponent.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Material\Material.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\MeshComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Mesh\StaticMesh.h" />
