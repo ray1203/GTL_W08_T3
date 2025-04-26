@@ -13,6 +13,7 @@
 #include "BaseGizmos/TransformGizmo.h"
 #include "LevelEditor/SLevelEditor.h"
 #include "SlateCore/Input/Events.h"
+#include "Camera/CameraComponent.h"
 
 FVector FEditorViewportClient::Pivot = FVector(0.0f, 0.0f, 0.0f);
 float FEditorViewportClient::OrthoSize = 10.0f;
@@ -370,6 +371,16 @@ FViewportResource* FEditorViewportClient::GetViewportResource()
     return ViewportResourceCache;
 }
 
+void FEditorViewportClient::AttachCameraComponent(UCameraComponent* InCameraComponent)
+{
+    OverridingCamera = InCameraComponent;
+}
+
+void FEditorViewportClient::DetachCameraComponent()
+{
+    OverridingCamera = nullptr;
+}
+
 void FEditorViewportClient::CameraMoveForward(float InValue)
 {
     if (IsPerspective())
@@ -436,8 +447,34 @@ void FEditorViewportClient::PivotMoveUp(float InValue)
     Pivot = Pivot + OrthogonalCamera.GetUpVector() * InValue * 0.05f;
 }
 
+FMatrix& FEditorViewportClient::GetViewMatrix()
+{
+    if (OverridingCamera)
+    {
+        return OverridingCamera->GetViewMatrix();
+    }
+    return View;
+    // TODO: 여기에 return 문을 삽입합니다.
+}
+
+FMatrix& FEditorViewportClient::GetProjectionMatrix()
+{
+    if (OverridingCamera)
+    {
+        return OverridingCamera->GetProjectionMatrix();
+    }
+    return Projection;
+    // TODO: 여기에 return 문을 삽입합니다.
+}
+
 void FEditorViewportClient::UpdateViewMatrix()
 {
+    if (OverridingCamera)
+    {
+        OverridingCamera->UpdateViewMatrix();
+        return;
+    }
+
     if (IsPerspective())
     {
         View = JungleMath::CreateViewMatrix(PerspectiveCamera.GetLocation(),
@@ -466,6 +503,12 @@ void FEditorViewportClient::UpdateViewMatrix()
 void FEditorViewportClient::UpdateProjectionMatrix()
 {
     AspectRatio = GetViewport()->GetD3DViewport().Width / GetViewport()->GetD3DViewport().Height;
+    if (OverridingCamera)
+    {
+        OverridingCamera->UpdateProjectionMatrix(AspectRatio);
+        return;
+    }
+
     if (IsPerspective())
     {
         Projection = JungleMath::CreateProjectionMatrix(
@@ -503,6 +546,11 @@ bool FEditorViewportClient::IsPerspective() const
 
 FVector FEditorViewportClient::GetCameraLocation() const
 {
+    if (OverridingCamera)
+    {
+        return OverridingCamera->GetCameraLocation();
+    }
+
     if (IsPerspective())
     {
         return PerspectiveCamera.GetLocation();
@@ -512,12 +560,71 @@ FVector FEditorViewportClient::GetCameraLocation() const
 
 float FEditorViewportClient::GetCameraLearClip() const
 {
+    if (OverridingCamera)
+    {
+        return OverridingCamera->GetCameraNearClip();
+    }
     return NearClip;
 }
 
 float FEditorViewportClient::GetCameraFarClip() const
 {
+    if (OverridingCamera)
+    {
+        return OverridingCamera->GetCameraFarClip();
+    }
     return FarClip;
+}
+
+FVector FEditorViewportClient::GetCameraForwardVector() const
+{
+    if (OverridingCamera)
+    {
+        return OverridingCamera->GetForwardVector();
+    }
+
+    if (IsPerspective())
+    {
+        return PerspectiveCamera.GetForwardVector();
+    }
+    else
+    {
+        return OrthogonalCamera.GetForwardVector();
+    }
+}
+
+FVector FEditorViewportClient::GetCameraRightVector() const
+{
+    if (OverridingCamera)
+    {
+        return OverridingCamera->GetRightVector();
+    }
+
+    if (IsPerspective())
+    {
+        return PerspectiveCamera.GetRightVector();
+    }
+    else
+    {
+        return OrthogonalCamera.GetRightVector();
+    }
+}
+
+FVector FEditorViewportClient::GetCameraUpVector() const
+{
+    if (OverridingCamera)
+    {
+        return OverridingCamera->GetUpVector();
+    }
+
+    if (IsPerspective())
+    {
+        return PerspectiveCamera.GetUpVector();
+    }
+    else
+    {
+        return OrthogonalCamera.GetUpVector();
+    }
 }
 
 ELevelViewportType FEditorViewportClient::GetViewportType() const

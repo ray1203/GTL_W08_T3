@@ -20,6 +20,8 @@
 #include "GameFramework/Actor.h"
 #include "Engine/AssetManager.h"
 #include "UObject/UObjectIterator.h"
+#include "Camera/CameraComponent.h"
+#include "Editor/LevelEditor/SLevelEditor.h"
 
 #include "Renderer/Shadow/SpotLightShadowMap.h"
 #include "Renderer/Shadow/PointLightShadowMap.h"
@@ -106,7 +108,7 @@ void PropertyEditorPanel::Render()
         }
     }
 
-    if(PickedActor)
+    if (PickedActor)
         if (UPointLightComponent* pointlightObj = PickedActor->GetComponentByClass<UPointLightComponent>())
         {
             int pointNum = 0;
@@ -296,7 +298,7 @@ void PropertyEditorPanel::Render()
             ImGui::PopStyleColor();
         }
 
-    if(PickedActor)
+    if (PickedActor)
         if (UAmbientLightComponent* ambientLightObj = PickedActor->GetComponentByClass<UAmbientLightComponent>())
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
@@ -329,8 +331,8 @@ void PropertyEditorPanel::Render()
 
                 float Gravity = ProjectileComp->GetGravity();
                 if (ImGui::InputFloat("Gravity", &Gravity, 0.f, 10000.f, "%.1f"))
-                    ProjectileComp->SetGravity(Gravity); 
-                
+                    ProjectileComp->SetGravity(Gravity);
+
                 float ProjectileLifetime = ProjectileComp->GetLifetime();
                 if (ImGui::InputFloat("Lifetime", &ProjectileLifetime, 0.f, 10000.f, "%.1f"))
                     ProjectileComp->SetLifetime(ProjectileLifetime);
@@ -342,7 +344,7 @@ void PropertyEditorPanel::Render()
                 if (ImGui::InputFloat3("Velocity", velocity, "%.1f")) {
                     ProjectileComp->SetVelocity(FVector(velocity[0], velocity[1], velocity[2]));
                 }
-                
+
                 ImGui::TreePop();
             }
 
@@ -350,7 +352,7 @@ void PropertyEditorPanel::Render()
         }
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
-        if (UTextComponent* textOBj = Cast<UTextComponent>(PickedActor->GetRootComponent()))
+        if (UTextComponent* textOBj = Cast<UTextComponent>(PickedActor->GetComponentByClass<UTextComponent>()))
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
             if (ImGui::TreeNodeEx("Text Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
@@ -386,14 +388,14 @@ void PropertyEditorPanel::Render()
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
-        if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(PickedActor->GetRootComponent()))
+        if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(PickedActor->GetComponentByClass<UStaticMeshComponent>()))
         {
             RenderForStaticMesh(StaticMeshComponent);
             RenderForMaterial(StaticMeshComponent);
         }
 
     if (PickedActor)
-        if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(PickedActor->GetRootComponent()))
+        if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(PickedActor->GetComponentByClass<UHeightFogComponent>()))
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
             if (ImGui::TreeNodeEx("Exponential Height Fog", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
@@ -492,6 +494,72 @@ void PropertyEditorPanel::Render()
             }
             ImGui::PopStyleColor();
         }
+
+    if (PickedActor)
+        if (UCameraComponent* CameraComponent = Cast<UCameraComponent>(PickedActor->GetComponentByClass<UCameraComponent>()))
+        {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+            if (ImGui::TreeNodeEx("Camera Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
+            {
+                Location = CameraComponent->GetRelativeLocation();
+                Rotation = CameraComponent->GetRelativeRotation();
+                Scale = CameraComponent->GetRelativeScale3D();
+
+                FImGuiWidget::DrawVec3Control("Location", Location, 0, 85);
+                ImGui::Spacing();
+
+                FImGuiWidget::DrawRot3Control("Rotation", Rotation, 0, 85);
+                ImGui::Spacing();
+
+                FImGuiWidget::DrawVec3Control("Scale", Scale, 0, 85);
+                ImGui::Spacing();
+
+                CameraComponent->SetRelativeLocation(Location);
+                CameraComponent->SetRelativeRotation(Rotation);
+                CameraComponent->SetRelativeScale3D(Scale);
+
+                // !TODO : 불리언 플래그로 값 전환 및 전환 시 특정 로직 실행
+                FEditorViewportClient* vp = GEngineLoop.GetLevelEditor()->GetActiveViewportClient().get();
+                if (vp)
+                {
+                    bool bIsCameraOverriden = vp->IsOverridingCamera();
+                    // bIsCameraOverriden값을 가지고 override 여부 판단해서 토글 표시, 클릭 시 vp->AttachCameraComponent, 해제 시 DetachCameraComponent 호출하도록
+                    // 토글 버튼 UI (체크박스 또는 버튼)
+                    if (ImGui::Checkbox("Override Viewport Camera", &bIsCameraOverriden))
+                    {
+                        if (bIsCameraOverriden)
+                        {
+                            // 오버라이드 활성화: 에디터 뷰포트에 카메라 컴포넌트 연결
+                            vp->AttachCameraComponent(CameraComponent);
+                        }
+                        else
+                        {
+                            // 오버라이드 비활성화: 기본 에디터 카메라로 복원
+                            vp->DetachCameraComponent();
+                        }
+                    }
+                }
+
+                float FOV = CameraComponent->GetFOV();
+                if (ImGui::SliderFloat("FOV", &FOV, 0.f, 180.f))
+                {
+                    CameraComponent->SetFOV(FOV);
+                }
+                float NearClip = CameraComponent->GetNearClip();
+                if (ImGui::SliderFloat("Near Clip", &NearClip, 0.f, 100.f))
+                {
+                    CameraComponent->SetNearClip(NearClip);
+                }
+                float FarClip = CameraComponent->GetFarClip();
+                if (ImGui::SliderFloat("Far Clip", &FarClip, 0.f, 10000.f))
+                {
+                    CameraComponent->SetFarClip(FarClip);
+                }
+                ImGui::TreePop();
+            }
+            ImGui::PopStyleColor();
+        }
+
     ImGui::End();
 }
 
@@ -624,7 +692,6 @@ void PropertyEditorPanel::RenderForStaticMesh(UStaticMeshComponent* StaticMeshCo
     }
     ImGui::PopStyleColor();
 }
-
 
 void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp)
 {

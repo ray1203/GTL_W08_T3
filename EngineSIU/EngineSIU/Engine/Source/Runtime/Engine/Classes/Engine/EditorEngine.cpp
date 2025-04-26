@@ -8,6 +8,7 @@
 #include "Classes/Engine/AssetManager.h"
 #include "Components/Light/DirectionalLightComponent.h"
 #include "Editor/LevelEditor/SLevelEditor.h"
+#include <Camera/CameraComponent.h>
 
 
 namespace PrivateEditorSelection
@@ -40,6 +41,9 @@ void UEditorEngine::Init()
 
 #ifdef _DEBUG
     AActor* Actor = EditorWorld->SpawnActor<ACube>();
+    UCameraComponent* CameraComp = Actor->AddComponent<UCameraComponent>(TEXT("Camera"));
+    CameraComp->SetupAttachment(Actor->GetRootComponent());
+
     
     ADirectionalLight* DirLight = EditorWorld->SpawnActor<ADirectionalLight>();
     DirLight->SetActorRotation(FRotator(20, -61, 11));
