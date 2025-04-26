@@ -15,6 +15,14 @@ FPhysicsSolver::~FPhysicsSolver()
     SimulatedBodies.Empty();
 }
 
+void FPhysicsSolver::UpdateBodyFromComponent()
+{
+    for (FPhysicsBody& Body : SimulatedBodies)
+    {
+        Body.Transform = Body.Component->GetWorldTransform();
+    }
+}
+
 void FPhysicsSolver::AdvanceAndDispatch(float DeltaTime)
 {
     ApplyForces();
@@ -29,7 +37,7 @@ void FPhysicsSolver::ApplyForces()
     {
         if (Body.bIsSimulatingPhysics)
         {
-            Body.Acceleration = FVector(0, 0, 0.01f); // 중력 가속도
+            Body.Acceleration = FVector(0, 0, -9.8f * 2); // 중력 가속도
         }
     }
 }
@@ -50,11 +58,28 @@ void FPhysicsSolver::HandleCollisions()
 {
     // 충돌 감지 및 반응(Velocity) 계산
     // 지금은 오버랩만 하니까 쓰지 않음
+    for (FPhysicsBody& Body : SimulatedBodies)
+    {
+        if (Body.bIsSimulatingPhysics)
+        {
+            // deltaTime이 너무 커서 실패함
+            // step을 줘서 더 작게 만들던가 해야함
+            if (Body.Transform.Translation.Z < 0.f)
+            {
+                Body.Transform.Translation.Z = 0.f;      // 바닥 위로 위치 보정
+                Body.Velocity.Z *= -Restitution;         // 반발력 적용 (Restitution 예: 0.9)
+                // 임계치 이하의 속도는 0으로 처리
+                if (std::abs(Body.Velocity.LengthSquared()) < RestitutionThreshold * RestitutionThreshold)
+                {
+                    Body.Velocity = FVector::ZeroVector;
+                }
+            }
+        }
+    }
 }
 
 void FPhysicsSolver::UpdateTransforms()
 {
-    // 충돌 결과를 새롭게 반영
 }
 
 void FPhysicsSolver::AddBody(UShapeComponent* Component)
@@ -109,6 +134,18 @@ void FPhysicsSolver::RemoveBody(UShapeComponent* Component)
             }
         }
     }
+}
+
+const FPhysicsBody* FPhysicsSolver::GetBody(UShapeComponent* Component)
+{
+    for (const FPhysicsBody& Body : SimulatedBodies)
+    {
+        if (Body.Component == Component)
+        {
+            return &Body;
+        }
+    }
+    return nullptr;
 }
 
 bool FPhysicsSolver::GetSimulatedTransform(UShapeComponent* Component, FTransform& OutTransform) const

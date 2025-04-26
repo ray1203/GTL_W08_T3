@@ -10,6 +10,7 @@ class FObjectFactory;
 class AActor;
 class UObject;
 class USceneComponent;
+class FPhysicsScene;
 
 class UWorld : public UObject
 {
@@ -57,6 +58,11 @@ public:
 
     EWorldType WorldType = EWorldType::None;
 
+
+    // TODO: 생성하는 위치 정하면 private로 넣기
+    // 현재는 외부에서 생성하고 있음.
+    // 물리 처리를 진행하는 Scene
+    FPhysicsScene* PhysicsScene = nullptr;
     
 private:
     FString WorldName = "DefaultWorld";
@@ -65,7 +71,6 @@ private:
 
     /** Actor가 Spawn되었고, 아직 BeginPlay가 호출되지 않은 Actor들 */
     TArray<AActor*> PendingBeginPlayActors;
-
 };
 
 

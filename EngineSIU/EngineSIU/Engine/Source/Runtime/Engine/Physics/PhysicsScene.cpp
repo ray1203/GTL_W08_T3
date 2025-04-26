@@ -1,7 +1,7 @@
 #include "PhysicsScene.h"
 #include "PhysicsSolver.h"
 #include "Components/Shapes/ShapeComponent.h"
-
+#include "Classes/GameFramework/Actor.h"
 FPhysicsScene::FPhysicsScene()
 {
     SceneSolver = new FPhysicsSolver();
@@ -25,9 +25,10 @@ void FPhysicsScene::SyncBodies()
             FTransform SimulatedTransform;
             if (SceneSolver && SceneSolver->GetSimulatedTransform(Comp, SimulatedTransform))
             {
-                Comp->SetWorldLocation(SimulatedTransform.Translation);
-                Comp->SetWorldRotation(SimulatedTransform.Rotation.ToRotator());
-                Comp->SetWorldScale3D(SimulatedTransform.Scale3D);
+                Comp->GetOwner()->SetActorLocation(SimulatedTransform.Translation);
+                Comp->GetOwner()->SetActorRotation(SimulatedTransform.Rotation.ToRotator());
+                // 강체인데 scale을 바꿀일이 있나...?
+                Comp->GetOwner()->SetActorScale(SimulatedTransform.Scale3D);
             }
         }
     }
@@ -38,6 +39,7 @@ void FPhysicsScene::TickPhysScene(float DeltaSeconds)
     DeltaTime = DeltaSeconds;
     if (SceneSolver)
     {
+        SceneSolver->UpdateBodyFromComponent();
         SceneSolver->AdvanceAndDispatch(DeltaSeconds);
     }
 }

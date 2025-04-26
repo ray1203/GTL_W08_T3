@@ -3,7 +3,7 @@
 #include <filesystem>
 
 #include "GameFramework/Actor.h"
-
+#include "Classes/Components/Shapes/ShapeComponent.h"
 ULuaScriptComponent::ULuaScriptComponent()
 {
     bAutoActive = true;

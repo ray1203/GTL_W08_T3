@@ -39,6 +39,9 @@ public:
     FPhysicsSolver();
     ~FPhysicsSolver();
 
+    // 시뮬레이션 이전 최신값을 반영
+    void UpdateBodyFromComponent();
+
     // 물리 시뮬레이션을 한 프레임 진행
     void AdvanceAndDispatch(float DeltaTime);
 
@@ -52,6 +55,7 @@ public:
     // 파티클(물리 객체) 추가/삭제
     void AddBody(UShapeComponent* Component);
     void RemoveBody(UShapeComponent* Component);
+    const FPhysicsBody* GetBody(UShapeComponent* Component);
 
     // 시뮬레이션 결과 transform을 가져옴 (예시)
     bool GetSimulatedTransform(UShapeComponent* Component, FTransform& OutTransform) const;
@@ -63,4 +67,8 @@ private:
 protected:
     // 시뮬레이트 된 결과물
     TArray<FPhysicsBody> SimulatedBodies;
+
+private:
+    const float RestitutionThreshold = 1e-2f;
+    float Restitution = 0.6;
 };
