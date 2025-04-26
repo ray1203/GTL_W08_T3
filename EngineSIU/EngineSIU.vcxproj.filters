@@ -795,6 +795,9 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\LightActor.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors</Filter>
     </ClInclude>
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.cpp">
+      <Filter>EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors</Filter>
+    </ClCompile>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors</Filter>
     </ClInclude>
@@ -1352,12 +1355,6 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\InputCore\FInputManager.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\GameEngine.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\SpringArmComponent.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Engine\Camera</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1415,8 +1412,6 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\DirectionalShadowMap.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer\Shadow</Filter>
     </ClInclude>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\GameEngine.h" />
-    <ClInclude Include="Pawn.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileData.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompile.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileUtility.h" />
@@ -1425,10 +1420,6 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\InputCore\FInputManager.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\SpringArmComponent.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Engine\Camera</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultPropertySheet.props" />

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <functional>
 #include "Core/Container/Map.h"
 
@@ -14,10 +14,8 @@ class FDelegateHandle
 	friend class std::hash<FDelegateHandle>;
 
 	uint64 HandleId;
-public:
 	explicit FDelegateHandle() : HandleId(0) {}
-    explicit FDelegateHandle(uint64 HandleId) : HandleId(HandleId) {}
-
+	explicit FDelegateHandle(uint64 HandleId) : HandleId(HandleId) {}
 
 	static uint64 GenerateNewID()
 	{
@@ -135,26 +133,6 @@ public:
 		return DelegateHandle;
 	}
 
-    template<typename ClassType>
-    FDelegateHandle AddDynamic(ClassType* Object, ReturnType(ClassType::* Func)(ParamTypes...))
-    {
-        FDelegateHandle DelegateHandle = FDelegateHandle::CreateHandle();
-
-        DelegateHandles.Add(
-            DelegateHandle,
-            [Object, Func](ParamTypes... Params)            
-            {
-                if (Object)
-                {
-                    (Object->*Func)(std::forward<ParamTypes>(Params)...);
-                }
-            }
-        );
-
-        return DelegateHandle;
-    }
-    
-
 	bool Remove(FDelegateHandle Handle)
 	{
 		if (Handle.IsValid())
@@ -164,7 +142,6 @@ public:
 		}
 		return false;
 	}
-    
 
 	void Broadcast(ParamTypes... Params) const
 	{

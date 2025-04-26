@@ -1,6 +1,6 @@
 #pragma once
 #include "Engine.h"
-#include "Actors/EditorPlayer.h"
+#include "Actors/Player.h"
 
 /*
     Editor 모드에서 사용될 엔진.
@@ -53,9 +53,6 @@ public:
 private:
     AEditorPlayer* EditorPlayer = nullptr;
 
-private:
-    void InitEditorWorld(FWorldContext& EditorWorldContext);
-    bool bEditorWorldInit = false;
 };
 
 

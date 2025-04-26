@@ -7,9 +7,6 @@
 #include "GameFramework/Actor.h"
 #include "Classes/Engine/AssetManager.h"
 #include "Components/Light/DirectionalLightComponent.h"
-#include "Editor/LevelEditor/SLevelEditor.h"
-#include <Camera/CameraComponent.h>
-
 
 namespace PrivateEditorSelection
 {
@@ -29,8 +26,12 @@ void UEditorEngine::Init()
 
     FWorldContext& EditorWorldContext = CreateNewWorldContext(EWorldType::Editor);
 
-    InitEditorWorld(EditorWorldContext);
+    EditorWorld = UWorld::CreateWorld(this, EWorldType::Editor, FString("EditorWorld"));
 
+    EditorWorldContext.SetCurrentWorld(EditorWorld);
+    ActiveWorld = EditorWorld;
+
+    EditorPlayer = FObjectFactory::ConstructObject<AEditorPlayer>(this);
 
     if (AssetManager == nullptr)
     {
@@ -41,9 +42,6 @@ void UEditorEngine::Init()
 
 #ifdef _DEBUG
     AActor* Actor = EditorWorld->SpawnActor<ACube>();
-    UCameraComponent* CameraComp = Actor->AddComponent<UCameraComponent>(TEXT("Camera"));
-    CameraComp->SetupAttachment(Actor->GetRootComponent());
-
     
     ADirectionalLight* DirLight = EditorWorld->SpawnActor<ADirectionalLight>();
     DirLight->SetActorRotation(FRotator(20, -61, 11));
@@ -107,12 +105,11 @@ void UEditorEngine::StartPIE()
         return;
     }
 
-    GEngineLoop.GetLevelEditor()->UnbindEditorInput();
     FWorldContext& PIEWorldContext = CreateNewWorldContext(EWorldType::PIE);
 
     PIEWorld = Cast<UWorld>(EditorWorld->Duplicate(this));
     PIEWorld->WorldType = EWorldType::PIE;
-    
+
     PIEWorldContext.SetCurrentWorld(PIEWorld);
     ActiveWorld = PIEWorld;
     
@@ -245,18 +242,4 @@ void UEditorEngine::HoverComponent(USceneComponent* InComponent) const
 AEditorPlayer* UEditorEngine::GetEditorPlayer() const
 {
     return EditorPlayer;
-}
-
-void UEditorEngine::InitEditorWorld(FWorldContext& EditorWorldContext)
-{
-    if (bEditorWorldInit)
-    {
-        return;
-    }
-    EditorWorld = UWorld::CreateWorld(this, EWorldType::Editor, FString("EditorWorld"));
-
-    EditorWorldContext.SetCurrentWorld(EditorWorld);
-    ActiveWorld = EditorWorld;
-    EditorPlayer = FObjectFactory::ConstructObject<AEditorPlayer>(this);
-    bEditorWorldInit = true;
 }

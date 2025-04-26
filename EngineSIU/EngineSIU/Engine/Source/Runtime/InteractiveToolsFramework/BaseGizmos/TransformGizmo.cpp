@@ -2,7 +2,7 @@
 #include "GizmoArrowComponent.h"
 #include "Define.h"
 #include "GizmoCircleComponent.h"
-#include "Actors/EditorPlayer.h"
+#include "Actors/Player.h"
 #include "GizmoRectangleComponent.h"
 #include "Engine/EditorEngine.h"
 #include "World/World.h"

@@ -15,7 +15,7 @@
 
 #include "World/World.h"
 
-#include "Actors/EditorPlayer.h"
+#include "Actors/Player.h"
 
 #include "BaseGizmos/GizmoBaseComponent.h"
 #include "BaseGizmos/TransformGizmo.h"
