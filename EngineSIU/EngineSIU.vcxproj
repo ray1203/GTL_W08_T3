@@ -254,6 +254,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\UnrealClient.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\UserInterface\Console.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\World\World.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\InputCore\FInputManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\InputCore\InputCoreTypes.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoArrowComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoBaseComponent.cpp" />
@@ -410,6 +411,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\World\World.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\World\WorldContext.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\World\WorldType.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\InputCore\FInputManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\InputCore\InputCoreTypes.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoArrowComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoBaseComponent.h" />

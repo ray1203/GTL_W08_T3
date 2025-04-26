@@ -11,6 +11,7 @@
 #include "World/World.h"
 #include <sol/sol.hpp>
 
+#include "FInputManager.h"
 #include "Lua/FLuaScriptSystem.h"
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -130,6 +131,8 @@ void FEngineLoop::Tick()
 
         GEngine->Tick(DeltaTime);
         LevelEditor->Tick(DeltaTime);
+        FInputKeyManager::Get().Tick();
+
         Render();
         UIMgr->BeginFrame();
         UnrealEditor->Render();

@@ -18,4 +18,8 @@ public:
     static void OpenLuaScriptEditor(const FString& ScriptFilePath);
 private:
     sol::state Lua;
+    void BindTypes();
+    void BindActor();
+    void BindInput();
+    void BindUtilities();
 };

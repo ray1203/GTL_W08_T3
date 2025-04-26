@@ -8,6 +8,8 @@
 #include "Math/Vector.h"
 #include <shellapi.h>
 
+#include "FInputManager.h"
+
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
 {
@@ -18,7 +20,11 @@ FLuaScriptSystem& FLuaScriptSystem::Get()
 void FLuaScriptSystem::Initialize()
 {
     Lua.open_libraries(sol::lib::base, sol::lib::math);
-
+    BindTypes();
+    BindActor();
+    BindInput();
+    BindUtilities();
+    /*
     Lua.new_usertype<FVector>("Vector",
         sol::constructors<FVector(), FVector(float, float, float)>(),
         "x", &FVector::X,
@@ -41,7 +47,8 @@ void FLuaScriptSystem::Initialize()
     /*Lua.new_usertype<UObject>("UObject",
         "GetName", &UObject::GetName,
         "GetUUID", &UObject::GetUUID
-    );*/
+    );#1#
+
     Lua.new_usertype<AActor>("GameObject",
         sol::base_classes, sol::bases<UObject>(),
 
@@ -57,17 +64,21 @@ void FLuaScriptSystem::Initialize()
         "PrintLocation", [](AActor* Self) {
             auto loc = Self->GetActorLocation();
             UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
-        },
-        "PrintVector",[](AActor* Self, FVector a)
-        {
-            UE_LOG(ELogLevel::Display, "Print Vector: %f %f %f", a.X, a.Y, a.Z);
         }
     );
     Lua.set_function("print", [](const std::string& msg)
         {
             UE_LOG(ELogLevel::Display, TEXT("[Lua Print] %s"), *FString(msg));
         });
+    Lua.new_usertype<FInputKeyManager>("Input", sol::no_constructor,
+        "GetKey", &FInputKeyManager::GetKey,
+        "GetKeyDown", &FInputKeyManager::GetKeyDown,
+        "GetKeyUp", &FInputKeyManager::GetKeyUp
+    );
 
+    // 글로벌로 사용 가능하도록 Input 매핑
+    Lua["Input"] = &FInputKeyManager::Get();
+    */
 
 
 }
@@ -121,4 +132,93 @@ void FLuaScriptSystem::OpenLuaScriptEditor(const FString& ScriptFilePath)
     {
         MessageBox(NULL, _T("파일 열기에 실패했습니다."), _T("Lua Script"), MB_OK | MB_ICONERROR);
     }
+}
+void FLuaScriptSystem::BindTypes()
+{
+    Lua.new_usertype<FVector>("Vector",
+        sol::constructors<FVector(), FVector(float, float, float)>(),
+        "x", &FVector::X,
+        "y", &FVector::Y,
+        "z", &FVector::Z,
+        sol::meta_function::addition, [](const FVector& a, const FVector& b) { return a + b; },
+        sol::meta_function::multiplication, [](const FVector& a, float f) { return a * f; }
+    );
+    Lua["Vector"] = [](float x, float y, float z) { return FVector(x, y, z); };
+
+    Lua.new_usertype<FRotator>("Rotator",
+        sol::constructors<FRotator(), FRotator(float, float, float)>(),
+        "Pitch", &FRotator::Pitch,
+        "Yaw", &FRotator::Yaw,
+        "Roll", &FRotator::Roll
+    );
+
+    Lua.new_usertype<FString>("FString",
+        "ToString", [](const FString& Str) { return std::string(TCHAR_TO_UTF8(*Str)); }
+    );
+}
+
+void FLuaScriptSystem::BindActor()
+{
+    Lua.new_usertype<AActor>("GameObject",
+        sol::base_classes, sol::bases<UObject>(),
+
+        "Location", sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
+        "Rotation", sol::property(&AActor::GetActorRotation, &AActor::SetActorRotation),
+        "Velocity", sol::property(&AActor::GetLuaVelocity, &AActor::SetLuaVelocity),
+        "UUID", sol::readonly_property(&AActor::GetUUID),
+
+        "PrintLocation", [](AActor* Self) {
+            auto loc = Self->GetActorLocation();
+            UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
+        }
+    );
+}
+
+void FLuaScriptSystem::BindInput()
+{
+    Lua.new_usertype<FInputKeyManager>("Input", sol::no_constructor,
+        "GetKey", &FInputKeyManager::GetKey,
+        "GetKeyDown", &FInputKeyManager::GetKeyDown,
+        "GetKeyUp", &FInputKeyManager::GetKeyUp
+    );
+    Lua["Input"] = &FInputKeyManager::Get();
+
+    Lua.new_enum("EKeys",
+        "A", EKeys::A,
+        "B", EKeys::B,
+        "C", EKeys::C,
+        "D", EKeys::D,
+        "E", EKeys::E,
+        "F", EKeys::F,
+        "G", EKeys::G,
+        "H", EKeys::H,
+        "I", EKeys::I,
+        "J", EKeys::J,
+        "K", EKeys::K,
+        "L", EKeys::L,
+        "M", EKeys::M,
+        "N", EKeys::N,
+        "O", EKeys::O,
+        "P", EKeys::P,
+        "Q", EKeys::Q,
+        "R", EKeys::R,
+        "S", EKeys::S,
+        "T", EKeys::T,
+        "U", EKeys::U,
+        "V", EKeys::V,
+        "W", EKeys::W,
+        "X", EKeys::X,
+        "Y", EKeys::Y,
+        "Z", EKeys::Z,
+        "SpaceBar", EKeys::SpaceBar,
+        "LeftMouseButton", EKeys::LeftMouseButton,
+        "RightMouseButton", EKeys::RightMouseButton
+    );
+}
+
+void FLuaScriptSystem::BindUtilities()
+{
+    Lua.set_function("print", [](const std::string& msg) {
+        UE_LOG(ELogLevel::Display, TEXT("[Lua Print] %s"), *FString(msg));
+        });
 }
