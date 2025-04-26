@@ -2,6 +2,9 @@
 #define _TCHAR_DEFINED
 #include <d3d11.h>
 #include <filesystem>
+#include <future>
+#include <vector>
+#include <mutex>
 
 #include "Container/Map.h"
 #include "Container/TSafeQueue.h"
@@ -37,6 +40,17 @@ public:
 	HRESULT AddPixelShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint);
     HRESULT AddPixelShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines);
 
+    HRESULT AddVertexShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint);
+    HRESULT AddVertexShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines);
+
+    HRESULT AddVertexShaderAndInputLayoutAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize);
+    HRESULT AddVertexShaderAndInputLayoutAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* Defines);
+
+    HRESULT AddPixelShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint);
+    HRESULT AddPixelShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines);
+
+    HRESULT WaitForAllShadersAsync();
+
 	ID3D11InputLayout* GetInputLayoutByKey(const std::wstring& Key) const;
 	ID3D11VertexShader* GetVertexShaderByKey(const std::wstring& Key) const;
 	ID3D11PixelShader* GetPixelShaderByKey(const std::wstring& Key) const;
@@ -61,4 +75,8 @@ private:
 	TMap<std::wstring, TShaderMetadataPtr<ID3D11PixelShader>> PixelShaders;
 
     TSafeQueue<FShaderCompileResult> CompileResultsQueue;
+
+    // 처음 create할때 비동기로 한번에 처리
+    std::vector<std::future<HRESULT>> PendingShaderFutures;
+    std::mutex FuturesMutex;
 };

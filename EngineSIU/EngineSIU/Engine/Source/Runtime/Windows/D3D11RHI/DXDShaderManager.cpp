@@ -132,6 +132,92 @@ HRESULT FDXDShaderManager::AddPixelShader(
     return S_OK;
 }
 
+HRESULT FDXDShaderManager::AddVertexShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint]() {
+            return this->AddVertexShader(Key, FileName, EntryPoint);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddVertexShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint, Defines]() {
+            return this->AddVertexShader(Key, FileName, EntryPoint, Defines);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddVertexShaderAndInputLayoutAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint, Layout, LayoutSize]() {
+            return this->AddVertexShaderAndInputLayout(Key, FileName, EntryPoint, Layout, LayoutSize);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddVertexShaderAndInputLayoutAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* Defines)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint, Layout, LayoutSize, Defines]() {
+            return this->AddVertexShaderAndInputLayout(Key, FileName, EntryPoint, Layout, LayoutSize, Defines);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddPixelShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint]() {
+            return this->AddPixelShader(Key, FileName, EntryPoint);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddPixelShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint, Defines]() {
+            return this->AddPixelShader(Key, FileName, EntryPoint, Defines);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::WaitForAllShadersAsync()
+{
+    bool bIsFailed = false;
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    for (auto& fut : PendingShaderFutures)
+    {
+        if (FAILED(fut.get()))
+        {
+            bIsFailed = true;
+        }
+    }
+    PendingShaderFutures.clear();
+
+    if (bIsFailed)
+    {
+        return E_FAIL;
+    }
+    return S_OK;
+}
+
 HRESULT FDXDShaderManager::AddVertexShader(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint)
 {
     if (DXDDevice == nullptr)
