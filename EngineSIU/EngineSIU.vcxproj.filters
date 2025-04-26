@@ -1349,6 +1349,9 @@
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileUtility.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderFileMetadata.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderMetadataPtr.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\InputCore\FInputManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\GameEngine.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.cpp" />
@@ -1419,6 +1422,9 @@
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileUtility.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderFileMetadata.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderMetadataPtr.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\InputCore\FInputManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\SpringArmComponent.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Engine\Camera</Filter>
