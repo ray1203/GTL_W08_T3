@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Container/Map.h"
 #include "HAL/PlatformType.h"
 
@@ -389,6 +389,7 @@ enum Type : uint8
 };
 }
 
+/*
 struct FInputKeyManager // ue FInputKeyManager.cpp, 1530
 {
 public:
@@ -400,3 +401,4 @@ private:
     TMap<uint32, EKeys::Type> KeyMapVirtualToEnum;
     TMap<uint32, EKeys::Type> KeyMapCharToEnum;
 };
+*/

@@ -1,4 +1,4 @@
-﻿// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppMemberFunctionMayBeConst
 #include "SlateAppMessageHandler.h"
 
 #define _TCHAR_DEFINED
@@ -6,6 +6,7 @@
 
 #include "Define.h"
 #include "EngineLoop.h"
+#include "FInputManager.h"
 #include "WindowsCursor.h"
 #include "Math/Vector.h"
 
@@ -366,7 +367,7 @@ void FSlateAppMessageHandler::OnKeyChar(const TCHAR Character, const bool IsRepe
 
 void FSlateAppMessageHandler::OnKeyDown(const uint32 KeyCode, const uint32 CharacterCode, const bool IsRepeat)
 {
-    FInputKeyManager::Get();
+    FInputKeyManager::Get().SetKeyDown(FInputKeyManager::Get().KeyMapVirtualToEnum[KeyCode]); // 키 다운 등록
     OnKeyDownDelegate.Broadcast(FKeyEvent{
         EKeys::Invalid, // TODO: 나중에 FInputKeyManager구현되면 바꾸기
         GetModifierKeys(),
@@ -379,6 +380,7 @@ void FSlateAppMessageHandler::OnKeyDown(const uint32 KeyCode, const uint32 Chara
 void FSlateAppMessageHandler::OnKeyUp(const uint32 KeyCode, const uint32 CharacterCode, const bool IsRepeat)
 {
     assert(!IsRepeat);  // KeyUp 이벤트에서 IsRepeat가 true일수가 없기 때문에
+    FInputKeyManager::Get().SetKeyUp(FInputKeyManager::Get().KeyMapVirtualToEnum[KeyCode]); // 키 업 등록
 
     OnKeyUpDelegate.Broadcast(FKeyEvent{
         EKeys::Invalid, // TODO: 나중에 FInputKeyManager구현되면 바꾸기

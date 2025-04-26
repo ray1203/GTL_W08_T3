@@ -90,7 +90,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GAME_BUILD=0</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -110,7 +110,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)GAME_BUILD=1</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -130,9 +130,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);GAME_BUILD=0</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)$(ProjectName);$(ProjectDir)$(ProjectName)\Engine\Source;$(ProjectDir)$(ProjectName)\Engine\Source\Editor;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Core;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Engine;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\InputCore;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Launch;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Renderer;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Serialization;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Slate;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\SlateCore;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Windows;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\tinyfiledialogs\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\Json\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\ImGui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)$(ProjectName);$(ProjectDir)$(ProjectName)\Engine\Source;$(ProjectDir)$(ProjectName)\Engine\Source\Editor;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\Sol2\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\Lua\include;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Core;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Engine;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\InputCore;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Launch;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Renderer;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Serialization;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Slate;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\SlateCore;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Windows;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\tinyfiledialogs\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\Json\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\ImGui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -140,8 +140,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(ProjectName)\Engine\Source\ThirdParty\DirectXTK\Lib\$(PlatformTarget)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\Lua\lib;$(SolutionDir)$(ProjectName)\Engine\Source\ThirdParty\DirectXTK\Lib\$(PlatformTarget)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK.lib;lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -150,9 +150,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)GAME_BUILD=1</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)$(ProjectName);$(ProjectDir)$(ProjectName)\Engine\Source;$(ProjectDir)$(ProjectName)\Engine\Source\Editor;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Core;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Engine;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\InputCore;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Launch;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Renderer;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Serialization;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Slate;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\SlateCore;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Windows;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\tinyfiledialogs\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\Json\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\ImGui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\Lua\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\Sol2\include;$(ProjectDir)$(ProjectName);$(ProjectDir)$(ProjectName)\Engine\Source;$(ProjectDir)$(ProjectName)\Engine\Source\Editor;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Core;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\CoreUObject;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Engine;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Engine\Classes;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\InputCore;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\InteractiveToolsFramework;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Launch;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Renderer;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Serialization;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Slate;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\SlateCore;$(ProjectDir)$(ProjectName)\Engine\Source\Runtime\Windows;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\tinyfiledialogs\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\Json\include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\DirectXTK\Include;$(ProjectDir)$(ProjectName)\Engine\Source\ThirdParty\ImGui\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -162,8 +162,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(ProjectName)\Engine\Source\ThirdParty\DirectXTK\Lib\$(PlatformTarget)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(ProjectName)\Engine\Source\ThirdParty\Lua\lib;$(SolutionDir)$(ProjectName)\Engine\Source\ThirdParty\DirectXTK\Lib\$(PlatformTarget)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK.lib;lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -220,6 +220,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\FireballActor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\HeightFogActor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\LightActor.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\PointLightActor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\SpotLightActor.cpp" />
@@ -232,6 +233,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\LightComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\PointLightComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\SpotLightComponent.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Material\Material.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\MeshComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Mesh\StaticMesh.cpp" />
@@ -248,13 +250,16 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\EditorEngine.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\Engine.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\FLoaderOBJ.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\GameEngine.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\ResourceMgr.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\StaticMeshActor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\GameFramework\Actor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Level.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\UnrealClient.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\UserInterface\Console.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\World\World.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\InputCore\FInputManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\InputCore\InputCoreTypes.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoArrowComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoBaseComponent.cpp" />
@@ -300,11 +305,15 @@
     <ClCompile Include="EngineSIU\LightGridGenerator.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\SphereComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\ShapeComponent.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\BoxComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\CapsuleComponent.h" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\SpringArmComponent.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\GameEngine.h" />
+    <ClInclude Include="Pawn.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileData.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompile.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileUtility.h" />
@@ -373,7 +382,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\FireballActor.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\HeightFogActor.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\LightActor.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\PointLightActor.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\SpotLightActor.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\ActorComponent.h" />
@@ -385,6 +394,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\LightComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\PointLightComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Light\SpotLightComponent.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Lua\LuaScriptComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Material\Material.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\MeshComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Mesh\StaticMesh.h" />
@@ -411,12 +421,14 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\CollisionShape.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\HitResult.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\OverlapInfo.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\UnrealClient.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\UserInterface\Console.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\ViewportClient.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\World\World.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\World\WorldContext.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\World\WorldType.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\InputCore\FInputManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\InputCore\InputCoreTypes.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoArrowComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\InteractiveToolsFramework\BaseGizmos\GizmoBaseComponent.h" />
@@ -494,6 +506,7 @@
     <ClInclude Include="EngineSIU\LightGridGenerator.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\SphereComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\ShapeComponent.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\SpringArmComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EngineSIU\Font\IconDefs.h" />

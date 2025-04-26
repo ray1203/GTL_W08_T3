@@ -1,4 +1,8 @@
 #include "Actor.h"
+
+#include "Components/ProjectileMovementComponent.h"
+#include "Components/Lua/LuaScriptComponent.h"
+#include "Lua/FLuaScriptSystem.h"
 #include "World/World.h"
 
 
@@ -8,6 +12,7 @@ UObject* AActor::Duplicate(UObject* InOuter)
 
     NewActor->Owner = Owner;
     NewActor->bTickInEditor = bTickInEditor;
+
     // 기본적으로 있던 컴포넌트 제거
     TSet CopiedComponents = NewActor->OwnedComponents;
     for (UActorComponent* Components : CopiedComponents)
@@ -264,8 +269,30 @@ bool AActor::SetActorScale(const FVector& NewScale)
     }
     return false;
 }
+void AActor::SetLuaComponent(ULuaScriptComponent* InComp)
+{
+    if (LuaComp)
+    {
+        UE_LOG(ELogLevel::Warning, TEXT("LuaComp is already bound to Actor %s. Skipping rebind."), *GetActorLabel());
+        InComp->DestroyComponent();
+        return;
+    }
+    LuaComp = InComp;
+}
 
 void AActor::SetActorTickInEditor(bool InbInTickInEditor)
 {
     bTickInEditor = InbInTickInEditor;
+}
+FVector AActor::GetLuaVelocity() const
+{
+    if (LuaComp)
+        return LuaComp->GetVelocity();
+    return FVector::ZeroVector;
+}
+
+void AActor::SetLuaVelocity(const FVector& InVelocity)
+{
+    if (LuaComp)
+        LuaComp->SetVelocity(InVelocity);
 }

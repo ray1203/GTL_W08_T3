@@ -290,6 +290,7 @@ public:
      * @return 포맷팅된 새로운 FString 객체.
      */
     static FString Printf(const ElementType* Format, ...);
+
 };
 
 template <typename Number>
@@ -359,3 +360,8 @@ inline const FString::ElementType* GetData(const FString& String)
 {
     return String.PrivateString.data();
 }
+#if USE_WIDECHAR
+#define TCHAR_TO_UTF8(Str) (FString(Str).ToAnsiString().c_str())
+#else
+#define TCHAR_TO_UTF8(Str) (Str)
+#endif

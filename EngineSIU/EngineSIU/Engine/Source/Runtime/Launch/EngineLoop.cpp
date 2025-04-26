@@ -9,8 +9,11 @@
 #include "UnrealEd/EditorViewportClient.h"
 #include "UnrealEd/UnrealEd.h"
 #include "World/World.h"
+#include <sol/sol.hpp>
+#include <Engine/GameEngine.h>
 
-
+#include "FInputManager.h"
+#include "Lua/FLuaScriptSystem.h"
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 FGraphicsDevice FEngineLoop::GraphicDevice;
@@ -38,7 +41,7 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
 {
     /* must be initialized before window. */
     WindowInit(hInstance);
-
+    FLuaScriptSystem::Get().Initialize();
     UnrealEditor = new UnrealEd();
     BufferManager = new FDXDBufferManager();
     UIMgr = new UImGuiManager;
@@ -58,7 +61,11 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     GetClientSize(ClientWidth, ClientHeight);
     LevelEditor->Initialize(ClientWidth, ClientHeight);
 
+#if GAME_BUILD
+    GEngine = FObjectFactory::ConstructObject<UGameEngine>(nullptr);
+#else
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
+#endif
     GEngine->Init();
 
     UpdateUI();
@@ -70,7 +77,7 @@ void FEngineLoop::Render() const
 {
     GraphicDevice.Prepare();
 
-    // ShadowMap Render ì‹œí‚¤ê¸°
+    // ShadowMap Render ?‹œ?‚¤ê¸?
     Renderer.RenderShadowMap();
 
     
@@ -102,7 +109,7 @@ void FEngineLoop::Render() const
 void FEngineLoop::Tick()
 {
     LARGE_INTEGER Frequency;
-    const double targetFrameTime = 1000.0 / TargetFPS; // í•œ í”„ë ˆì„ì˜ ëª©í‘œ ì‹œê°„ (ë°€ë¦¬ì´ˆ ë‹¨ìœ„)
+    const double targetFrameTime = 1000.0 / TargetFPS; // ?•œ ?”„? ˆ?„?˜ ëª©í‘œ ?‹œê°? (ë°?ë¦¬ì´ˆ ?‹¨?œ„)
 
     QueryPerformanceFrequency(&Frequency);
 
@@ -117,8 +124,8 @@ void FEngineLoop::Tick()
         MSG msg;
         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
         {
-            TranslateMessage(&msg); // í‚¤ë³´ë“œ ì…ë ¥ ë©”ì‹œì§€ë¥¼ ë¬¸ìë©”ì‹œì§€ë¡œ ë³€ê²½
-            DispatchMessage(&msg);  // ë©”ì‹œì§€ë¥¼ WndProcì— ì „ë‹¬
+            TranslateMessage(&msg); // ?‚¤ë³´ë“œ ?…? ¥ ë©”ì‹œì§?ë¥? ë¬¸ìë©”ì‹œì§?ë¡? ë³?ê²?
+            DispatchMessage(&msg);  // ë©”ì‹œì§?ë¥? WndProc?— ? „?‹¬
 
             if (msg.message == WM_QUIT)
             {
@@ -129,15 +136,19 @@ void FEngineLoop::Tick()
 
         GEngine->Tick(DeltaTime);
         LevelEditor->Tick(DeltaTime);
+        FInputKeyManager::Get().Tick();
+
         Render();
+#if !GAME_BUILD
         UIMgr->BeginFrame();
         UnrealEditor->Render();
 
         FConsole::GetInstance().Draw();
 
         UIMgr->EndFrame();
+#endif
 
-        // Pending ì²˜ë¦¬ëœ ì˜¤ë¸Œì íŠ¸ ì œê±°
+        // Pending ì²˜ë¦¬?œ ?˜¤ë¸Œì ?Š¸ ? œê±?
         GUObjectArray.ProcessPendingDestroyObjects();
 
         GraphicDevice.SwapBuffer();
