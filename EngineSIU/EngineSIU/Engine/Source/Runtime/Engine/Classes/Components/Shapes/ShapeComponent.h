@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Components/PrimitiveComponent.h"
 #include "Math/JungleCollision.h"
 #include "Math/JungleMath.h"
@@ -25,7 +27,7 @@ public:
     bool GetDrawOnlyIfSelected() const { return bDrawOnlyIfSelected; }
     void SetDrawOnlyIfSelected(bool InDrawOnlyIfSelected) { bDrawOnlyIfSelected = InDrawOnlyIfSelected; }
 
-private:
     FColor ShapeColor;
-    bool bDrawOnlyIfSelected; // true : 선택된 경우에만 그려짐. false : 항상 그려짐
+    bool bDrawOnlyIfSelected : 1 = false; // true : 선택된 경우에만 그려짐. false : 항상 그려짐
+    bool bIsSimulatingPhysics : 1 = true;
 };

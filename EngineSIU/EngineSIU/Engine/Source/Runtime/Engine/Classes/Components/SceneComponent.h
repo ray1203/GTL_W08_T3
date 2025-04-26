@@ -1,6 +1,7 @@
 #pragma once
 #include "ActorComponent.h"
 #include "Math/Rotator.h"
+#include "Math/Transform.h"
 #include "UObject/ObjectMacros.h"
 
 class USceneComponent : public UActorComponent
@@ -38,10 +39,12 @@ public:
     void SetRelativeLocation(const FVector& InNewLocation) { RelativeLocation = InNewLocation; }
     void SetRelativeRotation(const FRotator& InNewRotation) { RelativeRotation = InNewRotation; }
     void SetRelativeScale3D(const FVector& NewScale) { RelativeScale3D = NewScale; }
+    void SetRelativeTransform(const FTransform& InNewTransform);
 
     void SetWorldLocation(const FVector& InNewLocation);
     void SetWorldRotation(const FRotator& InNewRotation);
     void SetWorldScale3D(const FVector& NewScale);
+    void SetWorldTransform(const FTransform& InNewTransform);
 
     void Translate(const FVector& MoveDelta);
     void Rotate(const FRotator& RotationDelta);
@@ -49,10 +52,12 @@ public:
     FVector GetRelativeLocation() const { return RelativeLocation; }
     FRotator GetRelativeRotation() const { return RelativeRotation; }
     FVector GetRelativeScale3D() const { return RelativeScale3D; }
+    FTransform GetRelativeTransform() const { return FTransform(RelativeRotation.ToQuaternion(), RelativeLocation, RelativeScale3D); }
 
     FVector GetWorldLocation() const;
     FRotator GetWorldRotation() const;
     FVector GetWorldScale3D() const;
+    FTransform GetWorldTransform() const;
 
     FMatrix GetScaleMatrix() const;
     FMatrix GetRotationMatrix() const;

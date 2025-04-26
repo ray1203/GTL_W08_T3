@@ -1,6 +1,6 @@
 #pragma once
 #include "Math/Vector.h"
-#include "Math/JungleCollision.h
+#include "Math/JungleCollision.h"
 
 // Trace시 사용하는 Collision Shape
 namespace ECollisionShape
@@ -15,7 +15,7 @@ namespace ECollisionShape
 };
 
 // 16바이트 공용체로, 사용할 때 타입을 지정해야합니다.
-// 타입과 정보의 관계(Box type일때 extent를 저장)는 보장하지 않습니다.
+// 타입과 데이터의 관계를 보장하지 않습니다.
 struct FCollisionShape
 {
     ECollisionShape::Type ShapeType;

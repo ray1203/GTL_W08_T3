@@ -22,6 +22,17 @@ struct FBox
     FVector Max;
 };
 
+struct FOrientedBox
+{
+    FVector AxisX;
+    FVector AxisY;
+    FVector AxisZ;
+    FVector Center;
+    float ExtentX;
+    float ExtentY;
+    float ExtentZ;
+};
+
 struct FCapsule
 {
     FVector A; // 캡슐의 한쪽 끝
@@ -44,6 +55,8 @@ public:
 
     static bool Intersects(const FCapsule& A, const FCapsule& B);
 
+    static bool Intersects(const FOrientedBox& A, const FOrientedBox& B);
+
     static bool Intersects(const FSphere& Sphere, const FBox& AABB);
 
     static bool Intersects(const FBox& AABB, const FSphere& Sphere);
@@ -55,6 +68,18 @@ public:
     static bool Intersects(const FSphere& Sphere, const FCapsule& Capsule);
 
     static bool Intersects(const FCapsule& Capsule, const FSphere& Sphere);
+
+    static bool Intersects(const FOrientedBox& Box, const FSphere& Sphere);
+
+    static bool Intersects(const FSphere& Sphere, const FOrientedBox& Box);
+
+    static bool Intersects(const FOrientedBox& Box, const FCapsule& Capsule);
+
+    static bool Intersects(const FCapsule& Capsule, const FOrientedBox& Box);
+
+    static bool Intersects(const FOrientedBox& Box, const FBox& AABB);
+
+    static bool Intersects(const FBox& AABB, const FOrientedBox& Box);
 
     // 내부 계산은 SIMD로 작동
 private:
@@ -98,6 +123,12 @@ private:
     inline static bool RayIntersectsAABBSIMD(const RaySIMD& ray, const AABBSIMD& box, float* outT = nullptr);
     
     inline static bool RayIntersectsCapsuleSIMD(const RaySIMD& ray, const CapsuleSIMD& capsule, float* outT = nullptr);
+
+    inline static bool TestAxis(const FVector& Axis, const FOrientedBox& A, const FOrientedBox& B, const FVector& D);
+
+    inline static FVector ClosestPointOnOBB(const FOrientedBox& Box, const FVector& Point);
+
+    inline static FVector ClosestPointOnSegment(const FVector& A, const FVector& B, const FVector& P);
 };
 
 

@@ -98,6 +98,36 @@ bool JungleCollision::Intersects(const FCapsule& A, const FCapsule& B)
     return dist2 <= r * r;
 }
 
+bool JungleCollision::Intersects(const FOrientedBox& A, const FOrientedBox& B)
+{
+    // 각 박스의 로컬 축
+    FVector AxisA[3] = { A.AxisX, A.AxisY, A.AxisZ };
+    FVector AxisB[3] = { B.AxisX, B.AxisY, B.AxisZ };
+    // 두 박스 중심 벡터
+    FVector D = B.Center - A.Center;
+    // 15개의 축 모두 검사 (A0, A1, A2, B0, B1, B2, A0xB0, A0xB1, ..., A2xB2)
+    for (int i = 0; i < 3; ++i)
+    {
+        if (!TestAxis(AxisA[i], A, B, D)) return false;
+    }
+    for (int i = 0; i < 3; ++i)
+    {
+        if (!TestAxis(AxisB[i], A, B, D)) return false;
+    }
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            FVector Cross = FVector::CrossProduct(AxisA[i], AxisB[j]);
+            if (Cross.LengthSquared() > SMALL_NUMBER)
+            {
+                if (!TestAxis(Cross, A, B, D)) return false;
+            }
+        }
+    }
+    return true; // 모든 축에서 분리 안됐으면 충돌
+}
+
 bool JungleCollision::Intersects(const FSphere& Sphere, const FBox& AABB)
 {
     SphereSIMD _Sphere;
@@ -186,6 +216,53 @@ bool JungleCollision::Intersects(const FSphere& Sphere, const FCapsule& Capsule)
 bool JungleCollision::Intersects(const FCapsule& Capsule, const FSphere& Sphere)
 {
     return Intersects(Sphere, Capsule);
+}
+
+bool JungleCollision::Intersects(const FOrientedBox& Box, const FSphere& Sphere)
+{
+    FVector Local = Sphere.Center - Box.Center;
+    FVector ClosestPoint = Box.Center;
+    FVector Axes[3] = { Box.AxisX, Box.AxisY, Box.AxisZ };
+    float Extents[3] = { Box.ExtentX, Box.ExtentY, Box.ExtentZ };
+    for (int i = 0; i < 3; ++i)
+    {
+        float Distance = FVector::DotProduct(Local, Axes[i]);
+        Distance = FMath::Clamp(Distance, -Extents[i], Extents[i]);
+        ClosestPoint += Axes[i] * Distance;
+    }
+    return (ClosestPoint - Sphere.Center).LengthSquared() <= Sphere.Radius * Sphere.Radius;
+}
+
+bool JungleCollision::Intersects(const FSphere& Sphere, const FOrientedBox& Box)
+{
+    return Intersects(Box, Sphere);
+}
+
+bool JungleCollision::Intersects(const FOrientedBox& Box, const FCapsule& Capsule)
+{
+    FVector Top = Capsule.A;
+    FVector Bottom = Capsule.B;
+    // 캡슐 세그먼트의 Closest Point를 OBB에 대해 찾는다
+    FVector ClosestA = ClosestPointOnOBB(Box, Top);
+    FVector ClosestB = ClosestPointOnOBB(Box, Bottom);
+    FVector ClosestOnSegment = ClosestPointOnSegment(Top, Bottom, (ClosestA + ClosestB) * 0.5f);
+    float DistSq = (ClosestPointOnOBB(Box, ClosestOnSegment) - ClosestOnSegment).LengthSquared();
+    return DistSq <= Capsule.Radius * Capsule.Radius;
+}
+
+bool JungleCollision::Intersects(const FCapsule& Capsule, const FOrientedBox& Box)
+{
+    return false;
+}
+
+bool JungleCollision::Intersects(const FOrientedBox& Box, const FBox& AABB)
+{
+    return false;
+}
+
+bool JungleCollision::Intersects(const FBox& AABB, const FOrientedBox& Box)
+{
+    return false;
 }
 
 inline float JungleCollision::dot3(__m128 v1, __m128 v2)
@@ -350,4 +427,44 @@ inline bool JungleCollision::RayIntersectsCapsuleSIMD(const RaySIMD& ray, const 
     if (s < 0.0f) return false; // 레이 앞쪽일 때만
     if (outT) *outT = s;
     return true;
+}
+
+inline bool JungleCollision::TestAxis(const FVector& Axis, const FOrientedBox& A, const FOrientedBox& B, const FVector& D)
+{
+    float ProjectA =
+        A.ExtentX * FMath::Abs(FVector::DotProduct(Axis, A.AxisX)) +
+        A.ExtentY * FMath::Abs(FVector::DotProduct(Axis, A.AxisY)) +
+        A.ExtentZ * FMath::Abs(FVector::DotProduct(Axis, A.AxisZ));
+    float ProjectB =
+        B.ExtentX * FMath::Abs(FVector::DotProduct(Axis, B.AxisX)) +
+        B.ExtentY * FMath::Abs(FVector::DotProduct(Axis, B.AxisY)) +
+        B.ExtentZ * FMath::Abs(FVector::DotProduct(Axis, B.AxisZ));
+    float Distance = FMath::Abs(FVector::DotProduct(D, Axis));
+    return Distance <= (ProjectA + ProjectB);
+}
+
+inline FVector JungleCollision::ClosestPointOnOBB(const FOrientedBox& Box, const FVector& Point)
+{
+    FVector Local = Point - Box.Center;
+    FVector Result = Box.Center;
+    FVector Axes[3] = { Box.AxisX, Box.AxisY, Box.AxisZ };
+    float Extents[3] = { Box.ExtentX, Box.ExtentY, Box.ExtentZ };
+
+    for (int i = 0; i < 3; ++i)
+    {
+        float Distance = FVector::DotProduct(Local, Axes[i]);
+        Distance = FMath::Clamp(Distance, -Extents[i], Extents[i]);
+        Result += Axes[i] * Distance;
+    }
+    return Result;
+}
+
+inline FVector JungleCollision::ClosestPointOnSegment(const FVector& A, const FVector& B, const FVector& P)
+{
+    FVector AB = B - A;
+    float AB_LengthSq = AB.LengthSquared();
+    if (AB_LengthSq <= SMALL_NUMBER) return A;
+    float T = FVector::DotProduct(P - A, AB) / AB_LengthSq;
+    T = FMath::Clamp(T, 0.0f, 1.0f);
+    return A + AB * T;
 }
