@@ -2,26 +2,45 @@
     "Actors": [
         {
             "ActorClass": "ACube",
-            "ActorID": "ACube_103",
-            "ActorLabel": "OBJ_CUBE_103",
+            "ActorID": "ACube_91",
+            "ActorLabel": "ACube91",
             "Components": [
                 {
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "StaticMeshComponent_0",
                     "Properties": {
-                        "AABB_max": "X=1.000 Y=-0.000 Z=1.000",
-                        "AABB_min": "X=0.000 Y=-1.000 Z=0.000",
+                        "AABB_max": "X=1.287 Y=1.199 Z=2.555",
+                        "AABB_min": "X=-1.287 Y=-1.199 Z=-0.000",
                         "ComponentClass": "UStaticMeshComponent",
                         "ComponentName": "StaticMeshComponent_0",
-                        "ComponentOwner": "ACube_103",
+                        "ComponentOwner": "ACube_91",
                         "ComponentOwnerClass": "ACube",
-                        "RelativeLocation": "X=0.330 Y=0.386 Z=7.405",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
-                        "RelativeScale3D": "X=1.947 Y=3.055 Z=1.749",
-                        "StaticMeshPath": "Contents/Cube/cube-tex.obj",
+                        "RelativeLocation": "X=0.000 Y=6.800 Z=0.000",
+                        "RelativeRotation": "Pitch=-13.400 Yaw=-0.800 Roll=-1.500",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "StaticMeshPath": "Contents/Reference/Reference.obj",
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": ""
+                    }
+                },
+                {
+                    "ComponentClass": "UCameraComponent",
+                    "ComponentID": "Camera",
+                    "Properties": {
+                        "AspectRatio": "1.777000",
+                        "ComponentClass": "UCameraComponent",
+                        "ComponentName": "Camera",
+                        "ComponentOwner": "ACube_91",
+                        "ComponentOwnerClass": "ACube",
+                        "FOV": "90.000000",
+                        "FarClip": "1000.000000",
+                        "NearClip": "0.100000",
+                        "RelativeLocation": "X=-5.000 Y=0.800 Z=2.500",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
                     }
                 }
             ],
@@ -29,8 +48,8 @@
         },
         {
             "ActorClass": "ADirectionalLight",
-            "ActorID": "ADirectionalLight_105",
-            "ActorLabel": "OBJ_DIRECTIONALLGIHT_105",
+            "ActorID": "ADirectionalLight_94",
+            "ActorLabel": "ADirectionalLight94",
             "Components": [
                 {
                     "ComponentClass": "UDirectionalLightComponent",
@@ -40,11 +59,11 @@
                         "AABB_Min": "X=-1.000 Y=-1.000 Z=-0.100",
                         "ComponentClass": "UDirectionalLightComponent",
                         "ComponentName": "DirectionalLightComponent",
-                        "ComponentOwner": "ADirectionalLight_105",
+                        "ComponentOwner": "ADirectionalLight_94",
                         "ComponentOwnerClass": "ADirectionalLight",
                         "Direction": "X=-0.000 Y=-0.000 Z=-1.000",
-                        "Intensity": "20.299999",
-                        "LightColor": "R=0.357 G=0.353 B=0.982 A=1.000",
+                        "Intensity": "2.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
                         "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
@@ -61,12 +80,12 @@
                         "BufferKey": "Assets/Editor/Icon/DirectionalLight_64x.png",
                         "ComponentClass": "UBillboardComponent",
                         "ComponentName": "BillboardComponent",
-                        "ComponentOwner": "ADirectionalLight_105",
+                        "ComponentOwner": "ADirectionalLight_94",
                         "ComponentOwnerClass": "ADirectionalLight",
                         "FinalIndexU": "0.000000",
                         "FinalIndexV": "0.000000",
-                        "RelativeLocation": "X=0.000 Y=0.000 Z=50.000",
-                        "RelativeRotation": "Pitch=-1.600 Yaw=-4.500 Roll=0.000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=20.000",
+                        "RelativeRotation": "Pitch=20.000 Yaw=-61.000 Roll=11.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
                         "bAutoActive": "true",
                         "bIsActive": "true",

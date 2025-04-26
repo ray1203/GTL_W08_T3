@@ -518,28 +518,29 @@ void PropertyEditorPanel::Render()
                 CameraComponent->SetRelativeRotation(Rotation);
                 CameraComponent->SetRelativeScale3D(Scale);
 
-                // !TODO : 불리언 플래그로 값 전환 및 전환 시 특정 로직 실행
-                FEditorViewportClient* vp = GEngineLoop.GetLevelEditor()->GetActiveViewportClient().get();
-                if (vp)
+                bool bIsCameraAttachedToViewport = CameraComponent->IsAttachedToViewport();
+                // bIsCameraOverriden값을 가지고 override 여부 판단해서 토글 표시, 클릭 시 vp->AttachCameraComponent, 해제 시 DetachCameraComponent 호출하도록
+                // 토글 버튼 UI (체크박스 또는 버튼)
+                if (ImGui::Checkbox("Override Viewport Camera", &bIsCameraAttachedToViewport))
                 {
-                    bool bIsCameraOverriden = vp->IsOverridingCamera();
-                    // bIsCameraOverriden값을 가지고 override 여부 판단해서 토글 표시, 클릭 시 vp->AttachCameraComponent, 해제 시 DetachCameraComponent 호출하도록
-                    // 토글 버튼 UI (체크박스 또는 버튼)
-                    if (ImGui::Checkbox("Override Viewport Camera", &bIsCameraOverriden))
+                    if (bIsCameraAttachedToViewport)
                     {
-                        if (bIsCameraOverriden)
-                        {
-                            // 오버라이드 활성화: 에디터 뷰포트에 카메라 컴포넌트 연결
-                            vp->AttachCameraComponent(CameraComponent);
-                        }
-                        else
-                        {
-                            // 오버라이드 비활성화: 기본 에디터 카메라로 복원
-                            vp->DetachCameraComponent();
-                        }
+                        // 오버라이드 활성화: 에디터 뷰포트에 카메라 컴포넌트 연결
+                        CameraComponent->AttachToViewport();
+                    }
+                    else
+                    {
+                        // 오버라이드 비활성화: 기본 에디터 카메라로 복원
+                        CameraComponent->DetachFromViewport();
                     }
                 }
 
+                bool bShouldAttachedToViewport = CameraComponent->bShouldAttachedToViewport;
+                if (ImGui::Checkbox("Should Attached To Viewport", &bShouldAttachedToViewport))
+                {
+                    CameraComponent->bShouldAttachedToViewport = bShouldAttachedToViewport;
+                }
+                    
                 float FOV = CameraComponent->GetFOV();
                 if (ImGui::SliderFloat("FOV", &FOV, 0.f, 180.f))
                 {

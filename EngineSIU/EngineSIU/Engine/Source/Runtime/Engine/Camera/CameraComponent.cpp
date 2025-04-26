@@ -4,6 +4,7 @@
 #include "Editor/LevelEditor/SLevelEditor.h"
 #include "UObject/Casts.h"
 #include "UObject/ObjectFactory.h"
+#include "World/World.h"
 
 
 UCameraComponent::UCameraComponent()
@@ -18,6 +19,7 @@ UObject* UCameraComponent::Duplicate(UObject* InOuter)
     NewComponent->AspectRatio = AspectRatio;
     NewComponent->NearClip = NearClip;
     NewComponent->FarClip = FarClip;    
+    NewComponent->bShouldAttachedToViewport = bShouldAttachedToViewport;
     return NewComponent;
 }
 
@@ -30,6 +32,7 @@ void UCameraComponent::GetProperties(TMap<FString, FString>& OutProperties) cons
     OutProperties.Add(TEXT("AspectRatio"), FString::Printf(TEXT("%f"), AspectRatio));
     OutProperties.Add(TEXT("NearClip"), FString::Printf(TEXT("%f"), NearClip));
     OutProperties.Add(TEXT("FarClip"), FString::Printf(TEXT("%f"), FarClip));
+    OutProperties.Add(TEXT("IsShouldAttachedToViewport"), FString::Printf(TEXT("%f"), bShouldAttachedToViewport));
 }
 
 void UCameraComponent::SetProperties(const TMap<FString, FString>& InProperties)
@@ -45,6 +48,31 @@ void UCameraComponent::SetProperties(const TMap<FString, FString>& InProperties)
     if (TempStr) NearClip = FCString::Atof(**TempStr);
     TempStr = InProperties.Find(TEXT("FarClip"));
     if (TempStr) FarClip = FCString::Atof(**TempStr);
+    TempStr = InProperties.Find(TEXT("IsShouldAttachedToViewport"));
+    if (TempStr) bShouldAttachedToViewport = FCString::Atof(**TempStr);
+}
+
+void UCameraComponent::BeginPlay()
+{
+    Super::BeginPlay();
+    if (bShouldAttachedToViewport && GetWorld() && (GetWorld()->WorldType == EWorldType::PIE || GetWorld()->WorldType == EWorldType::Game))
+    {
+        AttachToViewport();
+    }
+    else
+    {
+        DetachFromViewport();
+    }
+}
+
+void UCameraComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    DetachFromViewport();
+}
+
+void UCameraComponent::InitializeComponent()
+{
+
 }
 
 void UCameraComponent::UpdateViewMatrix()
@@ -91,4 +119,27 @@ FVector UCameraComponent::GetUpVector() const
     Up = JungleMath::FVectorRotate(Up, GetWorldRotation());
     return Up;
 }
+
+void UCameraComponent::AttachToViewport()
+{
+    FEditorViewportClient* vp = GEngineLoop.GetLevelEditor()->GetActiveViewportClient().get();
+    if (vp)
+    {
+        // 카메라 컴포넌트를 뷰포트에 연결
+        vp->AttachCameraComponent(this);
+        bIsAttachedToViewport = true;
+    }
+}
+
+void UCameraComponent::DetachFromViewport()
+{
+    FEditorViewportClient* vp = GEngineLoop.GetLevelEditor()->GetActiveViewportClient().get();
+    if (vp)
+    {
+        // 카메라 컴포넌트를 뷰포트에서 분리
+        vp->DetachCameraComponent();
+        bIsAttachedToViewport = false;
+    }
+}
+
 

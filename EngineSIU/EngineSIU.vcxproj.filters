@@ -1351,6 +1351,10 @@
     <ClCompile Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderMetadataPtr.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\GameEngine.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\SpringArmComponent.cpp">
+      <Filter>EngineSIU\Engine\Source\Runtime\Engine\Camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1416,6 +1420,9 @@
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderFileMetadata.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderMetadataPtr.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\EditorPlayer.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\SpringArmComponent.h">
+      <Filter>EngineSIU\Engine\Source\Runtime\Engine\Camera</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultPropertySheet.props" />

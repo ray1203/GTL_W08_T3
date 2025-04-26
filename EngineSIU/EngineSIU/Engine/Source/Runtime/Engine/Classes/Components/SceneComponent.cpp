@@ -188,6 +188,20 @@ void USceneComponent::SetWorldScale3D(const FVector& NewScale)
     }
 }
 
+void USceneComponent::Translate(const FVector& MoveDelta)
+{
+    RelativeLocation = RelativeLocation + MoveDelta;
+}
+
+void USceneComponent::Rotate(const FRotator& RotationDelta)
+{
+    FQuat QuatDelta = RotationDelta.ToQuaternion();
+    FQuat Quat = RelativeRotation.ToQuaternion();
+    Quat = Quat * QuatDelta;
+
+    RelativeRotation = Quat.ToRotator();
+}
+
 FVector USceneComponent::GetWorldLocation() const
 {
     if (AttachParent)

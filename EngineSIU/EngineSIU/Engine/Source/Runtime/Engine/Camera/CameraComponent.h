@@ -3,7 +3,7 @@
 
 class FViewportClient;
 
-class UCameraComponent : public USceneComponent
+class UCameraComponent  : public USceneComponent
 {
     DECLARE_CLASS(UCameraComponent, USceneComponent)
 
@@ -14,6 +14,9 @@ public:
 
     void GetProperties(TMap<FString, FString>& OutProperties) const override;
     void SetProperties(const TMap<FString, FString>& InProperties) override;
+    void BeginPlay() override;
+    void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    void InitializeComponent() override;
 
 private:
     float ViewFOV = 90.0f;
@@ -44,4 +47,13 @@ public:
     FVector GetForwardVector() const;
     FVector GetRightVector() const;
     FVector GetUpVector() const;
+public:
+    void AttachToViewport();
+    void DetachFromViewport();
+    bool IsAttachedToViewport() const { return bIsAttachedToViewport; }
+protected:
+
+    bool bIsAttachedToViewport = false;
+public:
+    bool bShouldAttachedToViewport = false;
 };
