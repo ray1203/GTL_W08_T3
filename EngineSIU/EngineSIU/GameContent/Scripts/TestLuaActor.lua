@@ -1,8 +1,9 @@
+Velocity = Vector(20,2,0)
 function BeginPlay()
     print("[BeginPlay] " .. obj.UUID)
     print("TestLuaActor")
     obj:PrintLocation()
-    obj.Velocity = Vector(1,0,0)
+    -- obj.Velocity = Vector(2,2,0)
 end
 
 function EndPlay()
@@ -15,6 +16,8 @@ function OnOverlap(OtherActor)
 end
 
 function Tick(dt)
-    obj.Location = obj.Location + obj.Velocity * dt
+    --obj.Location = obj.Location + obj.Velocity * dt
+    obj.Location = obj.Location + Velocity * dt
     obj:PrintLocation()
+    obj:PrintVector(Velocity)
 end

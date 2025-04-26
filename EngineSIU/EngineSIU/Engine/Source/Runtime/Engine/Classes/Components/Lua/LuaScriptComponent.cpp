@@ -30,6 +30,16 @@ void ULuaScriptComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
     CallLuaFunction("Tick", DeltaTime);
+
+    sol::object VelocityObj = LuaScriptTable["Velocity"];
+    if (VelocityObj.is<FVector>())
+    {
+       FVector a =  VelocityObj.as<FVector>();
+       if (a!=FVector::Zero())
+       {
+           
+       }
+    }
 }
 UObject* ULuaScriptComponent::Duplicate(UObject* InOuter)
 {
@@ -91,5 +101,26 @@ void ULuaScriptComponent::CallLuaFunction(const char* FunctionName, float DeltaT
     {
         sol::error err = Result;
         UE_LOG(ELogLevel::Error, *FString::Printf(TEXT("Lua error in %s: %s"), *FString(FunctionName), err.what()));
+    }
+}
+void ULuaScriptComponent::GetProperties(TMap<FString, FString>& OutProperties) const
+{
+
+    TMap<FString, FString>& Properties = OutProperties;
+
+    Properties.Add(TEXT("LuaScriptPath"), *GetScriptPath());
+
+}
+
+void ULuaScriptComponent::SetProperties(const TMap<FString, FString>& Properties)
+{
+    const FString* TempStr = nullptr;
+
+    // --- 설정 값 복원 ---
+
+    TempStr = Properties.Find(TEXT("LuaScriptPath")); // bAutoActive 변수가 있다고 가정
+    if (TempStr)
+    {
+        SetScriptPath(GetData(*TempStr));
     }
 }

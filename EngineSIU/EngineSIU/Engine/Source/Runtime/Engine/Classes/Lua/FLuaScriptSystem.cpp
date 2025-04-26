@@ -57,6 +57,10 @@ void FLuaScriptSystem::Initialize()
         "PrintLocation", [](AActor* Self) {
             auto loc = Self->GetActorLocation();
             UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
+        },
+        "PrintVector",[](AActor* Self, FVector a)
+        {
+            UE_LOG(ELogLevel::Display, "Print Vector: %f %f %f", a.X, a.Y, a.Z);
         }
     );
     Lua.set_function("print", [](const std::string& msg)
