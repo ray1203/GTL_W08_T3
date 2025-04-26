@@ -9,7 +9,7 @@
 #include "BaseGizmos/GizmoBaseComponent.h"
 #include "D3D11RHI/GraphicDevice.h"
 #include "Engine/FLoaderOBJ.h"
-#include "Engine/Classes/Actors/Player.h"
+#include "Engine/Classes/Actors/EditorPlayer.h"
 #include "Engine/Classes/Components/HeightFogComponent.h"
 #include "Engine/Classes/Components/Light/AmbientLightComponent.h"
 #include "Engine/Classes/Components/Light/DirectionalLightComponent.h"

@@ -1,4 +1,4 @@
-﻿#include "Quat.h"
+#include "Quat.h"
 
 #include "Vector.h"
 #include "Matrix.h"
@@ -145,4 +145,43 @@ FMatrix FQuat::ToMatrix() const
     RotationMatrix.M[3][3] = 1.0f;
 
     return RotationMatrix;
+}
+
+FQuat FQuat::Inverse()
+{
+    float magnitude = sqrtf(W * W + X * X + Y * Y + Z * Z);
+    return FQuat(W / (magnitude * magnitude), -X / (magnitude * magnitude), -Y / (magnitude * magnitude), -Z / (magnitude * magnitude));
+}
+
+FRotator FQuat::ToRotator() const
+{
+    FRotator R;
+
+    const float SingularityTest = Z * X - W * Y;
+    const float YawY = 2.f * (W * Z + X * Y);
+    const float YawX = 1.f - 2.f * (Y * Y + Z * Z);
+
+    const float SINGULARITY_THRESHOLD = 0.4999995f;
+
+    // Pitch (X), Yaw (Y), Roll (Z)
+    if (SingularityTest < -SINGULARITY_THRESHOLD)
+    {
+        R.Pitch = -90.f;
+        R.Yaw = std::atan2(YawY, YawX) * (180.0f / PI);
+        R.Roll = -R.Yaw;
+    }
+    else if (SingularityTest > SINGULARITY_THRESHOLD)
+    {
+        R.Pitch = 90.f;
+        R.Yaw = std::atan2(YawY, YawX) * (180.0f / PI);
+        R.Roll = R.Yaw;
+    }
+    else
+    {
+        R.Pitch = std::asin(2.f * SingularityTest) * (180.0f / PI);
+        R.Yaw = std::atan2(YawY, YawX) * (180.0f / PI);
+        R.Roll = std::atan2(2.f * (W * X + Y * Z), 1.f - 2.f * (X * X + Y * Y)) * (180.0f / PI);
+    }
+
+    return R;
 }
