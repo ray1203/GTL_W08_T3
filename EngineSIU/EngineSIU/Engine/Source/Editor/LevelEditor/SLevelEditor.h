@@ -86,6 +86,15 @@ private:
     void RemoveTest2();
 
 private:
+    TArray<FDelegateHandle> InputDelegateHandles;
+
+public:
+    // 에디터 모드 입장 시
+    void BindEditorInput();
+    // 에디터 모드 나갈 때
+    void UnbindEditorInput();
+
+private:
     TMap<FString, FString> ReadIniFile(const FString& FilePath);
     void WriteIniFile(const FString& FilePath, const TMap<FString, FString>& Config);
 
