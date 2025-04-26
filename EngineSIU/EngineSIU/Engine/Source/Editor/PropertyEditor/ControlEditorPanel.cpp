@@ -29,6 +29,8 @@
 #include "Actors/DirectionalLightActor.h"
 #include "Actors/SpotLightActor.h"
 #include "Actors/AmbientLightActor.h"
+#include "Actors/UI/ButtonUIActor.h"
+#include "Actors/UI/TextUIActor.h"
 
 void ControlEditorPanel::Render()
 {
@@ -286,7 +288,10 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             { .label= "Particle",  .obj= OBJ_PARTICLE },
             { .label= "Text",      .obj= OBJ_TEXT },
             { .label= "Fireball",  .obj = OBJ_FIREBALL},
-            { .label= "Fog",       .obj= OBJ_FOG }
+            { .label= "Fog",       .obj= OBJ_FOG },
+            { .label = "UIText",   .obj = OBJ_UI_TEXT },
+            {.label = "UIButton", .obj = OBJ_UI_BUTTON },
+
         };
 
         for (const auto& primitive : primitives)
@@ -374,6 +379,26 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     SpawnedActor->SetActorLabel(TEXT("OBJ_FOG"));
                     break;
                 }
+                case OBJ_UI_TEXT:
+                {
+                    ATextUIActor* TextActor = World->SpawnActor<ATextUIActor>();
+                    TextActor->SetActorLabel(TEXT("OBJ_UI_TEXT"));
+                    TextActor->SetText("Hello UI Text!");
+                    SpawnedActor = TextActor;
+                    break;
+                }
+                case OBJ_UI_BUTTON:
+                {
+                    AButtonUIActor* ButtonActor = World->SpawnActor<AButtonUIActor>();
+                    ButtonActor->SetActorLabel(TEXT("OBJ_UI_BUTTON"));
+                    ButtonActor->SetLabel("Click Me");
+                    ButtonActor->SetOnClick([]() {
+                        UE_LOG(ELogLevel::Display, TEXT("UIButton Clicked from UI"));
+                        });
+                    SpawnedActor = ButtonActor;
+                    break;
+                }
+
                 case OBJ_TRIANGLE:
                 case OBJ_CAMERA:
                 case OBJ_PLAYER:

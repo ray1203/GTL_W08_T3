@@ -4,6 +4,7 @@
 #include "Char.h"
 #include "Container/CString.h"
 #include "Math/MathUtility.h"
+#include "Math/Vector.h"
 #include "Runtime/CoreUObject/UObject/NameTypes.h"
 
 
@@ -258,4 +259,36 @@ bool FParse::Bool(const TCHAR* Stream, const TCHAR* Match, bool& OnOff)
     {
         return false;
     }
+}
+bool FParse::Value(const TCHAR* Stream, const TCHAR* Match, FVector2D& Value)
+{
+    TCHAR Temp[256];
+    if (!FParse::Value(Stream, Match, Temp, std::size(Temp)))
+    {
+        return false;
+    }
+
+    const TCHAR* Comma = FCString::Strchr(Temp, ',');
+    if (!Comma)
+    {
+        return false;
+    }
+
+    // X 부분 추출 (Temp ~ Comma 전까지)
+    int32 XLength = static_cast<int32>(Comma - Temp);
+    if (XLength <= 0 || XLength >= 128)
+    {
+        return false;
+    }
+
+    TCHAR XPart[128] = {};
+    FCString::Strncpy(XPart, Temp, XLength + 1);  // +1 for null terminator
+
+    const TCHAR* YPart = Comma + 1;
+
+    float X = FCString::Atof(XPart);
+    float Y = FCString::Atof(YPart);
+
+    Value = FVector2D(X, Y);
+    return true;
 }

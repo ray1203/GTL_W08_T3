@@ -25,8 +25,8 @@ public:
     /** Lua 스크립트 경로 지정 */
     void SetScriptPath(const FString& Path) { LuaScriptPath = Path; }
     const FString& GetScriptPath() const { return LuaScriptPath; }
-    virtual void GetProperties(TMap<FString, FString>& OutProperties) const;
-    virtual void SetProperties(const TMap<FString, FString>& Properties);
+    virtual void GetProperties(TMap<FString, FString>& OutProperties) const override;
+    virtual void SetProperties(const TMap<FString, FString>& Properties) override;
 
 
 private:
