@@ -74,6 +74,23 @@ public:
     void SaveConfig();
 
 private:
+    void AddDynamicTest1(const FPointerEvent& PointerEvent);
+    std::optional<FDelegateHandle> Test1Handle;
+    void AddDynamicTest2(const FPointerEvent& PointerEvent);
+    std::optional<FDelegateHandle> Test2Handle;
+    void RemoveTest1();
+    void RemoveTest2();
+
+private:
+    TArray<FDelegateHandle> InputDelegateHandles;
+
+public:
+    // 에디터 모드 입장 시
+    void BindEditorInput();
+    // 에디터 모드 나갈 때
+    void UnbindEditorInput();
+
+private:
     TMap<FString, FString> ReadIniFile(const FString& FilePath);
     void WriteIniFile(const FString& FilePath, const TMap<FString, FString>& Config);
 

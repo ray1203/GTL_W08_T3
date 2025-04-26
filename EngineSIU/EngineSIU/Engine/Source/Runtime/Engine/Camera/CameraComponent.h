@@ -1,6 +1,7 @@
 #pragma once
 #include "Components/SceneComponent.h"
 
+class FViewportClient;
 
 class UCameraComponent  : public USceneComponent
 {

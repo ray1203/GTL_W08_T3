@@ -15,6 +15,7 @@ enum class EViewScreenLocation : uint8;
 class FViewportResource;
 class ATransformGizmo;
 class USceneComponent;
+class UCameraComponent;
 
 struct FViewportCamera
 {
@@ -130,6 +131,7 @@ public:
     
     //카메라
     /** Viewport camera transform data for perspective viewports */
+	UCameraComponent* OverridingCamera = nullptr;
     FViewportCamera PerspectiveCamera;
     FViewportCamera OrthogonalCamera;
     // 카메라 정보 
@@ -146,6 +148,11 @@ public:
     FMatrix View;
     FMatrix Projection;
 
+    // CameraComponent
+    void AttachCameraComponent(UCameraComponent* InCameraComponent);
+    void DetachCameraComponent();
+    bool IsOverridingCamera() const { return OverridingCamera != nullptr; }
+
     //Camera Movement
     void CameraMoveForward(float InValue);
     void CameraMoveRight(float InValue);
@@ -155,8 +162,8 @@ public:
     void PivotMoveRight(float InValue);
     void PivotMoveUp(float InValue);
 
-    FMatrix& GetViewMatrix() { return View; }
-    FMatrix& GetProjectionMatrix() { return Projection; }
+    FMatrix& GetViewMatrix();
+    FMatrix& GetProjectionMatrix();
     void UpdateViewMatrix();
     void UpdateProjectionMatrix();
 
@@ -167,6 +174,10 @@ public:
 
     float GetCameraLearClip() const;
     float GetCameraFarClip() const;
+
+    FVector GetCameraForwardVector() const;
+    FVector GetCameraRightVector() const;
+    FVector GetCameraUpVector() const;
     
     ELevelViewportType GetViewportType() const;
     void SetViewportType(ELevelViewportType InViewportType);

@@ -9,6 +9,7 @@
 #include "UnrealEd/EditorViewportClient.h"
 #include "UnrealEd/UnrealEd.h"
 #include "World/World.h"
+#include <Engine/GameEngine.h>
 #include <sol/sol.hpp>
 
 #include "FInputManager.h"
@@ -60,7 +61,11 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     GetClientSize(ClientWidth, ClientHeight);
     LevelEditor->Initialize(ClientWidth, ClientHeight);
 
+#if GAME_BUILD
+    GEngine = FObjectFactory::ConstructObject<UGameEngine>(nullptr);
+#else
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
+#endif
     GEngine->Init();
 
     UpdateUI();
@@ -134,12 +139,14 @@ void FEngineLoop::Tick()
         FInputKeyManager::Get().Tick();
 
         Render();
+#if !GAME_BUILD
         UIMgr->BeginFrame();
         UnrealEditor->Render();
 
         FConsole::GetInstance().Draw();
 
         UIMgr->EndFrame();
+#endif
 
         // Pending 처리된 오브젝트 제거
         GUObjectArray.ProcessPendingDestroyObjects();

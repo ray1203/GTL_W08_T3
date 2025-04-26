@@ -795,9 +795,6 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\LightActor.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors</Filter>
     </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors</Filter>
-    </ClCompile>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors</Filter>
     </ClInclude>
@@ -1418,6 +1415,8 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\DirectionalShadowMap.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer\Shadow</Filter>
     </ClInclude>
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\GameEngine.h" />
+    <ClInclude Include="Pawn.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileData.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompile.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileUtility.h" />

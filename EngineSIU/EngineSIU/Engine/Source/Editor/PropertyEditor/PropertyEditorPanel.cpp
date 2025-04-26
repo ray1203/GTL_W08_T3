@@ -23,6 +23,7 @@
 #include "Lua/FLuaScriptSystem.h"
 #include "UObject/UObjectIterator.h"
 #include "Camera/CameraComponent.h"
+#include "Editor/LevelEditor/SLevelEditor.h"
 
 #include "Renderer/Shadow/SpotLightShadowMap.h"
 #include "Renderer/Shadow/PointLightShadowMap.h"
@@ -157,7 +158,7 @@ void PropertyEditorPanel::Render()
         }
     }
 
-    if(PickedActor)
+    if (PickedActor)
         if (UPointLightComponent* pointlightObj = PickedActor->GetComponentByClass<UPointLightComponent>())
         {
             int pointNum = 0;
@@ -347,7 +348,7 @@ void PropertyEditorPanel::Render()
             ImGui::PopStyleColor();
         }
 
-    if(PickedActor)
+    if (PickedActor)
         if (UAmbientLightComponent* ambientLightObj = PickedActor->GetComponentByClass<UAmbientLightComponent>())
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
@@ -380,8 +381,8 @@ void PropertyEditorPanel::Render()
 
                 float Gravity = ProjectileComp->GetGravity();
                 if (ImGui::InputFloat("Gravity", &Gravity, 0.f, 10000.f, "%.1f"))
-                    ProjectileComp->SetGravity(Gravity); 
-                
+                    ProjectileComp->SetGravity(Gravity);
+
                 float ProjectileLifetime = ProjectileComp->GetLifetime();
                 if (ImGui::InputFloat("Lifetime", &ProjectileLifetime, 0.f, 10000.f, "%.1f"))
                     ProjectileComp->SetLifetime(ProjectileLifetime);
@@ -393,7 +394,7 @@ void PropertyEditorPanel::Render()
                 if (ImGui::InputFloat3("Velocity", velocity, "%.1f")) {
                     ProjectileComp->SetVelocity(FVector(velocity[0], velocity[1], velocity[2]));
                 }
-                
+
                 ImGui::TreePop();
             }
 
@@ -401,7 +402,7 @@ void PropertyEditorPanel::Render()
         }
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
-        if (UTextComponent* textOBj = Cast<UTextComponent>(PickedActor->GetRootComponent()))
+        if (UTextComponent* textOBj = Cast<UTextComponent>(PickedActor->GetComponentByClass<UTextComponent>()))
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
             if (ImGui::TreeNodeEx("Text Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
@@ -437,14 +438,14 @@ void PropertyEditorPanel::Render()
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
-        if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(PickedActor->GetRootComponent()))
+        if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(PickedActor->GetComponentByClass<UStaticMeshComponent>()))
         {
             RenderForStaticMesh(StaticMeshComponent);
             RenderForMaterial(StaticMeshComponent);
         }
 
     if (PickedActor)
-        if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(PickedActor->GetRootComponent()))
+        if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(PickedActor->GetComponentByClass<UHeightFogComponent>()))
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
             if (ImGui::TreeNodeEx("Exponential Height Fog", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
@@ -742,7 +743,6 @@ void PropertyEditorPanel::RenderForStaticMesh(UStaticMeshComponent* StaticMeshCo
     }
     ImGui::PopStyleColor();
 }
-
 
 void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp)
 {

@@ -53,6 +53,9 @@ public:
 private:
     AEditorPlayer* EditorPlayer = nullptr;
 
+private:
+    void InitEditorWorld(FWorldContext& EditorWorldContext);
+    bool bEditorWorldInit = false;
 };
 
 
