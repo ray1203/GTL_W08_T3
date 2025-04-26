@@ -9,10 +9,10 @@
 #include "RendererHelpers.h"
 #include "StaticMeshRenderPass.h"
 #include "WorldBillboardRenderPass.h"
-#include "EditorBillboardRenderPass.h"
+//#include "EditorBillboardRenderPass.h"
 #include "GizmoRenderPass.h"
 #include "UpdateLightBufferPass.h"
-#include "LineRenderPass.h"
+//#include "LineRenderPass.h"
 #include "FogRenderPass.h"
 #include "SlateRenderPass.h"
 #include "EditorRenderPass.h"
@@ -46,10 +46,10 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
 
     StaticMeshRenderPass = new FStaticMeshRenderPass();
     WorldBillboardRenderPass = new FWorldBillboardRenderPass();
-    EditorBillboardRenderPass = new FEditorBillboardRenderPass();
+    //EditorBillboardRenderPass = new FEditorBillboardRenderPass();
     GizmoRenderPass = new FGizmoRenderPass();
     UpdateLightBufferPass = new FUpdateLightBufferPass();
-    LineRenderPass = new FLineRenderPass();
+    //LineRenderPass = new FLineRenderPass();
     FogRenderPass = new FFogRenderPass();
     EditorRenderPass = new FEditorRenderPass();
     CompositingPass = new FCompositingPass();
@@ -61,10 +61,10 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
 
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     WorldBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
-    EditorBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+    //EditorBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     GizmoRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     UpdateLightBufferPass->Initialize(BufferManager, Graphics, ShaderManager);
-    LineRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+    //LineRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     FogRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     EditorRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     
@@ -93,10 +93,10 @@ void FRenderer::Release()
 
     delete StaticMeshRenderPass;
     delete WorldBillboardRenderPass;
-    delete EditorBillboardRenderPass;
+    //delete EditorBillboardRenderPass;
     delete GizmoRenderPass;
     delete UpdateLightBufferPass;
-    delete LineRenderPass;
+    //delete LineRenderPass;
     delete FogRenderPass;
     delete CompositingPass;
     delete PostProcessCompositingPass;
@@ -285,7 +285,7 @@ bool FRenderer::HandleHotReloadShader() const
         StaticMeshRenderPass->ReloadShader();
         GizmoRenderPass->ReloadShader();
         WorldBillboardRenderPass->ReloadShader();
-        EditorBillboardRenderPass->ReloadShader();
+        //EditorBillboardRenderPass->ReloadShader();
         FogRenderPass->ReloadShader();
         EditorRenderPass->ReloadShader();
         return true;
@@ -308,7 +308,7 @@ void FRenderer::PrepareRenderPass()
     StaticMeshRenderPass->PrepareRender();
     GizmoRenderPass->PrepareRender();
     WorldBillboardRenderPass->PrepareRender();
-    EditorBillboardRenderPass->PrepareRender();
+    //EditorBillboardRenderPass->PrepareRender();
     UpdateLightBufferPass->PrepareRender();
     FogRenderPass->PrepareRender();
     EditorRenderPass->PrepareRender();
@@ -318,7 +318,7 @@ void FRenderer::ClearRenderArr()
 {
     StaticMeshRenderPass->ClearRenderArr();
     WorldBillboardRenderPass->ClearRenderArr();
-    EditorBillboardRenderPass->ClearRenderArr();
+    //EditorBillboardRenderPass->ClearRenderArr();
     GizmoRenderPass->ClearRenderArr();
     UpdateLightBufferPass->ClearRenderArr();
     FogRenderPass->ClearRenderArr();
@@ -450,21 +450,7 @@ void FRenderer::RenderEditorOverlay(const std::shared_ptr<FEditorViewportClient>
         return;
     }
     
-    // Render Editor Billboard
-    /**
-     * TODO: 에디터 전용 빌보드는 이런 방식 처럼 빌보드의 bool값을 바꿔서 렌더하기 보다는
-     *       빌보드가 나와야 하는 컴포넌트는 텍스처만 가지고있고, 쉐이더를 통해 쿼드를 생성하고
-     *       텍스처를 전달해서 렌더하는 방식이 더 좋음.
-     *       이렇게 하는 경우 필요없는 빌보드 컴포넌트가 아웃라이너에 나오지 않음.
-     */
-    if (ShowFlag & EEngineShowFlags::SF_BillboardText)
-    {
-        EditorBillboardRenderPass->Render(Viewport);
-    }
-
     EditorRenderPass->Render(Viewport); // TODO: 임시로 이전에 작성되었던 와이어 프레임 렌더 패스로, 이후 개선 필요.
-
-    //LineRenderPass->Render(Viewport); // 기존 뎁스를 그대로 사용하지만 뎁스를 클리어하지는 않음
     
     GizmoRenderPass->Render(Viewport); // 기존 뎁스를 SRV로 전달해서 샘플 후 비교하기 위해 기즈모 전용 DSV 사용
 

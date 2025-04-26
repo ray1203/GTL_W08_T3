@@ -37,35 +37,39 @@ private:
     void CreateBuffers();
     void CreateConstantBuffers();
 
-    //void LazyLoad();
+    void LazyLoad();
     
     void PrepareRendertarget(const std::shared_ptr<FEditorViewportClient>& Viewport);
 
-
-    // constant buffer용 
-    FString CameraKey = FString("DebugCamera");
     // Gizmo 관련 함수
     //void RenderGizmos(const UWorld* World);
     //void PrepareShaderGizmo();
     //void PrepareConstantbufferGizmo();
 
     // Axis
-    const FWString AxisKeyW = L"DebugArrow";
+    const FWString AxisKeyW = L"DebugAxis";
     const FString AxisKey = FString(AxisKeyW);
     void RenderAxis();
 
     // AABB
-    //void RenderAABBInstanced(const UWorld* World);
-    //void PrepareConstantbufferAABB();
-    //void UdpateConstantbufferAABBInstanced(TArray<FConstantBufferDebugAABB> Buffer);
+    struct FConstantBufferDebugAABB
+    {
+        FVector Position;
+        float Padding1;
 
+        FVector Extent;
+        float Padding2;
+    };
+    const FWString AABBKeyW = L"DebugAABB";
+    const FString AABBKey = FString(AABBKeyW);
+    void RenderAABBInstanced();
+    
     // Sphere
     struct alignas(16) FConstantBufferDebugSphere
     {
         FVector Position;
         float Radius;
     };
-
     const FWString SphereKeyW = L"DebugSphere";
     const FString SphereKey = FString(SphereKeyW);
     void RenderPointlightInstanced();
@@ -85,24 +89,50 @@ private:
     void RenderSpotlightInstanced();
 
     // Grid
-    // void RenderGrid(std::shared_ptr<FEditorViewportClient> ActiveViewport);
-    // void PrepareConstantbufferGrid();
-    // void UpdateConstantbufferGrid(FConstantBufferDebugGrid Buffer);
+    struct alignas(16) FConstantBufferDebugGrid
+    {
+        FVector GridOrigin; // Grid의 중심
+        float GridSpacing;
+        int GridCount; // 총 grid 라인 수
+        float Color;
+        float Alpha; // 적용 안됨
+        float padding;
+    };
+    const FWString GridKeyW = L"DebugGrid";
+    const FString GridKey = FString(GridKeyW);
+    void RenderGrid(const std::shared_ptr<FEditorViewportClient>& Viewport);
 
     //// Icon
-    //void RenderIcons(const UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
+    struct alignas(16) FConstantBufferDebugIcon
+    {
+        alignas(16) FVector Position;
+        float Scale;
+        FLinearColor Color;
+    };
+    const FWString IconKeyW = L"DebugIcon";
+    const FString IconKey = FString(IconKeyW);
+    void RenderIcons(const std::shared_ptr<FEditorViewportClient>& Viewport);
     //void PrepareConstantbufferIcon();
     //void UdpateConstantbufferIcon(const FConstantBufferDebugIcon& Buffer);
     //void UpdateTextureIcon(IconType type);
 
     //// Arrow
-    //void RenderArrows();
-    //void PrepareConstantbufferArrow();
-    //void UdpateConstantbufferArrow(const FConstantBufferDebugArrow& Buffer);
+    struct FConstantBufferDebugArrow
+    {
+        alignas(16) FVector Position;
+        float ArrowScaleXYZ;
+        alignas(16) FVector Direction;
+        float ArrowScaleZ;
+        FLinearColor Color;
+    };
+    const FWString ArrowKeyW = L"DebugArrow";
+    const FString ArrowKey = FString(ArrowKeyW);
+    void RenderArrows();
 
     const UINT32 ConstantBufferSizeAABB = 8;
     const UINT32 ConstantBufferSizeSphere = 8;
     const UINT32 ConstantBufferSizeCone = 16; // 최대
+    const uint32 ConstantBufferSizeIcon = 16;
 
 };
 

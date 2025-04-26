@@ -73,7 +73,7 @@ void UGizmoBaseComponent::TickComponent(float DeltaTime)
             float ScreenHeight = ViewportClient->GetViewportResource()->GetD3DViewport().Height;
             float FOV = ViewportClient->ViewFOV * (PI / 180.0f);
 
-            float DesiredScreenHeight = 512.0f; // 원하는 화면상 크기(픽셀)
+            float DesiredScreenHeight = 128.f; // 원하는 화면상 크기(픽셀)
             float DrawScale = 2.0f * Distance * FMath::Tan(FOV * 0.5f) * (DesiredScreenHeight / ScreenHeight);
 
             DrawScale *= GizmoScale;

@@ -1,3 +1,5 @@
+// DEPRECATED
+#if 0
 #pragma once
 #include "IRenderPass.h"
 #include "EngineBaseTypes.h"
@@ -41,3 +43,4 @@ private:
     ID3D11VertexShader* VertexLineShader;
     ID3D11PixelShader* PixelLineShader;
 };
+#endif

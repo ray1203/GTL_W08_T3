@@ -16,6 +16,7 @@ struct SphereData
     float3 Position;
     float Radius;
 };
+
 cbuffer ConstantBufferDebugSphere : register(b11)
 {
     SphereData DataSphere[8];
@@ -37,13 +38,23 @@ cbuffer ConstantBufferDebugCone : register(b11)
 
 cbuffer ConstantBufferDebugGrid : register(b11)
 {
-    row_major matrix InverseViewProj;
-}
+    float3 GridOrigin; // Grid의 중심
+    float GridSpacing;
+    int GridCount; // 총 grid 라인 수
+    float GridColor;
+    float GridAlpha;
+    float GridPadding;
+};
 
-cbuffer ConstantBufferDebugIcon : register(b11)
+struct IconData
 {
     float3 IconPosition;
     float IconScale;
+    float4 IconColor;
+};
+cbuffer ConstantBufferDebugIcon : register(b11)
+{
+    IconData IconDatas[16];
 }
 
 cbuffer ConstantBufferDebugArrow : register(b11)
@@ -52,4 +63,5 @@ cbuffer ConstantBufferDebugArrow : register(b11)
     float ArrowScaleXYZ;
     float3 ArrowDirection;
     float ArrowScaleZ;
+    float4 ArrowColor;
 }

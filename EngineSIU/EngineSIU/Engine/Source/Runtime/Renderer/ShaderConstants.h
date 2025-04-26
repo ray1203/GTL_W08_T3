@@ -160,41 +160,16 @@ struct alignas(16) FConstantBufferLights
 /// <summary>
 /// Debug용 AABB 상수버퍼 : b13
 /// </summary>
-struct FConstantBufferDebugAABB
-{
-    FVector Position;
-    float Padding1;
-    
-    FVector Extent;
-    float Padding2;
-};
+
+
+
 
 /// <summary>
 /// Debug용 grid 상수버퍼 : b13
 /// </summary>
-struct FConstantBufferDebugGrid
-{
-    FMatrix InverseViewProj;
-};
-
-/// <summary>
-/// Debug용 grid 상수버퍼 : b13
-/// </summary>
-struct FConstantBufferDebugIcon
-{
-    FVector Position;
-    float Scale;
-};
 
 /// <summary>
 /// Debug용 arrow 상수버퍼 : b13
 /// </summary>
-struct FConstantBufferDebugArrow
-{
-    FVector Position;
-    float ArrowScaleXYZ;
-    
-    FVector Direction;
-    float ArrowScaleZ;
-};
+
 

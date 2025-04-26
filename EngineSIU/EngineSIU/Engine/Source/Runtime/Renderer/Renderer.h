@@ -105,10 +105,10 @@ public:
 
     FStaticMeshRenderPass* StaticMeshRenderPass = nullptr;
     FWorldBillboardRenderPass* WorldBillboardRenderPass = nullptr;
-    FEditorBillboardRenderPass* EditorBillboardRenderPass = nullptr;
+    //FEditorBillboardRenderPass* EditorBillboardRenderPass = nullptr;
     FGizmoRenderPass* GizmoRenderPass = nullptr;
     FUpdateLightBufferPass* UpdateLightBufferPass = nullptr;
-    FLineRenderPass* LineRenderPass = nullptr;
+    //FLineRenderPass* LineRenderPass = nullptr;
     FFogRenderPass* FogRenderPass = nullptr;
     FEditorRenderPass* EditorRenderPass = nullptr;
     

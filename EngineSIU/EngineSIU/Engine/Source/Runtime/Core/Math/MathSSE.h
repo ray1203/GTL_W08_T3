@@ -137,7 +137,7 @@ namespace MathSSE
     }
 
     // 검증 안됨
-#if 1
+#if 0
     // https://lxjk.github.io/2017/09/03/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained.html
     __forceinline __m128 Mat2Mul(__m128 vec1, __m128 vec2)
     {
@@ -163,7 +163,7 @@ namespace MathSSE
 
 
     // General한 방법으로, Transform에는 사용하지 말것.
-    // Transform Matrix의 경우에는 InverseTransformNoScale / InverseTransform 사용하기.
+    // SRT만을 사용한 경우에는 InverseTransformNoScale / InverseTransform 사용하기.
     // Transform의 경우에는 determinant가 작아서 FMatrix::Inverse와 결과가 다르게 나옴.
     inline FMatrix InverseMatrix(const FMatrix& Mat)
     {
@@ -236,7 +236,7 @@ namespace MathSSE
         return Result;
     }
 
-    // 변환 행렬 중 Scale=(1,1,1)인 경우에만 사용
+    // SRT 변환 행렬 중 Scale=(1,1,1)인 경우에만 사용
     inline FMatrix InverseTransformNoScale(const FMatrix& Mat)
     {
         FMatrix Result;
@@ -256,7 +256,7 @@ namespace MathSSE
         return Result;
     }
 
-    // 변환 행렬에만 사용
+    // SRT 변환 행렬에만 사용
     inline FMatrix InverseTransform(const FMatrix& Mat)
     {
         FMatrix Result;

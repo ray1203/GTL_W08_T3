@@ -1,3 +1,5 @@
+// DEPRECATED
+#if 0
 #include "LineRenderPass.h"
 
 #include "D3D11RHI/DXDBufferManager.h"
@@ -124,3 +126,4 @@ void FLineRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewp
 
     Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 }
+#endif
