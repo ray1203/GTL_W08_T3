@@ -32,7 +32,8 @@ void UCameraComponent::GetProperties(TMap<FString, FString>& OutProperties) cons
     OutProperties.Add(TEXT("AspectRatio"), FString::Printf(TEXT("%f"), AspectRatio));
     OutProperties.Add(TEXT("NearClip"), FString::Printf(TEXT("%f"), NearClip));
     OutProperties.Add(TEXT("FarClip"), FString::Printf(TEXT("%f"), FarClip));
-    OutProperties.Add(TEXT("IsShouldAttachedToViewport"), FString::Printf(TEXT("%f"), bShouldAttachedToViewport));
+    OutProperties.Add(TEXT("ShouldAttachedToViewport"), bShouldAttachedToViewport ? TEXT("true") : TEXT("false"));
+    
 }
 
 void UCameraComponent::SetProperties(const TMap<FString, FString>& InProperties)
@@ -48,8 +49,8 @@ void UCameraComponent::SetProperties(const TMap<FString, FString>& InProperties)
     if (TempStr) NearClip = FCString::Atof(**TempStr);
     TempStr = InProperties.Find(TEXT("FarClip"));
     if (TempStr) FarClip = FCString::Atof(**TempStr);
-    TempStr = InProperties.Find(TEXT("IsShouldAttachedToViewport"));
-    if (TempStr) bShouldAttachedToViewport = FCString::Atof(**TempStr);
+    TempStr = InProperties.Find(TEXT("ShouldAttachedToViewport"));
+    if (TempStr) bShouldAttachedToViewport = TempStr->ToBool();
 }
 
 void UCameraComponent::BeginPlay()

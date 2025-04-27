@@ -77,31 +77,68 @@
             "RootComponentID": "SphereComponent"
         },
         {
-            "ActorClass": "APlayerStart",
-            "ActorID": "APlayerStart_99",
-            "ActorLabel": "OBJ_PLAYERSTART_99",
+            "ActorClass": "APlayer",
+            "ActorID": "APlayer_101",
+            "ActorLabel": "OBJ_PLAYER_101",
             "Components": [
                 {
-                    "ComponentClass": "USphereComp",
-                    "ComponentID": "SphereComponent",
+                    "ComponentClass": "UCameraComponent",
+                    "ComponentID": "Camera",
                     "Properties": {
-                        "AABB_max": "X=1.000 Y=1.000 Z=1.000",
-                        "AABB_min": "X=-1.000 Y=-1.000 Z=-1.000",
-                        "ComponentClass": "USphereComp",
-                        "ComponentName": "SphereComponent",
-                        "ComponentOwner": "APlayerStart_99",
-                        "ComponentOwnerClass": "APlayerStart",
-                        "RelativeLocation": "X=18.347 Y=3.264 Z=0.000",
+                        "AspectRatio": "1.777000",
+                        "ComponentClass": "UCameraComponent",
+                        "ComponentName": "Camera",
+                        "ComponentOwner": "APlayer_101",
+                        "ComponentOwnerClass": "APlayer",
+                        "FOV": "90.000000",
+                        "FarClip": "1000.000000",
+                        "NearClip": "0.100000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
                         "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "StaticMeshPath": "Contents/Sphere.obj",
+                        "ShouldAttachedToViewport": "true",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
+                    "ComponentClass": "UStaticMeshComponent",
+                    "ComponentID": "MeshComponent",
+                    "Properties": {
+                        "AABB_max": "X=1.287 Y=1.199 Z=2.555",
+                        "AABB_min": "X=-1.287 Y=-1.199 Z=-0.000",
+                        "ComponentClass": "UStaticMeshComponent",
+                        "ComponentName": "MeshComponent",
+                        "ComponentOwner": "APlayer_101",
+                        "ComponentOwnerClass": "APlayer",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "StaticMeshPath": "Contents/Reference/Reference.obj",
                         "bAutoActive": "true",
                         "bIsActive": "true",
-                        "m_Type": "USphereComp"
+                        "m_Type": ""
+                    }
+                },
+                {
+                    "ComponentClass": "USpringArmComponent",
+                    "ComponentID": "CameraBoom",
+                    "Properties": {
+                        "ComponentClass": "USpringArmComponent",
+                        "ComponentName": "CameraBoom",
+                        "ComponentOwner": "APlayer_101",
+                        "ComponentOwnerClass": "APlayer",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "SocketOffset": "X=0.000 Y=0.000 Z=0.000",
+                        "TargetArmLength": "10.000000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
                     }
                 }
             ],
-            "RootComponentID": "SphereComponent"
+            "RootComponentID": "MeshComponent"
         }
     ],
     "NextUUID": 0,

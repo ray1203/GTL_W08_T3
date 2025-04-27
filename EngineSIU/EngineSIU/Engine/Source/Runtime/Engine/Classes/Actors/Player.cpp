@@ -2,6 +2,7 @@
 #include "Components/StaticMeshComponent.h"
 #include <Engine/FLoaderOBJ.h>
 #include "Camera/SpringArmComponent.h"
+#include "Components/Lua/LuaScriptComponent.h"
 
 APlayer::APlayer()
 {
@@ -15,7 +16,13 @@ APlayer::APlayer()
     CameraBoom->SetTargetArmLength(10.0f);
     CameraBoom->SetSocketOffset(FVector(0.f, 0.0f, 0.0f));
 
+    //lua comp
+    LuaComp = AddComponent<ULuaScriptComponent>(TEXT("LuaScriptComponent"));
+    LuaComp->SetScriptPath(TEXT("TestLuaActor"));
+
+#if !GAME_BUILD
     SetActorTickInEditor(true);
+#endif
 }
 
 void APlayer::BeginPlay()
