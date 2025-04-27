@@ -45,13 +45,6 @@ public:
     // 물리 시뮬레이션을 한 프레임 진행
     void AdvanceAndDispatch(float DeltaTime);
 
-    // 시뮬레이션
-    void ApplyForces(); // 힘을 계산 (현재는 중력만)
-    void Integrate(float DeltaTime); // 힘에 따른 위치 업데이트
-    void HandleCollisions(); // 충돌 감지 및 반응 계산(속도, 가속도 등)
-    void UpdateTransforms(); // 변화된 위치를 업데이트
-
-
     // 파티클(물리 객체) 추가/삭제
     void AddBody(UShapeComponent* Component);
     void RemoveBody(UShapeComponent* Component);
@@ -61,6 +54,12 @@ public:
     bool GetSimulatedTransform(UShapeComponent* Component, FTransform& OutTransform) const;
 
 private:
+    // 시뮬레이션
+    void ApplyForces(); // 힘을 계산 (현재는 중력만)
+    void Integrate(float DeltaTime); // 힘에 따른 위치 업데이트
+    void HandleCollisions(); // 충돌 감지 및 반응 계산(속도, 가속도 등)
+    void UpdateTransforms(); // 변화된 위치를 업데이트
+
     bool Raycast(const FVector& Start, const FVector& End, FHitResult& OutHit) const;
     bool Overlap(const FCollisionShape& Shape, const FTransform& Transform, TArray<AActor*>& OutOverlaps) const;
 

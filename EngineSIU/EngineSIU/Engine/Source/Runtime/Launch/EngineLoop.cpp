@@ -135,6 +135,7 @@ void FEngineLoop::Tick()
         FInputKeyManager::Get().Tick();
 
         Render();
+#if !GAME_BUILD
         UIMgr->BeginFrame();
         UnrealEditor->Render();
 
@@ -143,7 +144,7 @@ void FEngineLoop::Tick()
         FConsole::GetInstance().Draw();
 
         UIMgr->EndFrame();
-
+#endif
         // Pending 처리된 오브젝트 제거
         GUObjectArray.ProcessPendingDestroyObjects();
 

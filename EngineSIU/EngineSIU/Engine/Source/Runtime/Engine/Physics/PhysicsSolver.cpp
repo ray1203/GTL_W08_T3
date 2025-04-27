@@ -5,6 +5,8 @@
 #include "Components/Shapes/CapsuleComponent.h"
 #include "Components/Shapes/SphereComponent.h"
 #include "Engine/World/World.h"
+#include "Classes/GameFramework/Actor.h"
+#include "Classes/Components/ProjectileMovementComponent.h"
 
 FPhysicsSolver::FPhysicsSolver()
 {
@@ -20,6 +22,11 @@ void FPhysicsSolver::UpdateBodyFromComponent()
     for (FPhysicsBody& Body : SimulatedBodies)
     {
         Body.Transform = Body.Component->GetWorldTransform();
+        if (UProjectileMovementComponent* ProjComp = Body.Component->GetOwner()->GetComponentByClass<UProjectileMovementComponent>())
+        {
+            Body.Velocity = ProjComp->GetVelocity();
+            Body.Acceleration.Z = ProjComp->GetGravity();
+        }
     }
 }
 
@@ -35,10 +42,10 @@ void FPhysicsSolver::ApplyForces()
 {
     for (FPhysicsBody& Body : SimulatedBodies)
     {
-        if (Body.bIsSimulatingPhysics)
-        {
-            Body.Acceleration = FVector(0, 0, -9.8f * 2); // 중력 가속도
-        }
+        //if (Body.bIsSimulatingPhysics)
+        //{
+        //    Body.Acceleration = FVector(0, 0, -9.8f * 2); // 중력 가속도
+        //}
     }
 }
 

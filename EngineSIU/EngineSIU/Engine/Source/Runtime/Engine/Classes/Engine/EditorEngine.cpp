@@ -10,6 +10,7 @@
 #include "Editor/LevelEditor/SLevelEditor.h"
 #include <Camera/CameraComponent.h>
 #include "Components/Shapes/SphereComponent.h"
+#include "Components/ProjectileMovementComponent.h"
 #include "Physics/PhysicsScene.h"
 #include <Actors/Player.h>
 
@@ -45,8 +46,14 @@ void UEditorEngine::Init()
     //AActor* Actor = EditorWorld->SpawnActor<ACube>();
     //UCameraComponent* CameraComp = Actor->AddComponent<UCameraComponent>(TEXT("Camera"));
     //CameraComp->SetupAttachment(Actor->GetRootComponent());
-    //APlayer* Player = EditorWorld->SpawnActor<APlayer>();
     
+    APlayer* Player = EditorWorld->SpawnActor<APlayer>();
+    USphereComponent* SphereComp = Player->AddComponent<USphereComponent>(TEXT("Sphere"));
+    SphereComp->SetupAttachment(Player->GetRootComponent());
+    UProjectileMovementComponent* ProjComp = Player->AddComponent<UProjectileMovementComponent>(TEXT("Projectile"));
+    ProjComp->SetupAttachment(Player->GetRootComponent());
+
+
     ADirectionalLight* DirLight = EditorWorld->SpawnActor<ADirectionalLight>();
     DirLight->SetActorRotation(FRotator(20, -61, 11));
     DirLight->SetActorLocation(FVector(0, 0, 20));

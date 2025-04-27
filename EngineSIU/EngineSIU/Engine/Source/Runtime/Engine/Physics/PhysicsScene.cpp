@@ -1,6 +1,7 @@
 #include "PhysicsScene.h"
 #include "PhysicsSolver.h"
 #include "Components/Shapes/ShapeComponent.h"
+#include "Components/ProjectileMovementComponent.h"
 #include "Classes/GameFramework/Actor.h"
 FPhysicsScene::FPhysicsScene()
 {
@@ -29,6 +30,11 @@ void FPhysicsScene::SyncBodies()
                 Comp->GetOwner()->SetActorRotation(SimulatedTransform.Rotation.ToRotator());
                 // 강체인데 scale을 바꿀일이 있나...?
                 Comp->GetOwner()->SetActorScale(SimulatedTransform.Scale3D);
+                if (UProjectileMovementComponent* ProjComp = Comp->GetOwner()->GetComponentByClass<UProjectileMovementComponent>())
+                {
+                    const FPhysicsBody* Body = SceneSolver->GetBody(Comp);
+                    ProjComp->SetVelocity(Body->Velocity);
+                }
             }
         }
     }
