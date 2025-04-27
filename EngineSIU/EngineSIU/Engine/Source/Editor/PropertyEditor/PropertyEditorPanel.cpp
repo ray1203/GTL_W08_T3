@@ -1,7 +1,7 @@
 #include "PropertyEditorPanel.h"
 
 #include "World/World.h"
-#include "Actors/Player.h"
+#include "Actors/EditorPlayer.h"
 #include "Components/Light/LightComponent.h"
 #include "Components/Light/PointLightComponent.h"
 #include "Components/Light/SpotLightComponent.h"
@@ -22,6 +22,7 @@
 #include "Engine/AssetManager.h"
 #include "Lua/FLuaScriptSystem.h"
 #include "UObject/UObjectIterator.h"
+#include "Camera/CameraComponent.h"
 
 #include "Renderer/Shadow/SpotLightShadowMap.h"
 #include "Renderer/Shadow/PointLightShadowMap.h"
@@ -542,6 +543,73 @@ void PropertyEditorPanel::Render()
             }
             ImGui::PopStyleColor();
         }
+
+    if (PickedActor)
+        if (UCameraComponent* CameraComponent = Cast<UCameraComponent>(PickedActor->GetComponentByClass<UCameraComponent>()))
+        {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+            if (ImGui::TreeNodeEx("Camera Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
+            {
+                Location = CameraComponent->GetRelativeLocation();
+                Rotation = CameraComponent->GetRelativeRotation();
+                Scale = CameraComponent->GetRelativeScale3D();
+
+                FImGuiWidget::DrawVec3Control("Location", Location, 0, 85);
+                ImGui::Spacing();
+
+                FImGuiWidget::DrawRot3Control("Rotation", Rotation, 0, 85);
+                ImGui::Spacing();
+
+                FImGuiWidget::DrawVec3Control("Scale", Scale, 0, 85);
+                ImGui::Spacing();
+
+                CameraComponent->SetRelativeLocation(Location);
+                CameraComponent->SetRelativeRotation(Rotation);
+                CameraComponent->SetRelativeScale3D(Scale);
+
+                bool bIsCameraAttachedToViewport = CameraComponent->IsAttachedToViewport();
+                // bIsCameraOverriden값을 가지고 override 여부 판단해서 토글 표시, 클릭 시 vp->AttachCameraComponent, 해제 시 DetachCameraComponent 호출하도록
+                // 토글 버튼 UI (체크박스 또는 버튼)
+                if (ImGui::Checkbox("Override Viewport Camera", &bIsCameraAttachedToViewport))
+                {
+                    if (bIsCameraAttachedToViewport)
+                    {
+                        // 오버라이드 활성화: 에디터 뷰포트에 카메라 컴포넌트 연결
+                        CameraComponent->AttachToViewport();
+                    }
+                    else
+                    {
+                        // 오버라이드 비활성화: 기본 에디터 카메라로 복원
+                        CameraComponent->DetachFromViewport();
+                    }
+                }
+
+                bool bShouldAttachedToViewport = CameraComponent->bShouldAttachedToViewport;
+                if (ImGui::Checkbox("Should Attached To Viewport", &bShouldAttachedToViewport))
+                {
+                    CameraComponent->bShouldAttachedToViewport = bShouldAttachedToViewport;
+                }
+                    
+                float FOV = CameraComponent->GetFOV();
+                if (ImGui::SliderFloat("FOV", &FOV, 0.f, 180.f))
+                {
+                    CameraComponent->SetFOV(FOV);
+                }
+                float NearClip = CameraComponent->GetNearClip();
+                if (ImGui::SliderFloat("Near Clip", &NearClip, 0.f, 100.f))
+                {
+                    CameraComponent->SetNearClip(NearClip);
+                }
+                float FarClip = CameraComponent->GetFarClip();
+                if (ImGui::SliderFloat("Far Clip", &FarClip, 0.f, 10000.f))
+                {
+                    CameraComponent->SetFarClip(FarClip);
+                }
+                ImGui::TreePop();
+            }
+            ImGui::PopStyleColor();
+        }
+
     ImGui::End();
 }
 

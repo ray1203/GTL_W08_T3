@@ -3,6 +3,7 @@
 
 struct FVector;
 struct FMatrix;
+struct FRotator;
 
 // 쿼터니언
 struct FQuat
@@ -43,6 +44,10 @@ struct FQuat
 
     // 쿼터니언을 회전 행렬로 변환
     FMatrix ToMatrix() const;
+
+    FQuat Inverse();
+
+    FRotator ToRotator() const;
 };
 
 inline FArchive& operator<<(FArchive& Ar, FQuat& Q)
