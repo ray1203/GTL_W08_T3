@@ -121,6 +121,12 @@ void USceneComponent::AddScale(const FVector& InAddValue)
 
 }
 
+void USceneComponent::AddWorldRotation(FRotator DeltaRotation)
+{
+    FQuat NewWorldRotation = DeltaRotation.ToQuaternion() * GetWorldRotation().ToQuaternion();
+    SetWorldRotation(DeltaRotation);
+}
+
 void USceneComponent::AttachToComponent(USceneComponent* InParent)
 {
     // 기존 부모와 연결을 끊기
@@ -264,7 +270,7 @@ FMatrix USceneComponent::GetTranslationMatrix() const
 
 FMatrix USceneComponent::GetWorldMatrix() const
 {
-    FMatrix ScaleMat = FMatrix::GetScaleMatrix(RelativeScale3D);
+    /*FMatrix ScaleMat = FMatrix::GetScaleMatrix(RelativeScale3D);
     FMatrix RotationMat = FMatrix::GetRotationMatrix(RelativeRotation);
     FMatrix TranslationMat = FMatrix::GetTranslationMatrix(RelativeLocation);
 
@@ -279,7 +285,23 @@ FMatrix USceneComponent::GetWorldMatrix() const
         FMatrix ParentRTMat = ParentRotationMat * ParentTranslationMat;
         RTMat = RTMat * ParentRTMat;
     }
-    return ScaleMat * RTMat;
+    return ScaleMat * RTMat;*/
+    // 1. 로컬 스케일, 회전, 이동 행렬 생성
+    const FMatrix ScaleMat = FMatrix::GetScaleMatrix(RelativeScale3D);
+    const FMatrix RotationMat = FMatrix::GetRotationMatrix(RelativeRotation);
+    const FMatrix TranslationMat = FMatrix::GetTranslationMatrix(RelativeLocation);
+
+    // 2. S * R * T 순서로 로컬 변환 행렬 계산
+    FMatrix LocalMatrix = ScaleMat * RotationMat * TranslationMat;
+
+    // 3. 부모 변환 적용
+    if (AttachParent)
+    {
+        const FMatrix ParentMatrix = AttachParent->GetWorldMatrix();
+        LocalMatrix = LocalMatrix * ParentMatrix; // 행렬 곱셈
+    }
+
+    return LocalMatrix;
 }
 
 void USceneComponent::SetupAttachment(USceneComponent* InParent)

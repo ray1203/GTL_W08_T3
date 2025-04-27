@@ -2,6 +2,7 @@
 #include "GameFramework/Actor.h"
 #include "Camera/CameraComponent.h"
 #include "Launch/EngineLoop.h"
+#include "World/World.h"
 
 USpringArmComponent::USpringArmComponent()
 {
@@ -37,12 +38,18 @@ void USpringArmComponent::SetProperties(const TMap<FString, FString>& InProperti
 void USpringArmComponent::InitializeComponent()
 {
 	// !TODO : Input 시스템 찾아서 바인드
-    MouseInputHandle = GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.AddDynamic(this, &USpringArmComponent::OnRawMouseInput);
+    Super::InitializeComponent();
+    // 에디터에서는 인풋바인딩 하지 않는다
+    if (GetWorld() && GetWorld()->WorldType != EWorldType::Editor)
+    {
+        MouseInputHandle = GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.AddDynamic(this, &USpringArmComponent::OnRawMouseInput);
+    }
 }
 
 void USpringArmComponent::BeginPlay()
 {
     // SpringArmComponent는 BeginPlay에서 카메라 찾거나 생성
+    Super::BeginPlay();
     AActor* Owner = GetOwner();
     if (Owner == nullptr)
     {
@@ -54,24 +61,24 @@ void USpringArmComponent::BeginPlay()
     {
         Camera = Owner->AddComponent<UCameraComponent>(TEXT("Camera"));
         Camera->SetupAttachment(this);
+        Camera->bShouldAttachedToViewport = true;
+        Camera->BeginPlay();
     }
 }
 
 void USpringArmComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    //if ()
+    if (MouseInputHandle.has_value() && MouseInputHandle->IsValid())
+    {
+        GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.Remove(*MouseInputHandle);
+        MouseInputHandle.reset();
+    }
 }
 
 void USpringArmComponent::TickComponent(float DeltaTime)
 {
-	AActor* Owner = GetOwner();
-	if (Owner == nullptr || Camera == nullptr)
-		return;
-
-	FVector DesiredLocation = Owner->GetActorLocation() - Owner->GetActorForwardVector() * TargetArmLength + SocketOffset;
-	TargetLocation = FMath::Lerp(DesiredLocation, TargetLocation, 5.f * DeltaTime);
-
-	Camera->SetWorldLocation(TargetLocation);
+    Super::TickComponent(DeltaTime);
+    UpdateCameraTransform(DeltaTime);
 	//Camera->LookAt
 }
 
@@ -101,10 +108,13 @@ void USpringArmComponent::OnRawMouseInput(const FPointerEvent& InEvent)
     HandleRotation(MouseDelta);
 }
 
-void USpringArmComponent::HandleRotation(const FVector2D Vector)
+void USpringArmComponent::HandleRotation(const FVector2D& Vector)
 {
+    if (!Camera || !Camera->IsAttachedToViewport())
+        return;
+    //return;
     float yaw = Vector.X;
-    float pitch = Vector.Y;
+    float pitch = -Vector.Y;
 
     AActor* Owner = GetOwner();
     if (Owner)
@@ -112,10 +122,37 @@ void USpringArmComponent::HandleRotation(const FVector2D Vector)
         USceneComponent* RootComp = Owner->GetRootComponent();
         if (RootComp)
         {
-            // yaw는 돌린다
-            RootComp->Rotate(FRotator(0, yaw, 0));
-            // Pitch는?
-
+            RootComp->Rotate(FRotator(0, yaw / 10.f, 0));
+            CurrentPitchAngle = FMath::Clamp(CurrentPitchAngle + pitch / 10.f, -90.f, 70.f);
+            //SocketOffset.Z = FMath::Sin(FMath::DegreesToRadians(CurrentPitchAngle) * TargetArmLength);
         }
     }
+}
+
+void USpringArmComponent::UpdateCameraTransform(float DeltaTime)
+{
+    AActor* Owner = GetOwner();
+    if (!Owner || !Camera)
+        return;
+
+    if (!Camera->IsAttachedToViewport())
+        return;
+
+    FVector BaseLocation = Owner->GetActorLocation();
+    FRotator BaseRotation = Owner->GetActorRotation();
+
+    FVector DesiredLocation = Owner->GetActorLocation()
+        - (Owner->GetActorForwardVector() * TargetArmLength * FMath::Cos(FMath::DegreesToRadians(CurrentPitchAngle)))
+        + FVector(0, 0, FMath::Sin(FMath::DegreesToRadians(CurrentPitchAngle)) * TargetArmLength)
+        + SocketOffset;
+
+    TargetLocation = FMath::Lerp(DesiredLocation, TargetLocation, DeltaTime);
+
+    FVector LookDirection = Owner->GetActorLocation() - TargetLocation;
+    LookDirection.Normalize();
+    FRotator TargetLookRotation = LookDirection.Rotation();
+
+
+    Camera->SetWorldLocation(TargetLocation);
+    Camera->SetWorldRotation(TargetLookRotation);
 }
