@@ -28,6 +28,7 @@
 #include "Renderer/Shadow/SpotLightShadowMap.h"
 #include "Renderer/Shadow/PointLightShadowMap.h"
 #include "Renderer/Shadow/DirectionalShadowMap.h"
+#include <Camera/SpringArmComponent.h>
 
 void PropertyEditorPanel::Render()
 {
@@ -540,6 +541,35 @@ void PropertyEditorPanel::Render()
                     FogComponent->SetEndDistance(FogEndtDistance);
                 }
 
+                ImGui::TreePop();
+            }
+            ImGui::PopStyleColor();
+        }
+    if(PickedActor)
+        if (USpringArmComponent* SpringArmComponent = Cast<USpringArmComponent>(PickedActor->GetComponentByClass<USpringArmComponent>()))
+        {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+            if (ImGui::TreeNodeEx("Spring Arm Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
+            {
+                Location = SpringArmComponent->GetRelativeLocation();
+                Rotation = SpringArmComponent->GetRelativeRotation();
+                Scale = SpringArmComponent->GetRelativeScale3D();
+                FImGuiWidget::DrawVec3Control("Location", Location, 0, 85);
+                ImGui::Spacing();
+                FImGuiWidget::DrawRot3Control("Rotation", Rotation, 0, 85);
+                ImGui::Spacing();
+                FImGuiWidget::DrawVec3Control("Scale", Scale, 0, 85);
+                ImGui::Spacing();
+                SpringArmComponent->SetRelativeLocation(Location);
+                SpringArmComponent->SetRelativeRotation(Rotation);
+                SpringArmComponent->SetRelativeScale3D(Scale);
+                float TargetArmLength = SpringArmComponent->GetTargetArmLength();
+                if (ImGui::SliderFloat("Target Arm Length", &TargetArmLength, 0.f, 300.f))
+                    SpringArmComponent->SetTargetArmLength(TargetArmLength);
+                ImGui::Spacing();
+                FVector SocketOffset = SpringArmComponent->GetSocketOffset();
+                FImGuiWidget::DrawVec3Control("Socket Offset", SocketOffset);
+                SpringArmComponent->SetSocketOffset(SocketOffset);
                 ImGui::TreePop();
             }
             ImGui::PopStyleColor();

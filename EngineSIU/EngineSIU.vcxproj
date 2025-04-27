@@ -212,6 +212,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Stats\Stats.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\ActorEditor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\CameraComponent.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\APlayerStart.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Cube.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\DirectionalLightActor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\FireballActor.cpp" />
@@ -303,6 +304,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\SpringArmComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\APlayerStart.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Player.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\GameEngine.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileData.h" />

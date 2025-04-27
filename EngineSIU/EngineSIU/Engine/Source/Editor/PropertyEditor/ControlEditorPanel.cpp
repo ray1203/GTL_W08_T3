@@ -29,6 +29,7 @@
 #include "Actors/DirectionalLightActor.h"
 #include "Actors/SpotLightActor.h"
 #include "Actors/AmbientLightActor.h"
+#include <Actors/APlayerStart.h>
 
 void ControlEditorPanel::Render()
 {
@@ -286,7 +287,8 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             { .label= "Particle",  .obj= OBJ_PARTICLE },
             { .label= "Text",      .obj= OBJ_TEXT },
             { .label= "Fireball",  .obj = OBJ_FIREBALL},
-            { .label= "Fog",       .obj= OBJ_FOG }
+            { .label= "Fog",       .obj= OBJ_FOG },
+            { .label= "PlayerStart", .obj= OBJ_PLAYERSTART }
         };
 
         for (const auto& primitive : primitives)
@@ -372,6 +374,12 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 {
                     SpawnedActor = World->SpawnActor<AHeightFogActor>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_FOG"));
+                    break;
+                }
+                case OBJ_PLAYERSTART:
+                {
+                    SpawnedActor = World->SpawnActor<APlayerStart>();
+                    SpawnedActor->SetActorLabel(TEXT("OBJ_PLAYERSTART"));
                     break;
                 }
                 case OBJ_TRIANGLE:
