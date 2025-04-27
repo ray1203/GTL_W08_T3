@@ -32,6 +32,7 @@
 #include "Actors/UI/ButtonUIActor.h"
 #include "Actors/UI/TextUIActor.h"
 #include <Actors/APlayerStart.h>
+#include <Actors/Player.h>
 
 void ControlEditorPanel::Render()
 {
@@ -290,6 +291,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             { .label= "Text",      .obj= OBJ_TEXT },
             { .label= "Fireball",  .obj = OBJ_FIREBALL},
             { .label= "Fog",       .obj= OBJ_FOG },
+            { .label= "Player",    .obj= OBJ_PLAYER },
             { .label = "UIText",   .obj = OBJ_UI_TEXT },
             {.label = "UIButton", .obj = OBJ_UI_BUTTON },
 
@@ -388,6 +390,12 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     SpawnedActor->SetActorLabel(TEXT("OBJ_PLAYERSTART"));
                     break;
                 }
+                case OBJ_PLAYER:
+                {
+                    SpawnedActor = World->SpawnActor<APlayer>();
+                    SpawnedActor->SetActorLabel(TEXT("OBJ_PLAYER"));
+                    break;
+                }
                 case OBJ_UI_TEXT:
                 {
                     ATextUIActor* TextActor = World->SpawnActor<ATextUIActor>();
@@ -410,7 +418,6 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
 
                 case OBJ_TRIANGLE:
                 case OBJ_CAMERA:
-                case OBJ_PLAYER:
                 case OBJ_END:
                     break;
                 }

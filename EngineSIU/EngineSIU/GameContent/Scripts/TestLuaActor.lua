@@ -1,5 +1,5 @@
 Velocity = Vector(0, 0, 0)
-JumpVelocity = 100.0
+JumpVelocity = 8.0
 Gravity = -9.8
 IsJumping = false
 
@@ -23,37 +23,47 @@ end
 function Tick(dt)
     -- �̵� �Է�
     if Input:GetKey(EKeys.W) then
-        obj.Location = obj.Location + Vector(0, 1, 0) * dt * 5.0
+        --obj.Location = obj.Location + Vector(0, 1, 0) * dt * 5.0
+        local vec = Vector(obj.ForwardVector.x, obj.ForwardVector.y, obj.ForwardVector.z)
+        obj:Move(vec, dt * 5.0)
     end
     if Input:GetKey(EKeys.A) then
-        obj.Location = obj.Location + Vector(1, 0, 0) * dt * 5.0
+        --obj.Location = obj.Location + Vector(1, 0, 0) * dt * 5.0
+        local vec = Vector(-obj.RightVector.x, -obj.RightVector.y, -obj.RightVector.z)
+        obj:Move(vec, dt * 5.0)
     end
     if Input:GetKey(EKeys.S) then
-        obj.Location = obj.Location + Vector(0, -1, 0) * dt * 5.0
+        --obj.Location = obj.Location + Vector(0, -1, 0) * dt * 5.0
+        local vec = Vector(-obj.ForwardVector.x, -obj.ForwardVector.y, -obj.ForwardVector.z)
+        obj:Move(vec, dt * 5.0)
+
     end
     if Input:GetKey(EKeys.D) then
-        obj.Location = obj.Location + Vector(-1, 0, 0) * dt * 5.0
+        --obj.Location = obj.Location + Vector(-1, 0, 0) * dt * 5.0
+        local vec = Vector(obj.RightVector.x, obj.RightVector.y, obj.RightVector.z)
+        obj:Move(vec, dt * 5.0)
+
+
     end
 
     -- ���� �Է�
     if Input:GetKeyDown(EKeys.SpaceBar) and obj.Location.z <= 0 then
-        obj.Velocity = JumpVelocity;
-        -- Velocity.z = JumpVelocity
+        Velocity.z = JumpVelocity
         IsJumping = true
     end
 
-    -- -- �߷� ����
-    -- Velocity.z = Velocity.z + Gravity * dt
+    -- �߷� ����
+    Velocity.z = Velocity.z + Gravity * dt
 
-    -- -- ��ġ ����
-    -- obj.Location = obj.Location + Vector(0, 0, Velocity.z * dt)
+    -- ��ġ ����
+    obj.Location = obj.Location + Vector(0, 0, Velocity.z * dt)
 
-    -- -- �ٴ� üũ �� ����
-    -- if obj.Location.z <= 0 then
-    --     obj.Location = Vector(obj.Location.x, obj.Location.y, 0)
-    --     Velocity.z = 0
-    --     IsJumping = false
-    -- end
+    -- �ٴ� üũ �� ����
+    if obj.Location.z <= 0 then
+        obj.Location = Vector(obj.Location.x, obj.Location.y, 0)
+        Velocity.z = 0
+        IsJumping = false
+    end
 
     -- Score��� �̸��� ���� ã��
     local scoreActor = FindActorByLabel("Score")

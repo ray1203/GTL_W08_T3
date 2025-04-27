@@ -13,6 +13,7 @@
 #include "Components/ProjectileMovementComponent.h"
 #include "Physics/PhysicsScene.h"
 #include <Actors/Player.h>
+#include <WindowsCursor.h>
 
 namespace PrivateEditorSelection
 {
@@ -116,6 +117,19 @@ void UEditorEngine::StartPIE()
     }
 
     GEngineLoop.GetLevelEditor()->UnbindEditorInput();
+
+    // Bind F3 Key to Show cursor
+    FSlateAppMessageHandler* Handler = GEngineLoop.GetAppMessageHandler();
+    if (Handler)
+    {
+        ShowCursorDelegateHandle = Handler->OnKeyDownDelegate.AddLambda([](const FKeyEvent& KeyEvent)
+            {
+                if (KeyEvent.GetCharacter() == 'T')
+                {
+                    FWindowsCursor::SetShowMouseCursor(!FWindowsCursor::GetShowMouseCursor());
+                }
+            });
+    }
     FWorldContext& PIEWorldContext = CreateNewWorldContext(EWorldType::PIE);
 
     PIEWorld = Cast<UWorld>(EditorWorld->Duplicate(this));
@@ -131,6 +145,8 @@ void UEditorEngine::StartPIE()
     PIEWorld->BeginPlay();
     // 여기서 Actor들의 BeginPlay를 해줄지 안에서 해줄 지 고민.
     WorldList.Add(GetWorldContextFromWorld(PIEWorld));
+
+    FWindowsCursor::SetShowMouseCursor(false);
 }
 
 void UEditorEngine::EndPIE()
@@ -149,6 +165,14 @@ void UEditorEngine::EndPIE()
     }
     // 다시 EditorWorld로 돌아옴.
     ActiveWorld = EditorWorld;
+    FWindowsCursor::SetShowMouseCursor(true);
+
+    // 이벤트 해제
+    FSlateAppMessageHandler* Handler = GEngineLoop.GetAppMessageHandler();
+    if (Handler && ShowCursorDelegateHandle.has_value())
+    {
+        Handler->OnKeyDownDelegate.Remove(ShowCursorDelegateHandle.value());
+    }
 }
 
 FWorldContext& UEditorEngine::GetEditorWorldContext(/*bool bEnsureIsGWorld*/)

@@ -113,12 +113,24 @@ void FLuaScriptSystem::BindActor()
 
         "Location", sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
         "Rotation", sol::property(&AActor::GetActorRotation, &AActor::SetActorRotation),
-        //"Velocity", sol::property(&AActor::GetLuaVelocity, &AActor::SetLuaVelocity),
+
+        "Velocity", sol::property(&AActor::GetLuaVelocity, &AActor::SetLuaVelocity),
+
+        "ForwardVector", sol::property(&AActor::GetActorForwardVector),
+        "RightVector", sol::property(&AActor::GetActorRightVector),
+
         "UUID", sol::readonly_property(&AActor::GetUUID),
 
         "PrintLocation", [](AActor* Self) {
             auto loc = Self->GetActorLocation();
             UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
+        },
+        "Move", [](AActor* Self, FVector Direction, float Scalar)
+        {
+            if (USceneComponent* RootComp = Self->GetRootComponent())
+            {
+                RootComp->Translate(Direction * Scalar);
+            }
         }
     );
 

@@ -5,7 +5,7 @@
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/Shapes/ShapeComponent.h"
 
-
+#include "Components/Lua/LuaScriptComponent.h"
 
 APlayer::APlayer()
 {
@@ -26,7 +26,13 @@ APlayer::APlayer()
 
 
 
+    //lua comp
+    LuaComp = AddComponent<ULuaScriptComponent>(TEXT("LuaScriptComponent"));
+    LuaComp->SetScriptPath(TEXT("TestLuaActor"));
+
+#if !GAME_BUILD
     SetActorTickInEditor(true);
+#endif
 }
 
 void APlayer::BeginPlay()

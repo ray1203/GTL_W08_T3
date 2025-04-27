@@ -279,7 +279,10 @@ void AActor::SetLuaComponent(ULuaScriptComponent* InComp)
     if (LuaComp)
     {
         UE_LOG(ELogLevel::Warning, TEXT("LuaComp is already bound to Actor %s. Skipping rebind."), *GetActorLabel());
-        InComp->DestroyComponent();
+
+        if(InComp != LuaComp)
+            InComp->DestroyComponent();
+
         return;
     }
     LuaComp = InComp;
