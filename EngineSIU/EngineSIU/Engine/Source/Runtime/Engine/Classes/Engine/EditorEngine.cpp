@@ -117,7 +117,7 @@ void UEditorEngine::StartPIE()
     {
         ShowCursorDelegateHandle = Handler->OnKeyDownDelegate.AddLambda([](const FKeyEvent& KeyEvent)
             {
-                if (KeyEvent.GetKey() == EKeys::Tab)
+                if (KeyEvent.GetCharacter() == 'T')
                 {
                     FWindowsCursor::SetShowMouseCursor(!FWindowsCursor::GetShowMouseCursor());
                 }
