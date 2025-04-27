@@ -39,11 +39,7 @@ void USpringArmComponent::InitializeComponent()
 {
 	// !TODO : Input 시스템 찾아서 바인드
     Super::InitializeComponent();
-    // 에디터에서는 인풋바인딩 하지 않는다
-    if (GetWorld() && GetWorld()->WorldType != EWorldType::Editor)
-    {
-        MouseInputHandle = GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.AddDynamic(this, &USpringArmComponent::OnRawMouseInput);
-    }
+
 }
 
 void USpringArmComponent::BeginPlay()
@@ -63,6 +59,13 @@ void USpringArmComponent::BeginPlay()
         Camera->SetupAttachment(this);
         Camera->bShouldAttachedToViewport = true;
         Camera->BeginPlay();
+    }
+
+    // 에디터에서는 인풋바인딩 하지 않는다
+    UWorld* World = GetWorld();
+    if (World && World->WorldType != EWorldType::Editor)
+    {
+        MouseInputHandle = GEngineLoop.GetAppMessageHandler()->OnRawMouseInputDelegate.AddDynamic(this, &USpringArmComponent::OnRawMouseInput);
     }
 }
 
@@ -99,7 +102,7 @@ void USpringArmComponent::SetSocketOffset(const FVector& InOffset)
 
 FVector USpringArmComponent::GetSocketOffset() const
 {
-	return FVector();
+	return SocketOffset;
 }
 
 void USpringArmComponent::OnRawMouseInput(const FPointerEvent& InEvent)

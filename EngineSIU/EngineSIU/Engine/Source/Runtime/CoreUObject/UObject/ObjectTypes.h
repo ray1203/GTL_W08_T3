@@ -16,6 +16,7 @@ enum OBJECTS : uint8
     OBJ_CAMERA,
     OBJ_PLAYER,
     OBJ_FOG,
+    OBJ_PLAYERSTART,
     OBJ_END
 };
 

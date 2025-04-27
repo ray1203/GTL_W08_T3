@@ -44,7 +44,7 @@ void UEditorEngine::Init()
     //AActor* Actor = EditorWorld->SpawnActor<ACube>();
     //UCameraComponent* CameraComp = Actor->AddComponent<UCameraComponent>(TEXT("Camera"));
     //CameraComp->SetupAttachment(Actor->GetRootComponent());
-    APlayer* Player = EditorWorld->SpawnActor<APlayer>();
+    //APlayer* Player = EditorWorld->SpawnActor<APlayer>();
     
     ADirectionalLight* DirLight = EditorWorld->SpawnActor<ADirectionalLight>();
     DirLight->SetActorRotation(FRotator(20, -61, 11));
