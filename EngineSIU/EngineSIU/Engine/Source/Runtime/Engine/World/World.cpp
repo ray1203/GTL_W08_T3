@@ -71,14 +71,6 @@ void UWorld::BeginPlay()
         if (Actor->GetWorld() == this)
         {
             Actor->BeginPlay();
-            // PhysicsScene에 ShapeComponent 추가
-            for (UActorComponent* Comp : Actor->GetComponents())
-            {
-                if (UShapeComponent* ShapeComp = Cast<UShapeComponent>(Comp))
-                {
-                    PhysicsScene.AddRigidBody(ShapeComp);
-                }
-            }
         }
     }
 }

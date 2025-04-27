@@ -31,7 +31,7 @@ APlayer::APlayer()
     LuaComp->SetScriptPath(TEXT("TestLuaActor"));
 
 #if !GAME_BUILD
-    SetActorTickInEditor(true);
+    SetActorTickInEditor(false);
 #endif
 }
 
