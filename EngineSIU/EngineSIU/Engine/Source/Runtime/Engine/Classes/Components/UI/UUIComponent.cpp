@@ -36,13 +36,24 @@ bool UUIComponent::BeginWidget()
     if (bNoBackground)    Flags |= ImGuiWindowFlags_NoBackground;
     if (bNoInputs)        Flags |= ImGuiWindowFlags_NoInputs;
     if (bAutoSize)        Flags |= ImGuiWindowFlags_AlwaysAutoResize;
+    ImVec2 ScreenSize = ImGui::GetIO().DisplaySize;
+    FVector2D AnchorPos = GetAnchorPosition(Anchor, FVector2D(ScreenSize.x, ScreenSize.y));
+    FVector2D FinalPos = AnchorPos + Offset;
+    FinalPos -= Size * 0.5f;
 
-    ImGui::SetNextWindowPos(ImVec2(Position.X, Position.Y), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(ImVec2(FinalPos.X, FinalPos.Y), ImGuiCond_Always);
+
+    //ImGui::SetNextWindowPos(ImVec2(Position.X, Position.Y), ImGuiCond_Always);
     if (!bAutoSize)
     {
         ImGui::SetNextWindowSize(ImVec2(Size.X, Size.Y), ImGuiCond_Always);
     }
     ImGui::Begin(WidgetName.c_str(), nullptr, Flags);
+    if (bAutoSize)
+    {
+        ImVec2 ActualSize = ImGui::GetWindowSize();
+        Size = FVector2D(ActualSize.x, ActualSize.y);
+    }
     return true;
 }
 
@@ -56,7 +67,9 @@ UObject* UUIComponent::Duplicate(UObject* InOuter)
     /*FString UniqueName = FString::Printf(TEXT("%s_%s_%d"),
         *GetOwner()->GetName(), TEXT("UI"), GlobalWidgetCounter++);
     SetWidgetName(TCHAR_TO_UTF8(*UniqueName));*/
-    NewComponent->Position = Position;
+    //NewComponent->Position = Position;
+    NewComponent->Anchor = Anchor;
+    NewComponent->Offset = Offset;
     NewComponent->Size = Size;
     NewComponent->bNoMove = bNoMove;
     NewComponent->bNoResize = bNoResize;
@@ -75,7 +88,10 @@ void UUIComponent::GetProperties(TMap<FString, FString>& OutProperties) const
     Super::GetProperties(OutProperties);
 
     //WidgetName는 식별자로 작동만 하면 되니 저장 X
-    OutProperties.Add(TEXT("UIPosition"), Position.ToString());
+    //OutProperties.Add(TEXT("UIPosition"), Position.ToString());
+
+    OutProperties.Add(TEXT("Anchor"), FString::FromInt(static_cast<int32>(Anchor)));
+    OutProperties.Add(TEXT("Offset"), Offset.ToString());
     OutProperties.Add(TEXT("UISize"), Size.ToString());
     OutProperties.Add(TEXT("bNoMove"), bNoMove ? TEXT("true") : TEXT("false"));
     OutProperties.Add(TEXT("bNoResize"), bNoResize ? TEXT("true") : TEXT("false"));
@@ -91,9 +107,11 @@ void UUIComponent::GetProperties(TMap<FString, FString>& OutProperties) const
 void UUIComponent::SetProperties(const TMap<FString, FString>& Properties)
 {
     Super::SetProperties(Properties);
-    if (const FString* TempStr = Properties.Find(TEXT("UIPosition")))
+    if (const FString* Val = Properties.Find(TEXT("Anchor")))
+        Anchor = static_cast<EUIAnchor>(FCString::Atoi(**Val));
+    if (const FString* Val = Properties.Find(TEXT("Offset")))
     {
-        Position.InitFromString(*TempStr);
+        Offset.InitFromString(*Val);
     }
     if (const FString* TempStr = Properties.Find(TEXT("UISize")))
     {

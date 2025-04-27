@@ -55,7 +55,12 @@ public:
         Y += Rhs.Y;
         return *this;
     }
-
+    FVector2D& operator-=(const FVector2D& Rhs)
+    {
+        X -= Rhs.X;
+        Y -= Rhs.Y;
+        return *this;
+    }
     bool operator==(const FVector2D& Vector2D) const = default;
     bool operator!=(const FVector2D& Vector2D) const = default;
 

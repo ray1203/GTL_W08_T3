@@ -559,12 +559,29 @@ void PropertyEditorPanel::Render()
                 TextComp->SetText(TextBuffer);
             }
 
-            // 2. 위치
+            /*// 2. 위치
             FVector2D Pos = TextComp->Position;
             float PosXY[2] = { Pos.X, Pos.Y };
             if (ImGui::DragFloat2("Position", PosXY, 1.0f, 0.0f, 1920.0f, "%.1f"))
             {
                 TextComp->Position = FVector2D(PosXY[0], PosXY[1]);
+            }*/
+            const char* AnchorLabels[] = {
+    "TopLeft", "TopCenter", "TopRight",
+    "CenterLeft", "Center", "CenterRight",
+    "BottomLeft", "BottomCenter", "BottomRight"
+            };
+
+            int anchorIndex = static_cast<int>(TextComp->Anchor);
+            if (ImGui::Combo("Anchor", &anchorIndex, AnchorLabels, IM_ARRAYSIZE(AnchorLabels)))
+            {
+                TextComp->Anchor = static_cast<EUIAnchor>(anchorIndex);
+            }
+
+            float offset[2] = { TextComp->Offset.X, TextComp->Offset.Y };
+            if (ImGui::DragFloat2("Offset", offset, 1.0f))
+            {
+                TextComp->Offset = FVector2D(offset[0], offset[1]);
             }
 
             // 3. 크기

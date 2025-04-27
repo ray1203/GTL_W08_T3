@@ -6,13 +6,6 @@
             "ActorLabel": "ACube91",
             "Components": [
                 {
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaActor",
-                    "Properties": {
-                        "LuaScriptPath": "TestLuaActor"
-                    }
-                },
-                {
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "StaticMeshComponent_0",
                     "Properties": {
@@ -29,6 +22,13 @@
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": ""
+                    }
+                },
+                {
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaActor",
+                    "Properties": {
+                        "LuaScriptPath": "TestLuaActor"
                     }
                 }
             ],
@@ -92,18 +92,19 @@
                     "ComponentClass": "UUITextComponent",
                     "ComponentID": "UITextComponent",
                     "Properties": {
+                        "Anchor": "1",
                         "ComponentClass": "UUITextComponent",
                         "ComponentName": "UITextComponent",
                         "ComponentOwner": "ATextUIActor_97",
                         "ComponentOwnerClass": "ATextUIActor",
-                        "Text": "Hello UI Text!",
-                        "TextColor": "R=1.000 G=0.000 B=0.000 A=1.000",
-                        "TextScale": "1.580000",
-                        "UIPosition": "X=696.000 Y=58.000",
-                        "UISize": "X=200.000 Y=100.000",
+                        "Offset": "X=0.000 Y=26.000",
+                        "Text": "df",
+                        "TextColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "TextScale": "3.000000",
+                        "UISize": "X=66.000 Y=88.000",
                         "ZOrder": "0",
                         "bAutoActive": "true",
-                        "bAutoSize": "false",
+                        "bAutoSize": "true",
                         "bIsActive": "true",
                         "bNoBackground": "true",
                         "bNoInputs": "false",
