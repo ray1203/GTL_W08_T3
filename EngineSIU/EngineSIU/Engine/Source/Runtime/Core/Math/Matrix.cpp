@@ -39,7 +39,7 @@ FMatrix FMatrix::operator-(const FMatrix& Other) const {
 // 행렬 곱셈
 FMatrix FMatrix::operator*(const FMatrix& Other) const {
     FMatrix Result = {};
-    SSE::VectorMatrixMultiply(&Result, this, &Other);
+    MathSSE::MatrixMultiply(&Result, this, &Other);
     return Result;
 }
 
@@ -168,8 +168,10 @@ FMatrix FMatrix::Inverse(const FMatrix& Mat)
 		Mat[2][0] * (Mat[0][1] * Mat[1][2] - Mat[0][2] * Mat[1][1])
     );
 
+
     return Result;
 }
+
 
 FMatrix FMatrix::CreateRotationMatrix(float roll, float pitch, float yaw)
 {

@@ -7,8 +7,8 @@
 #include "UserInterface/Console.h"
 
 
-FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device)
-    : DXDDevice(Device)
+FDXDShaderManager::FDXDShaderManager(ID3D11Device* Device, ID3D11DeviceContext* DeviceContext = nullptr)
+    : DXDDevice(Device), DefaultDXDeviceContext(DeviceContext)
 {
     VertexShaders.Empty();
     PixelShaders.Empty();
@@ -129,6 +129,92 @@ HRESULT FDXDShaderManager::AddPixelShader(
     PixelShaders[Key].SetMetadata(std::make_unique<FShaderFileMetadata>(EntryPoint, FileName, IncludesHandler.GetIncludePaths(), Defines));
     PixelShaders[Key].SetShaderSize(ShaderSize);
 
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddVertexShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint]() {
+            return this->AddVertexShader(Key, FileName, EntryPoint);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddVertexShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint, Defines]() {
+            return this->AddVertexShader(Key, FileName, EntryPoint, Defines);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddVertexShaderAndInputLayoutAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint, Layout, LayoutSize]() {
+            return this->AddVertexShaderAndInputLayout(Key, FileName, EntryPoint, Layout, LayoutSize);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddVertexShaderAndInputLayoutAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D11_INPUT_ELEMENT_DESC* Layout, uint32_t LayoutSize, const D3D_SHADER_MACRO* Defines)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint, Layout, LayoutSize, Defines]() {
+            return this->AddVertexShaderAndInputLayout(Key, FileName, EntryPoint, Layout, LayoutSize, Defines);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddPixelShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint]() {
+            return this->AddPixelShader(Key, FileName, EntryPoint);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::AddPixelShaderAsync(const std::wstring& Key, const std::wstring& FileName, const std::string& EntryPoint, const D3D_SHADER_MACRO* Defines)
+{
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    PendingShaderFutures.push_back(
+        std::async(std::launch::async, [this, Key, FileName, EntryPoint, Defines]() {
+            return this->AddPixelShader(Key, FileName, EntryPoint, Defines);
+            })
+    );
+    return S_OK;
+}
+
+HRESULT FDXDShaderManager::WaitForAllShadersAsync()
+{
+    bool bIsFailed = false;
+    std::lock_guard<std::mutex> Lock(FuturesMutex);
+    for (auto& fut : PendingShaderFutures)
+    {
+        if (FAILED(fut.get()))
+        {
+            bIsFailed = true;
+        }
+    }
+    PendingShaderFutures.clear();
+
+    if (bIsFailed)
+    {
+        return E_FAIL;
+    }
     return S_OK;
 }
 
@@ -352,6 +438,93 @@ ID3D11PixelShader* FDXDShaderManager::GetPixelShaderByKey(const std::wstring& Ke
         return *PixelShaders.Find(Key);
     }
     return nullptr;
+}
+
+void FDXDShaderManager::SetVertexShader(const std::wstring& Key, ID3D11DeviceContext* Context) const
+{
+    ID3D11VertexShader* Shader = this->GetVertexShaderByKey(Key);
+    if (!Shader)
+    {
+        UE_LOG(ELogLevel::Error, "Failed to set vertex shader : invalid key");
+        return;
+    }
+    // context가 지정되어 있으면 해당 context로 실행
+    if (Context)
+    {
+        Context->VSSetShader(Shader, nullptr, 0);
+    }
+    // 없을 경우 기본 context 이용
+    else
+    {
+        if (!DefaultDXDeviceContext)
+        {
+            UE_LOG(ELogLevel::Error, "Failed to set vertex shader : DeviceContext not exist");
+            return;
+        }
+
+        DefaultDXDeviceContext->VSSetShader(Shader, nullptr, 0);
+    }
+}
+
+void FDXDShaderManager::SetVertexShaderAndInputLayout(const std::wstring& Key, ID3D11DeviceContext* Context) const
+{
+    ID3D11VertexShader* Shader = this->GetVertexShaderByKey(Key);
+    if (!Shader)
+    {
+        UE_LOG(ELogLevel::Error, "Failed to set vertex shader : invalid key");
+        return;
+    }
+    ID3D11InputLayout* Layout = this->GetInputLayoutByKey(Key);
+    if (!Layout)
+    {
+        UE_LOG(ELogLevel::Error, "Failed to set input layout : invalid key");
+        return;
+    }
+
+    // context가 지정되어 있으면 해당 context로 실행
+    if (Context)
+    {
+        Context->VSSetShader(Shader, nullptr, 0);
+        Context->IASetInputLayout(Layout);
+    }
+    // 없을 경우 기본 context 이용
+    else
+    {
+        if (!DefaultDXDeviceContext)
+        {
+            UE_LOG(ELogLevel::Error, "Failed to set vertex shader : Default DeviceContext not exist");
+            return;
+        }
+
+        DefaultDXDeviceContext->VSSetShader(Shader, nullptr, 0);
+        DefaultDXDeviceContext->IASetInputLayout(Layout);
+    }
+}
+
+void FDXDShaderManager::SetPixelShader(const std::wstring& Key, ID3D11DeviceContext* Context) const
+{
+    ID3D11PixelShader* Shader = this->GetPixelShaderByKey(Key);
+    if (!Shader)
+    {
+        UE_LOG(ELogLevel::Error, "Failed to set pixel shader : invalid key");
+        return;
+    }
+    // context가 지정되어 있으면 해당 context로 실행
+    if (Context)
+    {
+        Context->PSSetShader(Shader, nullptr, 0);
+    }
+    // 없을 경우 기본 context 이용
+    else
+    {
+        if (!DefaultDXDeviceContext)
+        {
+            UE_LOG(ELogLevel::Error, "Failed to set pixel shader : Default DeviceContext not exist");
+            return;
+        }
+
+        DefaultDXDeviceContext->PSSetShader(Shader, nullptr, 0);
+    }
 }
 
 bool FDXDShaderManager::HandleHotReloadShader()

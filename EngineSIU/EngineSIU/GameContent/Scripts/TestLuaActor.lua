@@ -52,19 +52,6 @@ function Tick(dt)
         IsJumping = true
     end
 
-    -- �߷� ����
-    Velocity.z = Velocity.z + Gravity * dt
-
-    -- ��ġ ����
-    obj.Location = obj.Location + Vector(0, 0, Velocity.z * dt)
-
-    -- �ٴ� üũ �� ����
-    if obj.Location.z <= 0 then
-        obj.Location = Vector(obj.Location.x, obj.Location.y, 0)
-        Velocity.z = 0
-        IsJumping = false
-    end
-
     -- Score��� �̸��� ���� ã��
     local scoreActor = FindActorByLabel("Score")
     if scoreActor then

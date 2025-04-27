@@ -1,4 +1,5 @@
-
+// DEPRECATED
+#if 0
 #include "EditorBillboardRenderPass.h"
 
 #include "UnrealClient.h"
@@ -22,3 +23,4 @@ void FEditorBillboardRenderPass::PrepareRender()
         }
     }
 }
+#endif

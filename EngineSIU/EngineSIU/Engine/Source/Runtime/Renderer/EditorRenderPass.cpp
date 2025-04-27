@@ -20,7 +20,8 @@
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectIterator.h"
 
-
+#include "PropertyEditor/ShowFlags.h"
+#include "Engine/EditorEngine.h"
 
 void FEditorRenderPass::Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager)
 {
@@ -52,47 +53,75 @@ void FEditorRenderPass::CreateShaders()
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
 
-    auto AddShaderSet = [&](const std::wstring& keyPrefix, const std::string& vsEntry, const std::string& psEntry,
-        D3D11_INPUT_ELEMENT_DESC* layout, uint32_t layoutSize,
-        D3D11_PRIMITIVE_TOPOLOGY topology, FShaderResource& target)
-        {
-            ShaderManager->AddVertexShaderAndInputLayout(keyPrefix + L"VS", L"Shaders/EditorShader.hlsl", vsEntry, layout, layoutSize);
-            ShaderManager->AddPixelShader(keyPrefix + L"PS", L"Shaders/EditorShader.hlsl", psEntry);
-            target.Vertex = ShaderManager->GetVertexShaderByKey(keyPrefix + L"VS");
-            target.Pixel = ShaderManager->GetPixelShaderByKey(keyPrefix + L"PS");
-            target.Layout = ShaderManager->GetInputLayoutByKey(keyPrefix + L"VS");
-            target.Topology = topology;
-        };
+    // Axis
+    ShaderManager->AddVertexShaderAndInputLayout(AxisKeyW, L"Shaders/EditorShader.hlsl", "axisVS", layoutPosOnly, ARRAYSIZE(layoutPosOnly));
+    ShaderManager->AddPixelShader(AxisKeyW, L"Shaders/EditorShader.hlsl", "axisPS");
+ 
+    // Arrow
+    ShaderManager->AddVertexShaderAndInputLayout(ArrowKeyW, L"Shaders/EditorShader.hlsl", "arrowVS", layoutGizmo, ARRAYSIZE(layoutGizmo));
+    ShaderManager->AddPixelShader(ArrowKeyW, L"Shaders/EditorShader.hlsl", "arrowPS");
 
     // Sphere
-    AddShaderSet(L"Sphere", "sphereVS", "spherePS", layoutPosOnly, ARRAYSIZE(layoutPosOnly),
-        D3D11_PRIMITIVE_TOPOLOGY_LINELIST, Resources.Shaders.Sphere);
+    ShaderManager->AddVertexShaderAndInputLayout(SphereKeyW, L"Shaders/EditorShader.hlsl", "sphereVS", layoutPosOnly, ARRAYSIZE(layoutPosOnly));
+    ShaderManager->AddPixelShader(SphereKeyW, L"Shaders/EditorShader.hlsl", "spherePS");
 
     // Cone
-    AddShaderSet(L"Cone", "coneVS", "conePS", layoutPosOnly, ARRAYSIZE(layoutPosOnly),
-        D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, Resources.Shaders.Cone);
+    ShaderManager->AddVertexShader(ConeKeyW, L"Shaders/EditorShader.hlsl", "coneVS");
+    ShaderManager->AddPixelShader(ConeKeyW, L"Shaders/EditorShader.hlsl", "conePS");
 
-    // Icons (layout 없음)
-    AddShaderSet(L"Icon", "iconVS", "iconPS", layoutPosOnly, ARRAYSIZE(layoutPosOnly),
-        D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, Resources.Shaders.Icon);
-    Resources.Shaders.Icon.Layout = nullptr;
+    // AABB
+    ShaderManager->AddVertexShaderAndInputLayout(AABBKeyW, L"Shaders/EditorShader.hlsl", "aabbVS", layoutPosOnly, ARRAYSIZE(layoutPosOnly));
+    ShaderManager->AddPixelShader(AABBKeyW, L"Shaders/EditorShader.hlsl", "aabbPS");
 
-    // Arrow (기즈모 layout 재사용)
-    ShaderManager->AddVertexShaderAndInputLayout(L"ArrowVS", L"Shaders/EditorShader.hlsl", "arrowVS", layoutGizmo, ARRAYSIZE(layoutGizmo));
-    ShaderManager->AddPixelShader(L"ArrowPS", L"Shaders/EditorShader.hlsl", "arrowPS");
-    Resources.Shaders.Arrow.Vertex = ShaderManager->GetVertexShaderByKey(L"ArrowVS");
-    Resources.Shaders.Arrow.Pixel = ShaderManager->GetPixelShaderByKey(L"ArrowPS");
-    Resources.Shaders.Arrow.Layout = ShaderManager->GetInputLayoutByKey(L"ArrowVS");
-    Resources.Shaders.Arrow.Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    // Grid
+    ShaderManager->AddVertexShader(GridKeyW, L"Shaders/EditorShader.hlsl", "gridVS");
+    ShaderManager->AddPixelShader(GridKeyW, L"Shaders/EditorShader.hlsl", "gridPS");
+
+    // Icon
+    ShaderManager->AddVertexShader(IconKeyW, L"Shaders/EditorShader.hlsl", "iconVS");
+    ShaderManager->AddPixelShader(IconKeyW, L"Shaders/EditorShader.hlsl", "iconPS");
+
+    //auto AddShaderSet = [&](const std::wstring& keyPrefix, const std::string& vsEntry, const std::string& psEntry,
+    //    D3D11_INPUT_ELEMENT_DESC* layout, uint32_t layoutSize,
+    //    /*D3D11_PRIMITIVE_TOPOLOGY topology, FShaderResource& target*/)
+    //    {
+    //        ShaderManager->AddVertexShaderAndInputLayout(keyPrefix + L"VS", L"Shaders/EditorShader.hlsl", vsEntry, layout, layoutSize);
+    //        ShaderManager->AddPixelShader(keyPrefix + L"PS", L"Shaders/EditorShader.hlsl", psEntry);
+    //        //target.Vertex = ShaderManager->GetVertexShaderByKey(keyPrefix + L"VS");
+    //        //target.Pixel = ShaderManager->GetPixelShaderByKey(keyPrefix + L"PS");
+    //        //target.Layout = ShaderManager->GetInputLayoutByKey(keyPrefix + L"VS");
+    //        //target.Topology = topology;
+    //    };
+
+    //// Sphere
+    //AddShaderSet(L"Sphere", "sphereVS", "spherePS", layoutPosOnly, ARRAYSIZE(layoutPosOnly),
+    //    /*D3D11_PRIMITIVE_TOPOLOGY_LINELIST, Resources.Shaders.Sphere*/);
+
+    //// Cone
+    //AddShaderSet(L"Cone", "coneVS", "conePS", layoutPosOnly, ARRAYSIZE(layoutPosOnly),
+    //    /*D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, Resources.Shaders.Cone*/);
+
+    //// Icons (layout 없음)
+    //AddShaderSet(L"Icon", "iconVS", "iconPS", layoutPosOnly, ARRAYSIZE(layoutPosOnly),
+    //    /*D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, Resources.Shaders.Icon*/);
+    ///*Resources.Shaders.Icon.Layout = nullptr;*/
+
+    //// Arrow (기즈모 layout 재사용)
+    //ShaderManager->AddVertexShaderAndInputLayout(L"ArrowVS", L"Shaders/EditorShader.hlsl", "arrowVS", layoutGizmo, ARRAYSIZE(layoutGizmo));
+    //ShaderManager->AddPixelShader(L"ArrowPS", L"Shaders/EditorShader.hlsl", "arrowPS");
+    //Resources.Shaders.Arrow.Vertex = ShaderManager->GetVertexShaderByKey(L"ArrowVS");
+    //Resources.Shaders.Arrow.Pixel = ShaderManager->GetPixelShaderByKey(L"ArrowPS");
+    //Resources.Shaders.Arrow.Layout = ShaderManager->GetInputLayoutByKey(L"ArrowVS");
+    //Resources.Shaders.Arrow.Topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 }
 
-void FEditorRenderPass::PrepareShader(const FShaderResource& ShaderResource) const
-{
-    Graphics->DeviceContext->VSSetShader(ShaderResource.Vertex, nullptr, 0);
-    Graphics->DeviceContext->PSSetShader(ShaderResource.Pixel, nullptr, 0);
-    Graphics->DeviceContext->IASetInputLayout(ShaderResource.Layout);
-    Graphics->DeviceContext->IASetPrimitiveTopology(ShaderResource.Topology);
-}
+//void FEditorRenderPass::PrepareShader(const FShaderResource& ShaderResource) const
+//{
+//    Graphics->DeviceContext->VSSetShader(ShaderResource.Vertex, nullptr, 0);
+//    Graphics->DeviceContext->PSSetShader(ShaderResource.Pixel, nullptr, 0);
+//    Graphics->DeviceContext->IASetInputLayout(ShaderResource.Layout);
+//    Graphics->DeviceContext->IASetPrimitiveTopology(ShaderResource.Topology);
+//}
 
 void FEditorRenderPass::ReleaseShaders()
 {
@@ -103,60 +132,8 @@ void FEditorRenderPass::ReleaseShaders()
 void FEditorRenderPass::CreateBuffers()
 {
     ////////////////////////////////////
-    // Box 버퍼 생성
-    TArray<FVector> CubeFrameVertices;
-    CubeFrameVertices.Add({ -1.f, -1.f, -1.f }); // 0
-    CubeFrameVertices.Add({ -1.f, 1.f, -1.f }); // 1
-    CubeFrameVertices.Add({ 1.f, -1.f, -1.f }); // 2
-    CubeFrameVertices.Add({ 1.f, 1.f, -1.f }); // 3
-    CubeFrameVertices.Add({ -1.f, -1.f, 1.f }); // 4
-    CubeFrameVertices.Add({ 1.f, -1.f, 1.f }); // 5
-    CubeFrameVertices.Add({ -1.f, 1.f, 1.f }); // 6
-    CubeFrameVertices.Add({ 1.f, 1.f, 1.f }); // 7
-
-    TArray<uint32> CubeFrameIndices = {
-        // Bottom face
-        0, 1, 1, 3, 3, 2, 2, 0,
-        // Top face
-        4, 6, 6, 7, 7, 5, 5, 4,
-        // Side faces
-        0, 4, 1, 6, 2, 5, 3, 7
-    };
-
-    // 버텍스 버퍼 생성
-    D3D11_BUFFER_DESC bufferDesc = {};
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated 
-    bufferDesc.ByteWidth = sizeof(FVector) * CubeFrameVertices.Num();
-    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
-
-    D3D11_SUBRESOURCE_DATA initData = {};
-    initData.pSysMem = CubeFrameVertices.GetData();
-
-    HRESULT hr = Graphics->Device->CreateBuffer(&bufferDesc, &initData, &Resources.Primitives.Box.Vertex);
-    if (FAILED(hr))
-    {
-        return;
-    }
-
-    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    bufferDesc.ByteWidth = sizeof(uint32) * CubeFrameIndices.Num();
-
-    initData.pSysMem = CubeFrameIndices.GetData();
-
-    hr = Graphics->Device->CreateBuffer(&bufferDesc, &initData, &Resources.Primitives.Box.Index);
-    if (FAILED(hr))
-    {
-        return;
-    }
-
-    Resources.Primitives.Box.NumVertices = CubeFrameVertices.Num();
-    Resources.Primitives.Box.VertexStride = sizeof(FVector);
-    Resources.Primitives.Box.NumIndices = CubeFrameIndices.Num();
-
-    ////////////////////////////////////
     // Sphere 버퍼 생성
-    FVector SphereFrameVertices[] =
+    TArray<FVector> SphereFrameVertices =
     {
         {1.0, 0.0, 0},
         {0.9795299412524945, 0.20129852008866006, 0},
@@ -256,7 +233,7 @@ void FEditorRenderPass::CreateBuffers()
         {0, 1, 0}
     };
 
-    uint32 SphereFrameIndices[] =
+    TArray<uint32> SphereFrameIndices =
     {
         0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
         11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20,
@@ -271,152 +248,116 @@ void FEditorRenderPass::CreateBuffers()
     };
 
     // 버텍스 버퍼 생성
-    bufferDesc = {};
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated 
-    bufferDesc.ByteWidth = sizeof(SphereFrameVertices);
-    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
+    BufferManager->CreateVertexBuffer(SphereKey, SphereFrameVertices);
+    BufferManager->CreateIndexBuffer(SphereKey, SphereFrameIndices);
+    
 
-    initData = {};
-    initData.pSysMem = SphereFrameVertices;
-
-    hr = Graphics->Device->CreateBuffer(&bufferDesc, &initData, &Resources.Primitives.Sphere.Vertex);
-    if (FAILED(hr))
-    {
-        return;
-    }
-
-    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    bufferDesc.ByteWidth = sizeof(SphereFrameIndices);
-
-    initData.pSysMem = SphereFrameIndices;
-
-    hr = Graphics->Device->CreateBuffer(&bufferDesc, &initData, &Resources.Primitives.Sphere.Index);
-    if (FAILED(hr))
-    {
-        return;
-    }
-
-    Resources.Primitives.Sphere.NumVertices = ARRAYSIZE(SphereFrameVertices);
-    Resources.Primitives.Sphere.VertexStride = sizeof(FVector);
-    Resources.Primitives.Sphere.NumIndices = ARRAYSIZE(SphereFrameIndices);
-
-
-
-    ////////////////////////////////////
-    // Cone 버퍼 생성
-    // 0,0,0이 Apex
-    // z=1이고, xy에서 r=1인 원이 밑변
-    constexpr uint32 NumSegments = 32;
     TArray<FVector> ConeVertices;
     ConeVertices.Add({ 0.0f, 0.0f, 0.0f }); // Apex
-    for (int i = 0; i < NumSegments; i++)
+    for (int i = 0; i < NumConeSegments; i++)
     {
-        float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments;
-        float x = cos(angle);
-        float y = sin(angle);
+        // hlsl 내부에서 계산
+        //float angle = 2.0f * 3.1415926535897932f * i / (float)NuzmSegments;
+        //float x = cos(angle);
+        //float y = sin(angle);
+        float x = 0;
+        float y = 0;
         ConeVertices.Add({ x, y, 1.0f }); // Bottom
     }
     TArray<uint32> ConeIndices;
-    constexpr uint32 vertexOffset0 = 1;
+    uint32 vertexOffset0 = 1;
     // apex -> 밑면으로 가는 line
-    for (int i = 0; i < NumSegments; i++)
+    for (int i = 0; i < NumConeSegments; i++)
     {
         ConeIndices.Add(0);
         ConeIndices.Add(vertexOffset0 + i);
     }
     // 밑변
-    for (int i = 0; i < NumSegments; i++)
+    for (int i = 0; i < NumConeSegments; i++)
     {
         ConeIndices.Add(vertexOffset0 + i);
-        ConeIndices.Add(vertexOffset0 + (i + 1) % NumSegments);
+        ConeIndices.Add(vertexOffset0 + (i + 1) % NumConeSegments);
     }
 
     // cone을 덮는 sphere
     // xz plane
-    float deltaAngle = 2.0f * 3.1415926535897932f / (float)NumSegments;
-    float offsetAngle = deltaAngle * NumSegments / 8; // 45도 부터 시작
-    for (int i = 0; i < NumSegments / 4 + 1; i++)
+    //float deltaAngle = 2.0f * 3.1415926535897932f / (float)NumConeSegments;
+    //float offsetAngle = deltaAngle * NumConeSegments / 8; // 45도 부터 시작
+    for (int i = 0; i < NumConeSegments + 1; i++)
     {
-        float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments + offsetAngle;
-        float x = cos(angle) * sqrt(2.f);
-        float z = sin(angle) * sqrt(2.f);
+        //float angle = 2.0f * 3.1415926535897932f * i / (float)NumConeSegments + offsetAngle;
+        //float x = cos(angle) * sqrt(2.f);
+        //float z = sin(angle) * sqrt(2.f);
+        float x = 0;
+        float z = 0;
         ConeVertices.Add({ x, 0, z });
     }
-    constexpr uint32 vertexOffset1 = NumSegments + vertexOffset0;
-    for (int i = 0; i < NumSegments / 4; i++)
+    uint32 vertexOffset1 = NumConeSegments + vertexOffset0;
+    for (int i = 0; i < NumConeSegments; i++)
     {
         ConeIndices.Add(vertexOffset1 + i);
         ConeIndices.Add(vertexOffset1 + (i + 1));
     }
     // yz plane
-    for (int i = 0; i < NumSegments / 4 + 1; i++)
+    for (int i = 0; i < NumConeSegments + 1; i++)
     {
-        float angle = 2.0f * 3.1415926535897932f * i / (float)NumSegments + offsetAngle;
-        float y = cos(angle) * sqrt(2.f);
-        float z = sin(angle) * sqrt(2.f);
+        //float angle = 2.0f * 3.1415926535897932f * i / (float)NumConeSegments + offsetAngle;
+        //float y = cos(angle) * sqrt(2.f);
+        //float z = sin(angle) * sqrt(2.f);
+        float y = 0;
+        float z = 0;
         ConeVertices.Add({ 0, y, z });
     }
-    constexpr uint32 vertexOffset2 = NumSegments / 4 + 1 + vertexOffset1;
-    for (int i = 0; i < NumSegments / 4; i++)
+    uint32 vertexOffset2 = NumConeSegments + 1 + vertexOffset1;
+    for (int i = 0; i < NumConeSegments; i++)
     {
         ConeIndices.Add(vertexOffset2 + i);
         ConeIndices.Add(vertexOffset2 + (i + 1));
     }
+    BufferManager->CreateIndexBuffer(ConeKey, ConeIndices);
 
-    // 버텍스 버퍼 생성
-    bufferDesc = {};
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // will never be updated 
-    bufferDesc.ByteWidth = ConeVertices.Num() * sizeof(FVector);
-    bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
+    ////////////////////////////////////
+    // Box 버퍼 생성
+    TArray<FVector> CubeFrameVertices;
+    CubeFrameVertices.Add({ -1.f, -1.f, -1.f }); // 0
+    CubeFrameVertices.Add({ -1.f, 1.f, -1.f }); // 1
+    CubeFrameVertices.Add({ 1.f, -1.f, -1.f }); // 2
+    CubeFrameVertices.Add({ 1.f, 1.f, -1.f }); // 3
+    CubeFrameVertices.Add({ -1.f, -1.f, 1.f }); // 4
+    CubeFrameVertices.Add({ 1.f, -1.f, 1.f }); // 5
+    CubeFrameVertices.Add({ -1.f, 1.f, 1.f }); // 6
+    CubeFrameVertices.Add({ 1.f, 1.f, 1.f }); // 7
 
-    initData = {};
-    initData.pSysMem = ConeVertices.GetData();
+    TArray<uint32> CubeFrameIndices = {
+        // Bottom face
+        0, 1, 1, 3, 3, 2, 2, 0,
+        // Top face
+        4, 6, 6, 7, 7, 5, 5, 4,
+        // Side faces
+        0, 4, 1, 6, 2, 5, 3, 7
+    };
 
-    hr = Graphics->Device->CreateBuffer(&bufferDesc, &initData, &Resources.Primitives.Cone.Vertex);
-    if (FAILED(hr))
-    {
-        return;
-    }
-
-    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    bufferDesc.ByteWidth = ConeIndices.Num() * sizeof(FVector);
-
-    initData.pSysMem = ConeIndices.GetData();
-
-    hr = Graphics->Device->CreateBuffer(&bufferDesc, &initData, &Resources.Primitives.Cone.Index);
-    if (FAILED(hr))
-    {
-        return;
-    }
-
-    Resources.Primitives.Cone.NumVertices = ConeVertices.Num();
-    Resources.Primitives.Cone.VertexStride = sizeof(FVector);
-    Resources.Primitives.Cone.NumIndices = ConeIndices.Num();
-
+    BufferManager->CreateVertexBuffer(AABBKey, CubeFrameVertices);
+    BufferManager->CreateIndexBuffer(AABBKey, CubeFrameIndices);
 }
 void FEditorRenderPass::CreateConstantBuffers()
 {
-    auto CreateCB = [this](UINT size, ID3D11Buffer** outBuffer)
-    {
-        D3D11_BUFFER_DESC desc = {};
-        desc.Usage = D3D11_USAGE_DYNAMIC;
-        desc.ByteWidth = size;
-        desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        Graphics->Device->CreateBuffer(&desc, nullptr, outBuffer);
-    };
-
-    CreateCB(sizeof(FConstantBufferCamera), &Resources.ConstantBuffers.Camera00);
-    CreateCB(sizeof(FConstantBufferDebugAABB) * ConstantBufferSizeAABB, &Resources.ConstantBuffers.AABB11);
-    CreateCB(sizeof(FConstantBufferDebugSphere) * ConstantBufferSizeSphere, &Resources.ConstantBuffers.Sphere11);
-    CreateCB(sizeof(FConstantBufferDebugCone) * ConstantBufferSizeCone, &Resources.ConstantBuffers.Cone11);
-    CreateCB(sizeof(FConstantBufferDebugGrid), &Resources.ConstantBuffers.Grid11);
-    CreateCB(sizeof(FConstantBufferDebugIcon), &Resources.ConstantBuffers.Icon11);
-    CreateCB(sizeof(FConstantBufferDebugArrow), &Resources.ConstantBuffers.Arrow11);
+    BufferManager->CreateConstantBuffer<FConstantBufferDebugSphere>(SphereKey, ConstantBufferSizeSphere);
+    BufferManager->CreateConstantBuffer<FConstantBufferDebugCone>(ConeKey, ConstantBufferSizeCone);
+    BufferManager->CreateConstantBuffer<FConstantBufferDebugAABB>(AABBKey, ConstantBufferSizeAABB);
+    BufferManager->CreateConstantBuffer<FConstantBufferDebugGrid>(GridKey);
+    BufferManager->CreateConstantBuffer<FConstantBufferDebugArrow>(ArrowKey);
+    BufferManager->CreateConstantBuffer<FConstantBufferDebugIcon>(IconKey, ConstantBufferSizeIcon);
+    //CreateCB(sizeof(FConstantBufferCamera), &Resources.ConstantBuffers.AABBKeyCamera00);
+    //CreateCB(sizeof(FConstantBufferDebugAABB) * ConstantBufferSizeAABB, &Resources.ConstantBuffers.AABB11);
+    //CreateCB(sizeof(FConstantBufferDebugSphere) * ConstantBufferSizeSphere, &Resources.ConstantBuffers.Sphere11);
+    //CreateCB(sizeof(FConstantBufferDebugCone) * ConstantBufferSizeCone, &Resources.ConstantBuffers.Cone11);
+    //CreateCB(sizeof(FConstantBufferDebugGrid), &Resources.ConstantBuffers.Grid11);
+    //CreateCB(sizeof(FConstantBufferDebugIcon), &Resources.ConstantBuffers.Icon11);
+    //CreateCB(sizeof(FConstantBufferDebugArrow), &Resources.ConstantBuffers.Arrow11);
 }
 
+// 이전 state와 상관없이 업데이트
 void FEditorRenderPass::PrepareRendertarget(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
     const EResourceType ResourceType = EResourceType::ERT_Editor;
@@ -424,7 +365,6 @@ void FEditorRenderPass::PrepareRendertarget(const std::shared_ptr<FEditorViewpor
     FViewportResource* ViewportResource = Viewport->GetViewportResource();
     FRenderTargetRHI* RenderTargetRHI = ViewportResource->GetRenderTarget(ResourceType);
     Graphics->DeviceContext->OMSetRenderTargets(1, &RenderTargetRHI->RTV, ViewportResource->GetDepthStencilView());
-
 }
 
 void FEditorRenderPass::PrepareRender()
@@ -436,73 +376,67 @@ void FEditorRenderPass::PrepareRender()
     {
         return;
     }
-    for (const auto& actor : TObjectRange<AActor>())
+
+    UEditorEngine* EditorEngine = Cast< UEditorEngine>(GEngine);
+    if (!EditorEngine)
     {
-        for (const auto& comp : actor->GetComponents())
+        return;
+    }
+
+    for (const auto iter : TObjectRange<UStaticMeshComponent>())
+    {
+        if (iter->GetWorld() == GEngine->ActiveWorld)
         {
-            // AABB용 static mesh component
-            if (UStaticMeshComponent* staticmesh = Cast<UStaticMeshComponent>(comp))
-            {
-                if (!staticmesh->IsA<UGizmoBaseComponent>())
-                {
-                    Resources.Components.StaticMesh.Add(staticmesh);
-                }
-            }
-
-            // light
-            if (ULightComponentBase* light = Cast<ULightComponentBase>(comp))
-            {
-                Resources.Components.Light.Add(light);
-            }
-
-            // fog
-            if (UHeightFogComponent* fog = Cast<UHeightFogComponent>(comp))
-            {
-                Resources.Components.Fog.Add(fog);
-            }
+            Resources.Components.StaticMesh.Add(iter);
         }
     }
+
+    for (const auto iter : TObjectRange<UDirectionalLightComponent>())
+    {
+        if (iter->GetWorld() == GEngine->ActiveWorld)
+        {
+            Resources.Components.DirLight.Add(iter);
+        }
+    }
+
+    for (const auto iter : TObjectRange<UPointLightComponent>())
+    {
+        if (iter->GetWorld() == GEngine->ActiveWorld)
+        {
+            Resources.Components.PointLight.Add(iter);
+        }
+    }
+
+
+    for (const auto iter : TObjectRange<USpotLightComponent>())
+    {
+        if (iter->GetWorld() == GEngine->ActiveWorld)
+        {
+            Resources.Components.SpotLight.Add(iter);
+        }
+    }
+
+    for (const auto iter : TObjectRange<UHeightFogComponent>())
+    {
+        if (iter->GetWorld() == GEngine->ActiveWorld)
+        {
+            Resources.Components.Fog.Add(iter);
+        }
+    }
+
 }
 
 void FEditorRenderPass::ClearRenderArr()
 {
     Resources.Components.StaticMesh.Empty();
-    Resources.Components.Light.Empty();
+    Resources.Components.DirLight.Empty();
+    Resources.Components.PointLight.Empty();
+    Resources.Components.SpotLight.Empty();
     Resources.Components.Fog.Empty();
 }
 
 void FEditorRenderPass::ReloadShader()
 {
-    auto ReloadShader = [this](const std::wstring& KeyPrefix, FShaderResource& TargetResource)
-    {
-        TargetResource.Vertex = ShaderManager->GetVertexShaderByKey(KeyPrefix + L"VS");
-        TargetResource.Pixel = ShaderManager->GetPixelShaderByKey(KeyPrefix + L"PS");
-    };
-
-    ReloadShader(L"Sphere", Resources.Shaders.Sphere);
-    ReloadShader(L"Cone", Resources.Shaders.Cone);
-    ReloadShader(L"Icon", Resources.Shaders.Icon);
-    ReloadShader(L"Arrow", Resources.Shaders.Arrow);
-}
-
-void FEditorRenderPass::PrepareConstantbufferGlobal()
-{
-    if (Resources.ConstantBuffers.Camera00)
-    {
-        Graphics->DeviceContext->VSSetConstantBuffers(0, 1, &Resources.ConstantBuffers.Camera00);
-    }
-}
-
-void FEditorRenderPass::UpdateConstantbufferGlobal(const FConstantBufferCamera& Buffer)
-{
-    if (Resources.ConstantBuffers.Camera00)
-    {
-        D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR; // GPU�� �޸� �ּ� ����
-
-        Graphics->DeviceContext->Map(Resources.ConstantBuffers.Camera00, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
-        memcpy(ConstantBufferMSR.pData, &Buffer, sizeof(Buffer));
-        Graphics->DeviceContext->Unmap(Resources.ConstantBuffers.Camera00, 0); // GPU�� �ٽ� ��밡���ϰ� �����
-    }
 }
 
 void FEditorRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
@@ -515,97 +449,128 @@ void FEditorRenderPass::Render(const std::shared_ptr<FEditorViewportClient>& Vie
     }
 
     PrepareRendertarget(Viewport);
-    
-    // PrepareConstantbufferGlobal();
-
-    // FConstantBufferCamera buf;
-    // buf.ViewMatrix = Viewport->GetViewMatrix();
-    // buf.ProjMatrix = Viewport->GetProjectionMatrix();
-    // buf.CameraPos = Viewport->GetCameraLocation();
-    // buf.CameraLookAt = ActiveViewport->ViewTransformPerspective.GetLookAt();
-    // UpdateConstantbufferGlobal(buf);
-
-    // ID3D11DepthStencilState* DepthStateEnable = Graphics->DepthStencilState;
-    // Graphics->DeviceContext->OMSetDepthStencilState(DepthStateEnable, 0);
+    RenderGrid(Viewport);
+    RenderAxis();
+    if (Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_AABB))
+    {
+        RenderAABBInstanced();
+    }
 
     RenderPointlightInstanced();
     RenderSpotlightInstanced();
-    RenderArrows();    // Directional Light Arrow : Depth Test Enabled
-    //RenderIcons(World, ActiveViewport); // 기존 렌더패스에서 아이콘 렌더하고 있으므로 제거
+    RenderArrows();
 
-    Graphics->DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
+    //ID3D11DepthStencilState* DepthStateEnable = Graphics->DepthStencilStateTestWriteEnable;
+    //Graphics->DeviceContext->OMSetDepthStencilState(DepthStateEnable, 0);
 
-    ID3D11Buffer* NullBuffer[1] = { nullptr };
-    Graphics->DeviceContext->VSSetConstantBuffers(11, 1, NullBuffer);
-    Graphics->DeviceContext->PSSetConstantBuffers(11, 1, NullBuffer);
-}
-
-void FEditorRenderPass::PrepareShaderGizmo()
-{
-
-}
-
-void FEditorRenderPass::PrepareConstantbufferGizmo()
-{
+    if (Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText))
+    {
+        RenderIcons(Viewport);
+    }
+    //ID3D11DepthStencilState* DepthStateDisable = Graphics->DepthStencilStateTestWriteDisable;
+    //Graphics->DeviceContext->OMSetDepthStencilState(DepthStateDisable, 0);
 }
 
 void FEditorRenderPass::RenderAxis()
 {
-    PrepareShader(Resources.Shaders.AxisLine);
+    // vertex index buffer 없음
+    ShaderManager->SetVertexShader(AxisKeyW);
+    ShaderManager->SetPixelShader(AxisKeyW);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
     Graphics->DeviceContext->Draw(6, 0);
 }
-
-void FEditorRenderPass::PrepareConstantbufferAABB()
+void FEditorRenderPass::RenderAABBInstanced()
 {
-    /*if (Resources.ConstantBuffers.AABB13)
+
+    ShaderManager->SetVertexShaderAndInputLayout(AABBKeyW);
+    ShaderManager->SetPixelShader(AABBKeyW);
+    BufferManager->SetVertexBuffer(AABBKey);    
+    BufferManager->SetIndexBuffer(AABBKey);
+    BufferManager->BindConstantBuffer(AABBKey, 11, EShaderStage::Vertex);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+    uint32 NumIndices = BufferManager->GetIndexBuffer(AABBKey).NumIndices;
+
+    // 위치랑 bounding box 크기 정보 가져오기
+    TArray<FConstantBufferDebugAABB> BufferAll;
+    for (UStaticMeshComponent* SMComp : Resources.Components.StaticMesh)
     {
-        Graphics->DeviceContext->VSSetConstantBuffers(11, 1, &Resources.ConstantBuffers.AABB13);
-    }*/
+        // 매 프레임마다 하고있는데, scenecomponent에서 변경이 발생하면 갱신하도록 변경필요
+        if (SMComp->GetStaticMesh() == nullptr)
+            return;
+        FVector min = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+        FVector max = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+        for (const FStaticMeshVertex& Vertex : SMComp->GetStaticMesh()->GetRenderData()->Vertices)
+        {
+            FVector VertexWorld = FVector(Vertex.X, Vertex.Y, Vertex.Z);
+            VertexWorld = SMComp->GetWorldMatrix().TransformPosition(VertexWorld);
+            min.X = std::min(min.X, VertexWorld.X);
+            min.Y = std::min(min.Y, VertexWorld.Y);
+            min.Z = std::min(min.Z, VertexWorld.Z);
+            max.X = std::max(max.X, VertexWorld.X);
+            max.Y = std::max(max.Y, VertexWorld.Y);
+            max.Z = std::max(max.Z, VertexWorld.Z);
+        }
+        FConstantBufferDebugAABB b;
+        b.Position = (min + max) / 2.f;
+        b.Extent = (max - min) / 2.f;
+        BufferAll.Add(b);
+    }
+
+    int BufferIndex = 0;
+    for (int i = 0; i < (1 + BufferAll.Num() / ConstantBufferSizeAABB) * ConstantBufferSizeAABB; ++i)
+    {
+        TArray<FConstantBufferDebugAABB> SubBuffer;
+        for (int j = 0; j < ConstantBufferSizeAABB; ++j)
+        {
+            if (BufferIndex < BufferAll.Num())
+            {
+                SubBuffer.Add(BufferAll[BufferIndex]);
+                ++BufferIndex;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (SubBuffer.Num() > 0)
+        {
+            BufferManager->UpdateConstantBufferArray(AABBKey, SubBuffer);
+            Graphics->DeviceContext->DrawIndexedInstanced(NumIndices, SubBuffer.Num(), 0, 0, 0);
+        }
+    }
 }
 
-void FEditorRenderPass::UdpateConstantbufferAABBInstanced(TArray<FConstantBufferDebugAABB> Buffer)
-{
-    if (Buffer.Num() > ConstantBufferSizeAABB)
-    {
-        // 최대개수 초과
-        // 코드 잘못짠거 아니면 오면안됨
-        UE_LOG(ELogLevel::Error, "Invalid Buffer Num");
-        return;
-    }
-    if (Resources.ConstantBuffers.AABB11)
-    {
-        D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
-
-        Graphics->DeviceContext->Map(Resources.ConstantBuffers.AABB11, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
-        memcpy(ConstantBufferMSR.pData, Buffer.GetData(), sizeof(FConstantBufferDebugAABB) * Buffer.Num()); // TArray이니까 실제 값을 받아와야함
-        Graphics->DeviceContext->Unmap(Resources.ConstantBuffers.AABB11, 0);
-    }
-}
 
 void FEditorRenderPass::RenderPointlightInstanced()
 {
-    PrepareShader(Resources.Shaders.Sphere);
-    UINT offset = 0;
-    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &Resources.Primitives.Sphere.Vertex, &Resources.Primitives.Sphere.VertexStride, &offset);
-    Graphics->DeviceContext->IASetIndexBuffer(Resources.Primitives.Sphere.Index, DXGI_FORMAT_R32_UINT, 0);
+    ShaderManager->SetVertexShaderAndInputLayout(SphereKeyW);
+    ShaderManager->SetPixelShader(SphereKeyW);
+    BufferManager->SetVertexBuffer(SphereKey);
+    BufferManager->SetIndexBuffer(SphereKey);
+    BufferManager->BindConstantBuffer(SphereKey, 11, EShaderStage::Vertex);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 
-    // 위치랑 bounding box 크기 정보 가져오기
     TArray<FConstantBufferDebugSphere> BufferAll;
-    for (ULightComponentBase* LightComp : Resources.Components.Light)
+    // 하나만 뜨도록 설정함
+    if (UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine))
     {
-        if (UPointLightComponent* PointLightComp = Cast<UPointLightComponent>(LightComp))
+        for (UPointLightComponent* PointLightComp : Resources.Components.PointLight)
         {
-            FConstantBufferDebugSphere b;
-            b.Position = PointLightComp->GetWorldLocation();
-            b.Radius = PointLightComp->GetRadius();
-            BufferAll.Add(b);
+            if (PointLightComp->GetOwner() == EditorEngine->GetSelectedActor())
+            {
+                FConstantBufferDebugSphere b;
+                b.Position = PointLightComp->GetWorldLocation();
+                b.Radius = PointLightComp->GetRadius();
+                BufferAll.Add(b);
+                break;
+            }
         }
-
     }
 
-    PrepareConstantbufferPointlight();
     int BufferIndex = 0;
+    uint32 NumIndices = BufferManager->GetIndexBuffer(SphereKey).NumIndices;
     for (int i = 0; i < (1 + BufferAll.Num() / ConstantBufferSizeSphere) * ConstantBufferSizeSphere; ++i)
     {
         TArray<FConstantBufferDebugSphere> SubBuffer;
@@ -624,65 +589,53 @@ void FEditorRenderPass::RenderPointlightInstanced()
 
         if (SubBuffer.Num() > 0)
         {
-            UdpateConstantbufferPointlightInstanced(SubBuffer);
-            Graphics->DeviceContext->DrawIndexedInstanced(Resources.Primitives.Sphere.NumIndices, SubBuffer.Num(), 0, 0, 0);
+            BufferManager->UpdateConstantBufferArray(SphereKey, SubBuffer);
+            Graphics->DeviceContext->DrawIndexedInstanced(NumIndices, SubBuffer.Num(), 0, 0, 0);
         }
-    }
-}
-
-void FEditorRenderPass::PrepareConstantbufferPointlight()
-{
-    if (Resources.ConstantBuffers.Sphere11)
-    {
-        Graphics->DeviceContext->VSSetConstantBuffers(11, 1, &Resources.ConstantBuffers.Sphere11);
-    }
-}
-
-void FEditorRenderPass::UdpateConstantbufferPointlightInstanced(TArray<FConstantBufferDebugSphere> Buffer)
-{
-    if (Buffer.Num() > ConstantBufferSizeSphere)
-    {
-        // 최대개수 초과
-        // 코드 잘못짠거 아니면 오면안됨
-        UE_LOG(ELogLevel::Error, "Invalid Buffer Num");
-        return;
-    }
-    if (Resources.ConstantBuffers.Sphere11)
-    {
-        D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR; // GPU�� �޸� �ּ� ����
-
-        Graphics->DeviceContext->Map(Resources.ConstantBuffers.Sphere11, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
-        memcpy(ConstantBufferMSR.pData, Buffer.GetData(), sizeof(FConstantBufferDebugSphere) * Buffer.Num()); // TArray이니까 실제 값을 받아와야함
-        Graphics->DeviceContext->Unmap(Resources.ConstantBuffers.Sphere11, 0); // GPU�� �ٽ� ��밡���ϰ� �����
     }
 }
 
 void FEditorRenderPass::RenderSpotlightInstanced()
 {
-    PrepareShader(Resources.Shaders.Cone);
-    UINT offset = 0;
-    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &Resources.Primitives.Cone.Vertex, &Resources.Primitives.Cone.VertexStride, &offset);
-    Graphics->DeviceContext->IASetIndexBuffer(Resources.Primitives.Cone.Index, DXGI_FORMAT_R32_UINT, 0);
+    Graphics->DeviceContext->IASetInputLayout(nullptr);
+    ShaderManager->SetVertexShader(ConeKeyW);
+    ShaderManager->SetPixelShader(ConeKeyW);
+    BufferManager->SetIndexBuffer(ConeKey);
+    BufferManager->BindConstantBuffer(ConeKey, 11, EShaderStage::Vertex);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+
+    constexpr FLinearColor OuterColor = FLinearColor(149.f / 255.f, 198.f / 255.f, 255.f / 255.f, 255.f / 255.f);
+    constexpr FLinearColor InnerColor = FLinearColor(0.777f, 1.0f, 1.0f, 1.0f);
 
     // 위치랑 bounding box 크기 정보 가져오기
     TArray<FConstantBufferDebugCone> BufferAll;
-    for (ULightComponentBase* LightComp : Resources.Components.Light)
+
+    // 하나만 뜨도록 설정함
+    if (UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine))
     {
-        if (USpotLightComponent* SpotComp = Cast<USpotLightComponent>(LightComp))
+        for (USpotLightComponent* SpotComp : Resources.Components.SpotLight)
         {
-            FConstantBufferDebugCone b;
-            b.ApexPosiiton = SpotComp->GetWorldLocation();
-            b.InnerRadius = SpotComp->GetRadius()*  FMath::Tan(SpotComp->GetInnerRad() * 0.5);
-            b.OuterRadius = SpotComp->GetRadius() * FMath::Tan(SpotComp->GetOuterRad() * 0.5);
-            b.Height = SpotComp->GetRadius();
-            b.Direction = SpotComp->GetDirection();
-            BufferAll.Add(b);
-            BufferAll.Add(b);
+            if (SpotComp->GetOwner() == EditorEngine->GetSelectedActor())
+            {
+                FConstantBufferDebugCone b;
+                b.ApexPosiiton = SpotComp->GetWorldLocation();
+                b.Radius = SpotComp->GetRadius();
+                b.Direction = SpotComp->GetDirection();
+                b.Angle = SpotComp->GetInnerRad();
+                b.Color = InnerColor;
+                BufferAll.Add(b);
+
+                b.Angle = SpotComp->GetOuterRad();
+                b.Color = OuterColor;
+                BufferAll.Add(b);
+                break;
+            }
         }
     }
 
-    PrepareConstantbufferSpotlight();
     int BufferIndex = 0;
+    uint32 NumIndices = BufferManager->GetIndexBuffer(ConeKey).NumIndices;
+
     for (int i = 0; i < (1 + BufferAll.Num() / ConstantBufferSizeCone) * ConstantBufferSizeCone; ++i)
     {
         TArray<FConstantBufferDebugCone> SubBuffer;
@@ -701,194 +654,220 @@ void FEditorRenderPass::RenderSpotlightInstanced()
 
         if (SubBuffer.Num() > 0)
         {
-            UdpateConstantbufferSpotlightInstanced(SubBuffer);
+            BufferManager->UpdateConstantBufferArray(ConeKey, SubBuffer);
 
-            Graphics->DeviceContext->DrawIndexedInstanced(Resources.Primitives.Cone.NumIndices, SubBuffer.Num(), 0, 0, 0);
+            Graphics->DeviceContext->DrawIndexedInstanced(NumIndices, SubBuffer.Num(),0,0,0);
         }
     }
 }
 
-void FEditorRenderPass::PrepareConstantbufferSpotlight()
+void FEditorRenderPass::RenderGrid(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    if (Resources.ConstantBuffers.Cone11)
-    {
-        Graphics->DeviceContext->VSSetConstantBuffers(11, 1, &Resources.ConstantBuffers.Cone11);
-    }
+    Graphics->DeviceContext->IASetInputLayout(nullptr);
+    ShaderManager->SetVertexShader(GridKeyW);
+    ShaderManager->SetPixelShader(GridKeyW);
+    BufferManager->BindConstantBuffer(GridKey, 11, EShaderStage::Vertex);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+
+    float Spacing = Viewport->GetGridSize() * 10;
+    FVector GridOrigin = Viewport->GetCameraLocation();
+    GridOrigin.X = std::floorf((GridOrigin.X - KINDA_SMALL_NUMBER) / Spacing) * Spacing;
+    GridOrigin.Y = std::floorf((GridOrigin.Y - KINDA_SMALL_NUMBER) / Spacing) * Spacing;
+    GridOrigin.Z = 0;
+
+    FConstantBufferDebugGrid b;
+
+    b.GridOrigin = GridOrigin;
+    b.GridCount = 32;
+    b.GridSpacing = Spacing;
+    b.Color = 0.5f;
+    b.Alpha = 0.5f;
+    BufferManager->UpdateConstantBuffer(GridKey, b);
+    Graphics->DeviceContext->DrawInstanced(2, b.GridCount, 0, 0); // 내부에서 버텍스 사용중
+
+    b.GridCount *= 10;
+    b.GridSpacing /= 10;
+    b.Color = 0.3f;
+    b.Alpha = 0.5f;
+    BufferManager->UpdateConstantBuffer(GridKey, b);
+    Graphics->DeviceContext->DrawInstanced(2, b.GridCount, 0, 0); // 내부에서 버텍스 사용중
+
+    b.GridCount *= 10;
+    b.GridSpacing /= 10;
+    b.Color = 0.1f;
+    b.Alpha = 0.5f;
+    BufferManager->UpdateConstantBuffer(GridKey, b);
+    Graphics->DeviceContext->DrawInstanced(2, b.GridCount, 0, 0); // 내부에서 버텍스 사용중
 }
 
-void FEditorRenderPass::UdpateConstantbufferSpotlightInstanced(TArray<FConstantBufferDebugCone> Buffer)
-{
-    if (Buffer.Num() > ConstantBufferSizeCone)
-    {
-        // 최대개수 초과
-        // 코드 잘못짠거 아니면 오면안됨
-        UE_LOG(ELogLevel::Error, "Invalid Buffer Num");
-        return;
-    }
-    if (Resources.ConstantBuffers.Cone11)
-    {
-        D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR; // GPU�� �޸� �ּ� ����
-
-        Graphics->DeviceContext->Map(Resources.ConstantBuffers.Cone11, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
-        memcpy(ConstantBufferMSR.pData, Buffer.GetData(), sizeof(FConstantBufferDebugCone) * Buffer.Num()); // TArray이니까 실제 값을 받아와야함
-        Graphics->DeviceContext->Unmap(Resources.ConstantBuffers.Cone11, 0); // GPU�� �ٽ� ��밡���ϰ� �����
-    }
-}
-
-
-// 꼼수로 이미 로드된 리소스를 사용
-// GUObjectArray에 안올라가게 우회
+//// 꼼수로 이미 로드된 리소스를 사용
+//// GUObjectArray에 안올라가게 우회
 void FEditorRenderPass::LazyLoad()
 {
     // Resourcemanager에서 로드된 texture의 포인터를 가져옴
     // FResourceMgr::Initialize에 추가되어야함
     Resources.IconTextures[IconType::DirectionalLight] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Editor/Icon/DirectionalLight_64x.png");
     Resources.IconTextures[IconType::PointLight] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Editor/Icon/PointLight_64x.png");
-	Resources.IconTextures[IconType::SpotLight] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Editor/Icon/SpotLight_64x.png");
+    Resources.IconTextures[IconType::SpotLight] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Editor/Icon/SpotLight_64x.png");
     Resources.IconTextures[IconType::AmbientLight] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Editor/Icon/AmbientLight_64x.png");
-	Resources.IconTextures[IconType::ExponentialFog] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Editor/Icon/ExponentialHeightFog_64.png");
-	Resources.IconTextures[IconType::AtmosphericFog] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Editor/Icon/AtmosphericFog_64.png");
+    Resources.IconTextures[IconType::ExponentialFog] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Editor/Icon/ExponentialHeightFog_64.png");
+    Resources.IconTextures[IconType::AtmosphericFog] = FEngineLoop::ResourceManager.GetTexture(L"Assets/Editor/Icon/AtmosphericFog_64.png");
 
     // Gizmo arrow 로드
     UStaticMesh* Mesh = FManagerOBJ::GetStaticMesh(L"Assets/GizmoTranslationZ.obj");
-    Resources.Primitives.Arrow.Vertex = Mesh->GetRenderData()->VertexBuffer;
-    Resources.Primitives.Arrow.Index = Mesh->GetRenderData()->IndexBuffer;
-    Resources.Primitives.Arrow.NumVertices = Mesh->GetRenderData()->Vertices.Num();
-    Resources.Primitives.Arrow.NumIndices = Mesh->GetRenderData()->Indices.Num();
-    Resources.Primitives.Arrow.VertexStride = sizeof(FStaticMeshVertex); // Directional Light의 Arrow에 해당됨
-
+    BufferManager->CreateVertexBuffer(ArrowKey, Mesh->GetRenderData()->Vertices);
+    BufferManager->CreateIndexBuffer(ArrowKey, Mesh->GetRenderData()->Indices);
 }
 
-void FEditorRenderPass::RenderIcons(const UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport)
+void FEditorRenderPass::RenderIcons(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    // ULightComponentBase::CheckRayIntersection에서도 수정 필요
-    const float IconScale = 0.3;
-    PrepareShader(Resources.Shaders.Icon);
-    UINT offset = 0;
-    // input vertex index 없음
+    Graphics->DeviceContext->IASetInputLayout(nullptr);
+    ShaderManager->SetVertexShader(IconKeyW);
+    ShaderManager->SetPixelShader(IconKeyW);
+    BufferManager->BindConstantBuffer(IconKey, 11, EShaderStage::Vertex);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    PrepareConstantbufferIcon();
-    for (ULightComponentBase* LightComp : Resources.Components.Light)
+    const float IconScale = 1.f;
+    AActor* PickedActor = nullptr;
+    if (UEditorEngine* Engine = Cast<UEditorEngine>(GEngine))
+    {
+        if (AEditorPlayer* player = Engine->GetEditorPlayer())
+        {
+            PickedActor = Engine->GetSelectedActor();
+        }
+    }
+
+    Graphics->DeviceContext->PSSetShaderResources(0, 1, &Resources.IconTextures[IconType::DirectionalLight]->TextureSRV);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &Resources.IconTextures[IconType::DirectionalLight]->SamplerState);
+    for (UDirectionalLightComponent* DirLightComp : Resources.Components.DirLight)
     {
         FConstantBufferDebugIcon b;
-        b.Position = LightComp->GetWorldLocation();
+        b.Position = DirLightComp->GetWorldLocation();
         b.Scale = IconScale;
-        UdpateConstantbufferIcon(b);
-
-        if (UPointLightComponent* PointLightComp = Cast<UPointLightComponent>(LightComp))
+        if (DirLightComp->GetOwner() == PickedActor)
         {
-            UpdateTextureIcon(IconType::PointLight);
-        }
-        else if (USpotLightComponent* SpotLightComp = Cast<USpotLightComponent>(LightComp))
-        {
-            UpdateTextureIcon(IconType::SpotLight);
-        }
-        else if (UDirectionalLightComponent* DirectionalLightComp = Cast<UDirectionalLightComponent>(LightComp))
-        {
-            UpdateTextureIcon(IconType::DirectionalLight);
-        }
-        else if (UAmbientLightComponent* AmbientLightComp = Cast<UAmbientLightComponent>(LightComp))
-        {
-            UpdateTextureIcon(IconType::AmbientLight);
+            b.Color = FLinearColor(0.5, 0.5, 0, 1);
         }
         else
         {
-            // 잘못된 light 종류
-            continue;
-        };
+            b.Color = DirLightComp->GetLightColor();
+        }
+        BufferManager->UpdateConstantBuffer(IconKey, b);
         Graphics->DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
     }
 
+    Graphics->DeviceContext->PSSetShaderResources(0, 1, &Resources.IconTextures[IconType::PointLight]->TextureSRV);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &Resources.IconTextures[IconType::PointLight]->SamplerState);
+    TArray<FConstantBufferDebugIcon> PointLightBuffers;
+    for (UPointLightComponent* PointLightComp : Resources.Components.PointLight)
+    {
+        FConstantBufferDebugIcon b;
+        b.Position = PointLightComp->GetWorldLocation();
+        b.Scale = IconScale;
+        if (PointLightComp->GetOwner() == PickedActor)
+        {
+            b.Color = FLinearColor(0.5, 0.5, 0, 1);
+        }
+        else
+        {
+            b.Color = PointLightComp->GetLightColor();
+        }
+        PointLightBuffers.Add(b);
+    }
+
+    int BufferIndex = 0;
+    for (int i = 0; i < (1 + PointLightBuffers.Num() / ConstantBufferSizeIcon) * ConstantBufferSizeIcon; ++i)
+    {
+        TArray<FConstantBufferDebugIcon> SubBuffer;
+        for (int j = 0; j < ConstantBufferSizeIcon; ++j)
+        {
+            if (BufferIndex < PointLightBuffers.Num())
+            {
+                SubBuffer.Add(PointLightBuffers[BufferIndex]);
+                ++BufferIndex;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (SubBuffer.Num() > 0)
+        {
+            BufferManager->UpdateConstantBufferArray(IconKey, SubBuffer);
+            Graphics->DeviceContext->DrawInstanced(6, SubBuffer.Num(), 0, 0);
+        }
+    }
+
+    Graphics->DeviceContext->PSSetShaderResources(0, 1, &Resources.IconTextures[IconType::SpotLight]->TextureSRV);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &Resources.IconTextures[IconType::SpotLight]->SamplerState);
+    for (USpotLightComponent* SpotLightComp : Resources.Components.SpotLight)
+    {
+        FConstantBufferDebugIcon b;
+        b.Position = SpotLightComp->GetWorldLocation();
+        b.Scale = IconScale;
+        if (SpotLightComp->GetOwner() == PickedActor)
+        {
+            b.Color = FLinearColor(0.5, 0.5, 0, 1);
+        }
+        else
+        {
+            b.Color = SpotLightComp->GetLightColor();
+        }
+        BufferManager->UpdateConstantBuffer(IconKey, b);
+        Graphics->DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
+    }
+
+    Graphics->DeviceContext->PSSetShaderResources(0, 1, &Resources.IconTextures[IconType::ExponentialFog]->TextureSRV);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &Resources.IconTextures[IconType::ExponentialFog]->SamplerState);
     for (UHeightFogComponent* FogComp : Resources.Components.Fog)
     {
         FConstantBufferDebugIcon b;
         b.Position = FogComp->GetWorldLocation();
         b.Scale = IconScale;
-        UdpateConstantbufferIcon(b);
-        UpdateTextureIcon(IconType::ExponentialFog);
+        b.Color = FogComp->GetFogColor();
 
+        BufferManager->UpdateConstantBuffer(IconKey, b);
         Graphics->DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
     }
 }
 
-void FEditorRenderPass::PrepareConstantbufferIcon()
-{
-    if (Resources.ConstantBuffers.Icon11)
-    {
-        Graphics->DeviceContext->VSSetConstantBuffers(11, 1, &Resources.ConstantBuffers.Icon11);
-    }
-}
-
-void FEditorRenderPass::UdpateConstantbufferIcon(const FConstantBufferDebugIcon& Buffer)
-{
-    if (Resources.ConstantBuffers.Icon11)
-    {
-        D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR; // GPU�� �޸� �ּ� ����
-
-        Graphics->DeviceContext->Map(Resources.ConstantBuffers.Icon11, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
-        memcpy(ConstantBufferMSR.pData, &Buffer, sizeof(FConstantBufferDebugIcon)); // TArray이니까 실제 값을 받아와야함
-        Graphics->DeviceContext->Unmap(Resources.ConstantBuffers.Icon11, 0); // GPU�� �ٽ� ��밡���ϰ� �����
-    }
-}
-
-void FEditorRenderPass::UpdateTextureIcon(IconType type)
-{
-    Graphics->DeviceContext->PSSetShaderResources(0, 1, &Resources.IconTextures[type]->TextureSRV);
-    Graphics->DeviceContext->PSSetSamplers(0, 1, &Resources.IconTextures[type]->SamplerState);
-}
-
 void FEditorRenderPass::RenderArrows()
 {
+    ShaderManager->SetVertexShaderAndInputLayout(ArrowKeyW);
+    ShaderManager->SetPixelShader(ArrowKeyW);
+    BufferManager->SetVertexBuffer(ArrowKey);
+    BufferManager->SetIndexBuffer(ArrowKey);
+    BufferManager->BindConstantBuffer(ArrowKey, 11, EShaderStage::Vertex);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
     // XYZ한번. Z는 중복으로 적용
-    const float ArrowScale = 1;
+    const float ArrowScale = 1.5;
+    uint32 NumIndices = BufferManager->GetIndexBuffer(ArrowKey).NumIndices;
 
-    PrepareShader(Resources.Shaders.Arrow);
-    UINT offset = 0;
-    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &Resources.Primitives.Arrow.Vertex, &Resources.Primitives.Arrow.VertexStride, &offset);
-    Graphics->DeviceContext->IASetIndexBuffer(Resources.Primitives.Arrow.Index, DXGI_FORMAT_R32_UINT, 0);
-
-    PrepareConstantbufferArrow();
-    for (ULightComponentBase* LightComp : Resources.Components.Light)
+    for (UDirectionalLightComponent* DLightComp : Resources.Components.DirLight)
     {
-        if (UDirectionalLightComponent* DLightComp = Cast<UDirectionalLightComponent>(LightComp))
-        {
-            FConstantBufferDebugArrow buf;
-            buf.Position = DLightComp->GetWorldLocation();
-            buf.ArrowScaleXYZ = ArrowScale;
-            buf.Direction = DLightComp->GetDirection();
-            buf.ArrowScaleZ = ArrowScale;
-            UdpateConstantbufferArrow(buf);
-            Graphics->DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
-        }
-        if (USpotLightComponent* SpotComp = Cast<USpotLightComponent>(LightComp))
-        {
-            FConstantBufferDebugArrow buf;
-            buf.Position = SpotComp->GetWorldLocation();
-            buf.ArrowScaleXYZ = ArrowScale;
-            buf.Direction = SpotComp->GetDirection();
-            buf.ArrowScaleZ = ArrowScale;
-            UdpateConstantbufferArrow(buf);
-            Graphics->DeviceContext->DrawIndexed(Resources.Primitives.Arrow.NumIndices, 0, 0);
-        }
-    }
-}
+        FConstantBufferDebugArrow buf;
+        buf.Position = DLightComp->GetWorldLocation();
+        buf.ArrowScaleXYZ = ArrowScale;
+        buf.Direction = DLightComp->GetDirection();
+        buf.ArrowScaleZ = ArrowScale;
+        buf.Color = DLightComp->GetLightColor();
+        BufferManager->UpdateConstantBuffer(ArrowKey, buf);
+        Graphics->DeviceContext->DrawIndexed(NumIndices, 0, 0);
 
-void FEditorRenderPass::PrepareConstantbufferArrow()
-{
-    if (Resources.ConstantBuffers.Arrow11)
+    }
+    for (USpotLightComponent* SLightComp : Resources.Components.SpotLight)
     {
-        Graphics->DeviceContext->VSSetConstantBuffers(11, 1, &Resources.ConstantBuffers.Arrow11);
-    }
-}
+        FConstantBufferDebugArrow buf;
+        buf.Position = SLightComp->GetWorldLocation();
+        buf.ArrowScaleXYZ = ArrowScale;
+        buf.Direction = SLightComp->GetDirection();
+        buf.ArrowScaleZ = ArrowScale;
+        buf.Color = SLightComp->GetLightColor();
+        BufferManager->UpdateConstantBuffer(ArrowKey, buf);
+        Graphics->DeviceContext->DrawIndexed(NumIndices, 0, 0);
 
-void FEditorRenderPass::UdpateConstantbufferArrow(const FConstantBufferDebugArrow& Buffer)
-{
-    if (Resources.ConstantBuffers.Arrow11)
-    {
-        D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR; // GPU�� �޸� �ּ� ����
-
-        Graphics->DeviceContext->Map(Resources.ConstantBuffers.Arrow11, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
-        memcpy(ConstantBufferMSR.pData, &Buffer, sizeof(FConstantBufferDebugArrow)); // TArray이니까 실제 값을 받아와야함
-        Graphics->DeviceContext->Unmap(Resources.ConstantBuffers.Arrow11, 0); // GPU�� �ٽ� ��밡���ϰ� �����
     }
+
 }

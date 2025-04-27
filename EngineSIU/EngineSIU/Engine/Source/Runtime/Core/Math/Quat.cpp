@@ -88,6 +88,21 @@ FVector FQuat::RotateVector(const FVector& Vec) const
     return FVector(result.X, result.Y, result.Z); // 회전된 벡터 반환
 }
 
+FVector FQuat::GetForwardVector() const
+{
+    return RotateVector(FVector(1.0f, 0.0f, 0.0f));
+}
+
+FVector FQuat::GetRightVector() const
+{
+    return RotateVector(FVector(0.0f, 1.0f, 0.0f));
+}
+
+FVector FQuat::GetUpVector() const
+{
+    return RotateVector(FVector(0.0f, 0.0f, 1.0f));
+}
+
 bool FQuat::IsNormalized() const
 {
     return fabs(W * W + X * X + Y * Y + Z * Z - 1.0f) < 1e-6f;

@@ -70,24 +70,40 @@ const static float4 AxisColor[3] =
     float4(0, 0, 1, 1)
 };
 
+struct PS_INPUT_AXIS
+{
+    float4 position : SV_Position;
+    float4 worldPos : POSITION;
+    float4 color : COLOR;
+};
+
 // Draw()에서 NumVertices만큼 SV_VertexID만 다른채로 호출됨.
 // 어차피 월드에 하나이므로 Vertex를 받지않음.
-PS_INPUT axisVS(uint vertexID : SV_VertexID)
+PS_INPUT_AXIS axisVS(uint vertexID : SV_VertexID)
 {
-    PS_INPUT output;
+    PS_INPUT_AXIS output;
     
     float4 Vertex = AxisPos[vertexID];
+    output.worldPos = Vertex;
     Vertex = mul(Vertex, ViewMatrix);
     Vertex = mul(Vertex, ProjectionMatrix);
     output.position = Vertex;
     
     output.color = AxisColor[vertexID / 2];
-    
     return output;
 }
 
-float4 axisPS(PS_INPUT input) : SV_Target
+float4 axisPS(PS_INPUT_AXIS input) : SV_Target
 {
+    float Dist = length(input.worldPos.xyz - ViewWorldLocation);
+
+    float MaxDist = 400 * 1.2f;
+    float MinDist = MaxDist * 0.3f;
+
+    // Fade out grid
+    float Fade = saturate(1.f - (Dist - MinDist) / (MaxDist - MinDist));
+    input.color.a *= Fade * Fade * Fade;
+    
     return input.color;
 }
 
@@ -150,9 +166,9 @@ float4 spherePS(PS_INPUT input) : SV_Target
 
 /////////////////////////////////////////////
 // Cone
-float3x3 CreateRotationMatrixFromZ(float3 targetDir)
+float3x3 CreateRotationMatrixFromX(float3 targetDir)
 {
-    float3 from = float3(0.0f, 0.0f, 1.0f); // 기준 방향
+    float3 from = float3(1, 0, 0); // 기준 방향 X축
     float3 to = normalize(targetDir); // 타겟 방향 정규화
 
     float cosTheta = dot(from, to);
@@ -167,7 +183,7 @@ float3x3 CreateRotationMatrixFromZ(float3 targetDir)
         );
     }
 
-    // 반대 방향인 경우: 180도 회전, 축은 X축이나 Y축 아무거나 가능
+    // 반대 방향인 경우: 180도 회전, 축은 Y축이나 Z축 아무거나 가능
     if (cosTheta < -0.9999f)
     {
         float3 up = float3(0.0f, 1.0f, 0.0f);
@@ -194,26 +210,61 @@ float3x3 CreateRotationMatrixFromZ(float3 targetDir)
     float3x3 R = I + s * K + (1 - cosTheta) * mul(K, K);
     return R;
 }
-PS_INPUT coneVS(VS_INPUT_POS_ONLY input, uint instanceID : SV_InstanceID)
+PS_INPUT coneVS(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 {
+    const int NUM_SEGMENTS = 16;
     PS_INPUT output;
     
-    float3 pos = DataCone[instanceID%2].ApexPosition;
-    float radius = DataCone[instanceID].InnerRadius;
-    if (instanceID % 2 == 1)
+    int SegmentIndex;
+    // cone의 옆면
+    float Angle = DataCone[instanceID].Angle;
+    float TangentAngle = tan(Angle);
+    float SinAngle = sin(Angle);
+    float CosAngle = cos(Angle);
+    float radius = DataCone[instanceID].Radius;
+    
+    float3 localPos3;
+    // 원뿔의 빗면
+    if (vertexID == 0)
     {
-        radius = DataCone[instanceID].OuterRadius;
-        output.color = float4(0.776, 1.0, 1.0, 1.0); // 하늘색
+        localPos3 = float3(0, 0, 0);
     }
+    else if (vertexID < NUM_SEGMENTS + 1)
+    {
+        float ConeBaseRadius = radius * SinAngle;
+        float ConeHeight = radius * CosAngle;
+        SegmentIndex = (vertexID - 1);
+        float SegmentAngle = SegmentIndex / (float) NUM_SEGMENTS * 2.0f * 3.1415926535897932f;
+        localPos3 = float3(ConeHeight, ConeBaseRadius, ConeBaseRadius);
+        localPos3 = localPos3 * float3(1.f, cos(SegmentAngle), sin(SegmentAngle));
+    }
+    // xz plane의 구
+    else if (vertexID < NUM_SEGMENTS + 1 + NUM_SEGMENTS + 1)
+    {
+        SegmentIndex = (vertexID - (NUM_SEGMENTS + 1));
+        float SegmentAngle = SegmentIndex / (float) (NUM_SEGMENTS) * (2 * Angle);
+        float angleOffset = -Angle;
+        localPos3 = float3(cos(angleOffset + SegmentAngle), 0, sin(angleOffset + SegmentAngle));
+        localPos3 = localPos3 * float3(radius, radius, radius) * 1;
+    }
+    // yz plane의 구
+    else if (vertexID < NUM_SEGMENTS + 1 + 2 * (NUM_SEGMENTS + 1))
+    {
+        SegmentIndex = (vertexID - (NUM_SEGMENTS + 1 + NUM_SEGMENTS + 1));
+        float SegmentAngle = SegmentIndex / (float) (NUM_SEGMENTS) * (2 * Angle);
+        float angleOffset = -Angle;
+        localPos3 = float3(cos(angleOffset + SegmentAngle), sin(angleOffset + SegmentAngle), 0);
+        localPos3 = localPos3 * float3(radius, radius, radius) * 1;
+    }
+    // 원점
     else
     {
-        output.color = float4(0.4157, 0.5765, 0.7765, 1.0); // 짙은 하늘색
+        localPos3 = float3(0, 0, 0);
     }
-    float3 scale = float3(radius.xx, DataCone[instanceID%2].Height);
-    float3x3 rot = CreateRotationMatrixFromZ(DataCone[instanceID%2].Direction);
+
+    float3 pos = DataCone[instanceID].ApexPosiiton;
+    float3x3 rot = CreateRotationMatrixFromX(DataCone[instanceID].Direction);
     
-    float3 localPos3 = input.position.xyz;
-    localPos3 = localPos3 * scale;
     localPos3 = mul(localPos3, rot);
     localPos3 = localPos3 + pos;
     
@@ -222,7 +273,7 @@ PS_INPUT coneVS(VS_INPUT_POS_ONLY input, uint instanceID : SV_InstanceID)
     localPos = mul(localPos, ViewMatrix);
     localPos = mul(localPos, ProjectionMatrix);
     output.position = localPos;
-    
+    output.color = DataCone[instanceID].Color;
     return output;
 }
 
@@ -230,209 +281,94 @@ float4 conePS(PS_INPUT input) : SV_Target
 {
     return input.color;
 }
-
 /////////////////////////////////////////////
 // Grid
+
+struct VS_INPUT_GRID
+{
+    uint vertexID : SV_VertexID; // 0 또는 1: 각 라인의 시작과 끝
+    uint instanceID : SV_InstanceID; // 인스턴스 ID로 grid, axis, bounding box를 구분
+};
+
 struct PS_INPUT_GRID
 {
     float4 Position : SV_Position;
-    float4 NearPoint : COLOR0;
-    float4 FarPoint : COLOR1;
-    float3 WorldPos : WORLD_POSITION;
-    float2 Deriv : TEXCOORD1;
-    float ViewMode : TEXCOORD2;
+    float4 WorldPosition : POSITION;
+    float4 Color : COLOR;
 };
 
-static const float3 XYQuadPos[12] =
+/////////////////////////////////////////////////////////////////////////
+// Grid 위치 계산 함수
+/////////////////////////////////////////////////////////////////////////
+float3 ComputeGridPosition(uint instanceID, uint vertexID)
 {
-    float3(-1, -1, 0), float3(-1, 1, 0), float3(1, -1, 0), // 좌하단, 좌상단, 우하단
-    float3(-1, 1, 0), float3(1, 1, 0), float3(1, -1, 0), // 좌상단, 우상단, 우하단 - 오른손 좌표계
-    float3(1, -1, 0), float3(1, 1, 0), float3(-1, 1, 0),
-    float3(1, -1, 0), float3(-1, 1, 0), float3(-1, -1, 0),
-};
-
-// YZ 평면: X = 0, (Y,Z) 사용
-static const float3 YZQuadPos[12] =
-{
-    float3(0, -1, -1), float3(0, -1, 1), float3(0, 1, -1), // 좌하단, 좌상단, 우하단
-    float3(0, -1, 1), float3(0, 1, 1), float3(0, 1, -1), // 좌상단, 우상단, 우하단 - 오른손 좌표계
-    float3(0, 1, -1), float3(0, 1, 1), float3(0, -1, 1),
-    float3(0, 1, -1), float3(0, -1, 1), float3(0, -1, -1),
-};
-
-static const float3 XZQuadPos[12] =
-{
-    float3(-1, 0, -1), float3(-1, 0, 1), float3(1, 0, -1), // 좌하단, 좌상단, 우하단
-    float3(-1, 0, 1), float3(1, 0, 1), float3(1, 0, -1), // 좌상단, 우상단, 우하단 - 오른손 좌표계
-    float3(1, 0, -1), float3(1, 0, 1), float3(-1, 0, 1),
-    float3(1, 0, -1), float3(-1, 0, 1), float3(-1, 0, -1),
-};
-
-/*
-PS_INPUT_GRID gridVS(uint vertexID : SV_VertexID)
-{
-    // 상수버퍼의 CaemerLookAt : (screenWidth, screenHeight, ViewMode)
+    int halfCount = GridCount / 2;
+    float centerOffset = halfCount * 0.5; // grid 중심이 원점에 오도록
     
+    float3 startPos;
+    float3 endPos;
+    
+    if (instanceID < halfCount)
+    {
+        // 수직선: X 좌표 변화, Y는 -centerOffset ~ +centerOffset
+        float x = GridOrigin.x + (instanceID - centerOffset) * GridSpacing;
+        if (abs(x) < 0.001) // axis와 겹치는 선
+        {
+            startPos = float3(0, 0, 0);
+            endPos = float3(0, (GridOrigin.y - centerOffset * GridSpacing), 0);
+        }
+        else
+        {
+            startPos = float3(x, GridOrigin.y - centerOffset * GridSpacing, GridOrigin.z);
+            endPos = float3(x, GridOrigin.y + centerOffset * GridSpacing, GridOrigin.z);
+        }
+    }
+    else
+    {
+        // 수평선: Y 좌표 변화, X는 -centerOffset ~ +centerOffset
+        int idx = instanceID - halfCount;
+        float y = GridOrigin.y + (idx - centerOffset) * GridSpacing;
+        if (abs(y) < 0.001)
+        {
+            startPos = float3(0, 0, 0);
+            endPos = float3(-(GridOrigin.x + centerOffset * GridSpacing), 0, 0);
+        }
+        else
+        {
+            startPos = float3(GridOrigin.x - centerOffset * GridSpacing, y, GridOrigin.z);
+            endPos = float3(GridOrigin.x + centerOffset * GridSpacing, y, GridOrigin.z);
+        }
+
+    }
+    return (vertexID == 0) ? startPos : endPos;
+}
+
+PS_INPUT_GRID gridVS(VS_INPUT_GRID input)
+{
     PS_INPUT_GRID output;
-    float viewMode = CameraLookAt.z;
-    float gridScale = 1000000.0f; // 최종 그리드 크기
-    float3 pos;
-    if (viewMode <= 2.0)
-    {
-        pos = XYQuadPos[vertexID];
-    }
-    else if (viewMode <= 4.0)
-    {
-        pos = XZQuadPos[vertexID];
-    }
-    else
-    {
-        pos = YZQuadPos[vertexID];
-    }
-    float3 vPos3 = pos * gridScale; // 정점 정의 거꾸로 되있었음..
+    float3 pos = ComputeGridPosition(input.instanceID, input.vertexID);
     
-    // 뷰모드에 따라 다른 카메라 오프셋 적용
-    float3 offset = float3(0.0, 0.0, 0.0);
-    if (viewMode <= 2.0)
-    {
-        offset = float3(ViewWorldLocation.x, ViewWorldLocation.y, 0.0);
-    }
-    else if (viewMode <= 4.0)
-    {
-        offset = float3(0.0, ViewWorldLocation.x, ViewWorldLocation.z);
-    }
-    else
-    {
-        offset = float3(ViewWorldLocation.y, 0.0, ViewWorldLocation.z);
-    }
-    vPos3 += offset;
-    
-    float4 vPos4 = float4(vPos3, 1.0f);
-    vPos4 = mul(vPos4, ViewMatrix);
-    vPos4 = mul(vPos4, ProjectionMatrix);
-    output.Position = vPos4;
-    output.WorldPos = vPos3;
-    output.Deriv = 2.0 / CameraLookAt.xy;
-    output.ViewMode = viewMode;
+    output.WorldPosition = float4(pos, 1.f);
+    output.Position = mul(output.WorldPosition, ViewMatrix);
+    output.Position = mul(output.Position, ProjectionMatrix);
+    output.Color = float4(GridColor.xxx, GridAlpha);
     
     return output;
 }
-*/
 
-float log10f(float x)
+float4 gridPS(PS_INPUT_GRID input) : SV_Target
 {
-    return log(x) / log(10.0);
+    float Dist = length(input.WorldPosition.xyz - ViewWorldLocation);
+
+    float MaxDist = 400 * 1.2f;
+    float MinDist = MaxDist * 0.3f;
+
+    // Fade out grid
+    float Fade = saturate(1.f - (Dist - MinDist) / (MaxDist - MinDist));
+    input.Color.a *= Fade * Fade * Fade;
+
+    return input.Color;
 }
-
-float max2(float2 v)
-{
-    return max(v.x, v.y);
-}
-// x, y 모두 음수 일 때에 패턴을 아예 출력 안하는 문제 발생
-// HLSL의 fmod는 음수 입력에 대해 음수의 나머지를 반환하므로, saturate를 거치면 0에 수렴하는 문제가 있음
-float modWrap(float x, float y)
-{
-    float m = fmod(x, y);
-    return (m < 0.0) ? m + y : m;
-}
-
-float2 modWrap2(float2 xy, float y)
-{
-    return float2(modWrap(xy.x, y), modWrap(xy.y, y));
-}
-
-// 뷰 모드에 따른 2D 평면 좌표 반환
-float2 GetPlaneCoords(float3 worldPos, float viewMode)
-{
-    if (viewMode <= 2.0)
-        return worldPos.xy; // 뷰 모드 0~2 : XY 평면
-    else if (viewMode <= 4.0)
-        return worldPos.xz; // 뷰 모드 3~4 : XZ 평면
-    else
-        return worldPos.yz; // 뷰 모드 5 이상 : YZ 평면
-}
-
-// 주어진 평면 좌표와, 셀 크기, 미분값(dudv)에 해당하는 LOD 단계의 알파값 계산
-float ComputeLODAlpha(float3 worldPos, float cellSize, float2 dudv, float viewMode)
-{
-    float2 planeCoords = GetPlaneCoords(worldPos, viewMode);
-    float2 modResult = modWrap2(planeCoords, cellSize) / dudv;
-    return max2(1.0 - abs(saturate(modResult) * 2.0 - 1.0));
-}
-
-struct PS_OUTPUT
-{
-    float4 Color : SV_Target;
-    float Depth : SV_Depth;
-};
-
-/*
-PS_OUTPUT gridPS(PS_INPUT_GRID input)
-{
-    PS_OUTPUT output;
-    
-    // 기본 상수 값들
-    const float gGridSize = 5.0;
-    const float gGridMinPixelsBetweenCells = 0.5;
-    const float gGridCellSize = 1.0;
-    const float4 gGridColorThick = float4(0.3, 0.3, 0.3, 1.0);
-    const float4 gGridColorThin = float4(0.2, 0.2, 0.2, 1.0);
-    
-    // 뷰모드에 따라 사용할 평면 좌표
-    float2 planeCoords = GetPlaneCoords(input.WorldPos, input.ViewMode);
-    float2 dvx = float2(ddx(planeCoords.x), ddy(planeCoords.x));
-    float2 dvy = float2(ddx(planeCoords.y), ddy(planeCoords.y));
-    
-    // 최소값 클램핑 - 한 픽셀에서의 변화량이 미미할 때 떨림 현상 방지용 (효과는 없음)
-    float epsilon = 1e-3;
-    float lx = max(length(dvx), epsilon);
-    float ly = max(length(dvy), epsilon);
-    float2 dudv = float2(lx, ly);
-    float l = length(dudv);
-
-    // LOD 계산 (log10 기반)
-    float LOD = max(0.0, log10f(l * gGridMinPixelsBetweenCells / gGridCellSize) + 1.0);
-
-    float GridCellSizeLod0 = gGridCellSize * pow(10.0, floor(LOD));
-    float GridCellSizeLod1 = GridCellSizeLod0 * 10.0;
-    float GridCellSizeLod2 = GridCellSizeLod1 * 10.0;
-
-    dudv *= 4.0;
-
-    // 뷰모드에 따라 모듈러 연산에 전달할 2D 성분 결정
-    float Lod0a = ComputeLODAlpha(input.WorldPos, GridCellSizeLod0, dudv, input.ViewMode);
-    float Lod1a = ComputeLODAlpha(input.WorldPos, GridCellSizeLod1, dudv, input.ViewMode);
-    float Lod2a = ComputeLODAlpha(input.WorldPos, GridCellSizeLod2, dudv, input.ViewMode);
-    
-    // LOD 페이드 (LOD의 소수 부분)
-    float LODFade = frac(LOD);
-    float4 Color;
-    if (Lod2a > 0.0)
-    {
-        Color = gGridColorThick;
-        Color.a *= Lod2a;
-    }
-    else if (Lod1a > 0.0)
-    {
-        Color = lerp(gGridColorThick, gGridColorThin, LODFade);
-        Color.a *= Lod1a;
-    }
-    else
-    {
-        Color = gGridColorThin;
-        Color.a *= (Lod0a * LODFade);
-    }
-
-    // 카메라와의 거리 기반 페이드아웃 ( TOFIX: 여기선 XY 평면을 기준으로함)
-    float OpacityFalloff = (1.0 - saturate(length(input.WorldPos.xy - ViewWorldLocation.xy) / gGridSize));
-    Color.a *= OpacityFalloff;
-
-    output.Color = Color;
-    output.Depth = 0.9999999; // 월드 그리드는 강제로 먼 깊이값 부여 (Forced to be Occluded ALL THE TIME)
-    return output;
-}
-*/
-
 
 
 /////////////////////////////////////////////
@@ -441,6 +377,7 @@ struct PS_INPUT_ICON
 {
     float4 Position : SV_Position;
     float2 TexCoord : TEXCOORD;
+    float4 Color : COLOR;
 };
 
 Texture2D gTexture : register(t0);
@@ -459,10 +396,12 @@ const static float2 QuadTexCoord[6] =
 };
 
 
-PS_INPUT_ICON iconVS(uint vertexID : SV_VertexID)
+PS_INPUT_ICON iconVS(uint vertexID : SV_VertexID, uint instanceID : SV_InstanceID)
 {
     PS_INPUT_ICON output;
 
+    float3 IconPosition = IconDatas[instanceID].IconPosition;
+    float IconScale = IconDatas[instanceID].IconScale;
     // 카메라를 향하는 billboard 좌표계 생성
     float3 forward = normalize(ViewWorldLocation - IconPosition);
     float3 up = float3(0, 0, 1);
@@ -477,22 +416,25 @@ PS_INPUT_ICON iconVS(uint vertexID : SV_VertexID)
     float4 viewPos = mul(float4(worldPos, 1.0), ViewMatrix);
     output.Position = mul(viewPos, ProjectionMatrix);
 
-    output.TexCoord =
-    QuadTexCoord[vertexID];
-    return
-    output;
+    output.TexCoord = QuadTexCoord[vertexID];
+    output.Color = IconDatas[instanceID].IconColor;
+    return output;
 }
 
 
 // 픽셀 셰이더
 float4 iconPS(PS_INPUT_ICON input) : SV_Target
 {
-    float4 col = gTexture.Sample(gSampler, input.TexCoord);
+    float4 iconTexture = gTexture.Sample(gSampler, input.TexCoord);
+    float4 color = input.Color / 2;
+    color.w = 1.f;
+    
+    float4 OutColor = iconTexture * color;
     float threshold = 0.01; // 필요한 경우 임계값을 조정
-    if (col.a < threshold)
+    if (OutColor.a < threshold)
         clip(-1); // 픽셀 버리기
     
-    return col;
+    return OutColor;
 }
 
 
@@ -527,7 +469,7 @@ PS_INPUT arrowVS(VS_INPUT input)
     pos = mul(pos, ProjectionMatrix);
 
     output.position = pos;
-    output.color = float4(0.7, 0.7, 0.7, 1.0f);
+    output.color = ArrowColor;
 
     return output;
 }

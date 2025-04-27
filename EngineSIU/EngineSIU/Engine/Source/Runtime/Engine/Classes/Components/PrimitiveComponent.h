@@ -1,5 +1,6 @@
 #pragma once
 #include "Components/SceneComponent.h"
+#include "Physics/OverlapInfo.h"
 
 class UPrimitiveComponent : public USceneComponent
 {
@@ -19,9 +20,8 @@ public:
     ) const;
 
     
-    void GetProperties(TMap<FString, FString>& OutProperties) const override;
-    void SetProperties(const TMap<FString, FString>& InProperties) override;
-
+    virtual void GetProperties(TMap<FString, FString>& OutProperties) const override;
+    virtual void SetProperties(const TMap<FString, FString>& InProperties) override;
 
     FBoundingBox AABB;
 
@@ -37,5 +37,19 @@ public:
         //staticMesh = FEngineLoop::resourceMgr.GetMesh(m_Type);
     }
     FBoundingBox GetBoundingBox() const { return AABB; }
+
+    // week 08 : collision
+private:
+    // overlap : 두개의 물체가 부딪힌 이후 겹침
+    // block : 두개의 물체가 부딪힌 이후 겹치지 않음
+    bool bGenerateOverlapEvents : 1; // 오버랩 이벤트를 생성할지 여부
+    bool bBlockComponent : 1; // 블로킹 이벤트를 생성할지 여부
+    TArray<FOverlapInfo> OverlappingComponents; // 현재 겹쳐있는 컴포넌트들
+
+public:
+    bool GetGenerateOverlapEvents() const { return bGenerateOverlapEvents; }
+    void SetGenerateOverlapEvents(bool InGenerateOverlapEvents) { bGenerateOverlapEvents = InGenerateOverlapEvents; }
+    bool GetBlockComponent() const { return bBlockComponent; }
+    void SetBlockComponent(bool InBlockComponent) { bBlockComponent = InBlockComponent; }
 };
 

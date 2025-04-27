@@ -1,5 +1,8 @@
 #pragma once
 #include <cassert>
+
+#include <immintrin.h>
+
 #include "MathUtility.h"
 #include "Serialization/Archive.h"
 
@@ -92,6 +95,7 @@ struct FVector
 
     explicit FVector(const FRotator& InRotator);
 
+
     // Vector(0, 0, 0)
     static const FVector ZeroVector;
 
@@ -168,6 +172,32 @@ public:
     static inline FVector GetAbs(const FVector& v)
     {
          return FVector(abs(v.X), abs(v.Y), abs(v.Z));
+    }
+
+    static inline FVector Min(const FVector& A, const FVector& B)
+    {
+        __m128 a = _mm_set_ps(0.0f, A.Z, A.Y, A.X); // 마지막에 0.0f는 패딩, W는 무시
+        __m128 b = _mm_set_ps(0.0f, B.Z, B.Y, B.X);
+
+        __m128 result = _mm_min_ps(a, b);
+
+        alignas(16) float r[4];
+        _mm_store_ps(r, result);
+
+        return FVector(r[0], r[1], r[2]);
+    }
+
+    static inline FVector Max(const FVector& A, const FVector& B)
+    {
+        __m128 a = _mm_set_ps(0.0f, A.Z, A.Y, A.X);
+        __m128 b = _mm_set_ps(0.0f, B.Z, B.Y, B.X);
+
+        __m128 result = _mm_max_ps(a, b);
+
+        alignas(16) float r[4];
+        _mm_store_ps(r, result);
+
+        return FVector(r[0], r[1], r[2]);
     }
 public:
     bool Equals(const FVector& V, float Tolerance = KINDA_SMALL_NUMBER) const;

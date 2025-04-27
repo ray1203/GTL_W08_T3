@@ -149,7 +149,6 @@ void FEngineLoop::Tick()
 
         UIMgr->EndFrame();
 #endif
-
         // Pending 처리된 오브젝트 제거
         GUObjectArray.ProcessPendingDestroyObjects();
 

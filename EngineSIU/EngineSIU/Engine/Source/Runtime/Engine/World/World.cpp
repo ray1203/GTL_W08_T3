@@ -6,12 +6,14 @@
 #include "Camera/CameraComponent.h"
 #include "Classes/Components/StaticMeshComponent.h"
 #include "Components/SkySphereComponent.h"
+#include "Components/Shapes/ShapeComponent.h"
 #include "Engine/FLoaderOBJ.h"
 #include "Actors/HeightFogActor.h"
 #include "Components/UI/UUIComponent.h"
 #include "Engine/EditorEngine.h"
 #include "Engine/Engine.h"
 #include "UnrealEd/SceneManager.h"
+#include "Engine/Physics/PhysicsScene.h"
 
 class UEditorEngine;
 
@@ -39,12 +41,19 @@ UObject* UWorld::Duplicate(UObject* InOuter)
     NewWorld->ActiveLevel = Cast<ULevel>(ActiveLevel->Duplicate(NewWorld));
     NewWorld->ActiveLevel->InitLevel(NewWorld);
     
-    
+
     return NewWorld;
 }
 
 void UWorld::Tick(float DeltaTime)
 {
+    // 물리 연산 먼저 처리
+    if (this->WorldType != EWorldType::Editor)
+    {
+        PhysicsScene.TickPhysScene(DeltaTime);
+        PhysicsScene.SyncBodies();
+    }
+
     // SpawnActor()에 의해 Actor가 생성된 경우, 여기서 BeginPlay 호출
     for (AActor* Actor : PendingBeginPlayActors)
     {
@@ -55,6 +64,8 @@ void UWorld::Tick(float DeltaTime)
 
 void UWorld::BeginPlay()
 {
+    // 월드가 시작할 때 등록된 액터들을 물리 scene에 등록
+    // 월드 도중에 생성된 액터들은 
     for (AActor* Actor : ActiveLevel->Actors)
     {
         if (Actor->GetWorld() == this)

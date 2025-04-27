@@ -31,6 +31,10 @@ struct FQuat
     // (쿼터니언) 벡터 회전
     FVector RotateVector(const FVector& Vec) const;
 
+    FVector GetForwardVector() const;
+    FVector GetRightVector() const;
+    FVector GetUpVector() const;
+
     // 단위 쿼터니언 여부 확인
     bool IsNormalized() const;
 

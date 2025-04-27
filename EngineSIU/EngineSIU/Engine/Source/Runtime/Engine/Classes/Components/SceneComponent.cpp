@@ -153,6 +153,13 @@ void USceneComponent::AttachToComponent(USceneComponent* InParent)
     }
 }
 
+void USceneComponent::SetRelativeTransform(const FTransform& InNewTransform)
+{
+    RelativeLocation = InNewTransform.Translation;
+    RelativeRotation = InNewTransform.Rotation.ToRotator();
+    RelativeScale3D = InNewTransform.Scale3D;
+}
+
 void USceneComponent::SetWorldLocation(const FVector& InNewLocation)
 {
     if (AttachParent)
@@ -194,6 +201,13 @@ void USceneComponent::SetWorldScale3D(const FVector& NewScale)
     }
 }
 
+void USceneComponent::SetWorldTransform(const FTransform& InNewTransform)
+{
+    SetWorldLocation(InNewTransform.Translation);
+    SetWorldRotation(InNewTransform.Rotation.ToRotator());
+    SetWorldScale3D(InNewTransform.Scale3D);
+}
+
 void USceneComponent::Translate(const FVector& MoveDelta)
 {
     RelativeLocation = RelativeLocation + MoveDelta;
@@ -233,6 +247,18 @@ FVector USceneComponent::GetWorldScale3D() const
         return AttachParent->GetWorldScale3D() * RelativeScale3D;
     }
     return RelativeScale3D;
+}
+
+FTransform USceneComponent::GetWorldTransform() const
+{
+    if (AttachParent)
+    {
+        return GetRelativeTransform() * AttachParent->GetWorldTransform();
+    }
+    else
+    {
+        return GetRelativeTransform();
+    }
 }
 
 FMatrix USceneComponent::GetScaleMatrix() const

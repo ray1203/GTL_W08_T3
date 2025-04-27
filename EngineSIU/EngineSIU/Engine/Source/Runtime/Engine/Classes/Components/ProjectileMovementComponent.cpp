@@ -34,34 +34,34 @@ UObject* UProjectileMovementComponent::Duplicate(UObject* InOuter)
 void UProjectileMovementComponent::BeginPlay()
 {
     FVector Forward = GetOwner()->GetActorForwardVector();
-    Velocity = Forward * InitialSpeed;
+    //Velocity = Forward * InitialSpeed;
 }
 
 void UProjectileMovementComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
 
-    Velocity.Z += Gravity * DeltaTime;
+    //Velocity.Z += Gravity * DeltaTime;
 
-    if (Velocity.Length() > MaxSpeed)
-    {
-        Velocity = Velocity.GetSafeNormal() * MaxSpeed;
-    }
-    if (GetOwner())
-    {
-        FVector NewLocation = GetOwner()->GetRootComponent()->GetRelativeLocation() + Velocity * DeltaTime;
-        GetOwner()->GetRootComponent()->SetRelativeLocation(NewLocation);
-    }
+    //if (Velocity.Length() > MaxSpeed)
+    //{
+    //    Velocity = Velocity.GetSafeNormal() * MaxSpeed;
+    //}
+    //if (GetOwner())
+    //{
+    //    FVector NewLocation = GetOwner()->GetRootComponent()->GetRelativeLocation() + Velocity * DeltaTime;
+    //    GetOwner()->GetRootComponent()->SetRelativeLocation(NewLocation);
+    //}
 
-    //ToDo : PIE모드 진입 후에도 PickedActor를 유지했을 때 예외발생할 수 있음.
-    AccumulatedTime += DeltaTime;
-    if (AccumulatedTime >= ProjectileLifetime)
-    {
-        if (GetOwner())
-        {
-            GetOwner()->Destroy();
-        }
-    }
+    ////ToDo : PIE모드 진입 후에도 PickedActor를 유지했을 때 예외발생할 수 있음.
+    //AccumulatedTime += DeltaTime;
+    //if (AccumulatedTime >= ProjectileLifetime)
+    //{
+    //    if (GetOwner())
+    //    {
+    //        GetOwner()->Destroy();
+    //    }
+    //}
 }
 
 void UProjectileMovementComponent::GetProperties(TMap<FString, FString>& OutProperties) const

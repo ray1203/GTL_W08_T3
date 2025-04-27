@@ -9,10 +9,10 @@
 #include "RendererHelpers.h"
 #include "StaticMeshRenderPass.h"
 #include "WorldBillboardRenderPass.h"
-#include "EditorBillboardRenderPass.h"
+//#include "EditorBillboardRenderPass.h"
 #include "GizmoRenderPass.h"
 #include "UpdateLightBufferPass.h"
-#include "LineRenderPass.h"
+//#include "LineRenderPass.h"
 #include "FogRenderPass.h"
 #include "SlateRenderPass.h"
 #include "EditorRenderPass.h"
@@ -36,7 +36,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     Graphics = InGraphics;
     BufferManager = InBufferManager;
 
-    ShaderManager = new FDXDShaderManager(Graphics->Device);
+    ShaderManager = new FDXDShaderManager(Graphics->Device, Graphics->DeviceContext);
 
     CreateConstantBuffers();
     CreateCommonShader();
@@ -46,12 +46,10 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
 
     StaticMeshRenderPass = new FStaticMeshRenderPass();
     WorldBillboardRenderPass = new FWorldBillboardRenderPass();
-    EditorBillboardRenderPass = new FEditorBillboardRenderPass();
-    GizmoRenderPass = new FGizmoRenderPass();
+    //EditorBillboardRenderPass = new FEditorBillboardRenderPass();
     UpdateLightBufferPass = new FUpdateLightBufferPass();
-    LineRenderPass = new FLineRenderPass();
+    //LineRenderPass = new FLineRenderPass();
     FogRenderPass = new FFogRenderPass();
-    EditorRenderPass = new FEditorRenderPass();
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
@@ -59,15 +57,18 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     SpotLightShadowMapPass = new FSpotLightShadowMap();
     PointLightShadowMapPass = new FPointLightShadowMap();
 
+#if !GAME_BUILD
+    GizmoRenderPass = new FGizmoRenderPass();
+    EditorRenderPass = new FEditorRenderPass();
+#endif
+
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     WorldBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     UpdateLightBufferPass->Initialize(BufferManager, Graphics, ShaderManager);
-    LineRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     FogRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
 
 #if !GAME_BUILD
     GizmoRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
-    EditorBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     EditorRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
 #endif
     
@@ -96,10 +97,9 @@ void FRenderer::Release()
 
     delete StaticMeshRenderPass;
     delete WorldBillboardRenderPass;
-    delete EditorBillboardRenderPass;
-    delete GizmoRenderPass;
+    //delete EditorBillboardRenderPass;
     delete UpdateLightBufferPass;
-    delete LineRenderPass;
+    //delete LineRenderPass;
     delete FogRenderPass;
     delete CompositingPass;
     delete PostProcessCompositingPass;
@@ -108,6 +108,12 @@ void FRenderer::Release()
     delete DirectionalShadowMap;
     delete SpotLightShadowMapPass;
     delete PointLightShadowMapPass;
+
+#if !GAME_BUILD
+    delete EditorRenderPass;
+    delete GizmoRenderPass;
+#endif
+
 }
 
 void FRenderer::RenderShadowMap()
@@ -286,11 +292,14 @@ bool FRenderer::HandleHotReloadShader() const
     if (ShaderManager->HandleHotReloadShader())
     {
         StaticMeshRenderPass->ReloadShader();
-        GizmoRenderPass->ReloadShader();
         WorldBillboardRenderPass->ReloadShader();
-        EditorBillboardRenderPass->ReloadShader();
+        //EditorBillboardRenderPass->ReloadShader();
         FogRenderPass->ReloadShader();
+
+#if !GAME_BUILD
+        GizmoRenderPass->ReloadShader();
         EditorRenderPass->ReloadShader();
+#endif
         return true;
     }
     return false;
@@ -309,25 +318,28 @@ void FRenderer::PrepareRender(FViewportResource* ViewportResource)
 void FRenderer::PrepareRenderPass()
 {
     StaticMeshRenderPass->PrepareRender();
-    GizmoRenderPass->PrepareRender();
     WorldBillboardRenderPass->PrepareRender();
-    EditorBillboardRenderPass->PrepareRender();
     UpdateLightBufferPass->PrepareRender();
     FogRenderPass->PrepareRender();
+#if !GAME_BUILD
+    GizmoRenderPass->PrepareRender();
     EditorRenderPass->PrepareRender();
+#endif
 }
 
 void FRenderer::ClearRenderArr()
 {
     StaticMeshRenderPass->ClearRenderArr();
     WorldBillboardRenderPass->ClearRenderArr();
-    EditorBillboardRenderPass->ClearRenderArr();
-    GizmoRenderPass->ClearRenderArr();
+    //EditorBillboardRenderPass->ClearRenderArr();
     UpdateLightBufferPass->ClearRenderArr();
     FogRenderPass->ClearRenderArr();
-    EditorRenderPass->ClearRenderArr();
     SpotLightShadowMapPass->ClearRenderArr();
     PointLightShadowMapPass->ClearRenderArr();
+#if !GAME_BUILD
+    GizmoRenderPass->ClearRenderArr();
+    EditorRenderPass->ClearRenderArr();
+#endif
 }
 
 void FRenderer::UpdateCommonBuffer(const std::shared_ptr<FEditorViewportClient>& Viewport)
@@ -377,8 +389,9 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
    
     RenderWorldScene(Viewport);
     RenderPostProcess(Viewport);
+#if !GAME_BUILD
     RenderEditorOverlay(Viewport);
-
+#endif
     // Compositing: 위에서 렌더한 결과들을 하나로 합쳐서 뷰포트의 최종 이미지를 만드는 작업
     CompositingPass->Render(Viewport);
 
@@ -453,21 +466,7 @@ void FRenderer::RenderEditorOverlay(const std::shared_ptr<FEditorViewportClient>
         return;
     }
     
-    // Render Editor Billboard
-    /**
-     * TODO: 에디터 전용 빌보드는 이런 방식 처럼 빌보드의 bool값을 바꿔서 렌더하기 보다는
-     *       빌보드가 나와야 하는 컴포넌트는 텍스처만 가지고있고, 쉐이더를 통해 쿼드를 생성하고
-     *       텍스처를 전달해서 렌더하는 방식이 더 좋음.
-     *       이렇게 하는 경우 필요없는 빌보드 컴포넌트가 아웃라이너에 나오지 않음.
-     */
-    if (ShowFlag & EEngineShowFlags::SF_BillboardText)
-    {
-        EditorBillboardRenderPass->Render(Viewport);
-    }
-
     EditorRenderPass->Render(Viewport); // TODO: 임시로 이전에 작성되었던 와이어 프레임 렌더 패스로, 이후 개선 필요.
-
-    LineRenderPass->Render(Viewport); // 기존 뎁스를 그대로 사용하지만 뎁스를 클리어하지는 않음
     
     GizmoRenderPass->Render(Viewport); // 기존 뎁스를 SRV로 전달해서 샘플 후 비교하기 위해 기즈모 전용 DSV 사용
 

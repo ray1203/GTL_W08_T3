@@ -5,6 +5,7 @@
 
 #include "Components/Lua/LuaScriptComponent.h"
 #include "GameFramework/Actor.h"
+#include "Classes/Actors/Player.h"
 #include "Math/Vector.h"
 #include <shellapi.h>
 
@@ -112,6 +113,7 @@ void FLuaScriptSystem::BindActor()
 
         "Location", sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
         "Rotation", sol::property(&AActor::GetActorRotation, &AActor::SetActorRotation),
+
         "Velocity", sol::property(&AActor::GetLuaVelocity, &AActor::SetLuaVelocity),
 
         "ForwardVector", sol::property(&AActor::GetActorForwardVector),
@@ -130,6 +132,11 @@ void FLuaScriptSystem::BindActor()
                 RootComp->Translate(Direction * Scalar);
             }
         }
+    );
+
+    Lua.new_usertype<APlayer>("APlayer",
+        sol::base_classes, sol::bases<AActor>(),
+        "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity)
     );
 }
 

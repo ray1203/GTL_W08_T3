@@ -1,3 +1,5 @@
+// DEPRECATED
+#if 0
 #pragma once
 
 #include "BillboardRenderPass.h"
@@ -10,3 +12,4 @@ public:
 
     virtual void PrepareRender() override;
 };
+#endif

@@ -4,7 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "LevelEditor/SLevelEditor.h"
 #include "UnrealEd/EditorViewportClient.h"
-
+#include "UnrealClient.h"
 
 int UGizmoBaseComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
 {
@@ -65,10 +65,19 @@ void UGizmoBaseComponent::TickComponent(float DeltaTime)
     {
         if (ViewportClient->IsPerspective())
         {
-            float Scaler = (ViewportClient->PerspectiveCamera.GetLocation() - GetOwner()->GetActorLocation()).Length();
-            
-            Scaler *= GizmoScale;
-            RelativeScale3D = FVector(Scaler);
+            // 월드 → 카메라 공간 변환 (ProjectionMatrix는 빼야 함)
+            FMatrix ViewMatrix = ViewportClient->GetViewMatrix();
+            FVector CameraSpaceLocation = ViewMatrix.TransformPosition(GetOwner()->GetActorLocation());
+
+            float Distance = FMath::Abs(CameraSpaceLocation.Z); // 카메라와의 실제 거리
+            float ScreenHeight = ViewportClient->GetViewportResource()->GetD3DViewport().Height;
+            float FOV = ViewportClient->ViewFOV * (PI / 180.0f);
+
+            float DesiredScreenHeight = 128.f; // 원하는 화면상 크기(픽셀)
+            float DrawScale = 2.0f * Distance * FMath::Tan(FOV * 0.5f) * (DesiredScreenHeight / ScreenHeight);
+
+            DrawScale *= GizmoScale;
+            RelativeScale3D = FVector(DrawScale);
         }
         else
         {

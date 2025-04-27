@@ -5,6 +5,7 @@
 #include "UObject/ObjectMacros.h"
 #include "WorldType.h"
 #include "Level.h"
+#include "Physics/PhysicsScene.h"
 
 class FObjectFactory;
 class AActor;
@@ -59,6 +60,12 @@ public:
 
     void RenderUIComponents();
 
+
+    // TODO: 생성하는 위치 정하면 private로 넣기
+    // 현재는 외부에서 생성하고 있음.
+    // 물리 처리를 진행하는 Scene
+    FPhysicsScene PhysicsScene;
+    
 private:
     FString WorldName = "DefaultWorld";
 
@@ -66,7 +73,6 @@ private:
 
     /** Actor가 Spawn되었고, 아직 BeginPlay가 호출되지 않은 Actor들 */
     TArray<AActor*> PendingBeginPlayActors;
-
 };
 
 
