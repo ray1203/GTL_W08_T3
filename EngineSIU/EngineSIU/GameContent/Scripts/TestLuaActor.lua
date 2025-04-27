@@ -21,40 +21,51 @@ function OnOverlap(OtherActor)
 end
 
 function Tick(dt)
-    -- ÀÌµ¿ ÀÔ·Â
+    -- ï¿½Ìµï¿½ ï¿½Ô·ï¿½
     if Input:GetKey(EKeys.W) then
-        obj.Location = obj.Location + Vector(0, 1, 0) * dt * 5.0
+        --obj.Location = obj.Location + Vector(0, 1, 0) * dt * 5.0
+        local vec = Vector(obj.ForwardVector.x, obj.ForwardVector.y, obj.ForwardVector.z)
+        obj:Move(vec, dt * 5.0)
     end
     if Input:GetKey(EKeys.A) then
-        obj.Location = obj.Location + Vector(1, 0, 0) * dt * 5.0
+        --obj.Location = obj.Location + Vector(1, 0, 0) * dt * 5.0
+        local vec = Vector(-obj.RightVector.x, -obj.RightVector.y, -obj.RightVector.z)
+        obj:Move(vec, dt * 5.0)
     end
     if Input:GetKey(EKeys.S) then
-        obj.Location = obj.Location + Vector(0, -1, 0) * dt * 5.0
+        --obj.Location = obj.Location + Vector(0, -1, 0) * dt * 5.0
+        local vec = Vector(-obj.ForwardVector.x, -obj.ForwardVector.y, -obj.ForwardVector.z)
+        obj:Move(vec, dt * 5.0)
+
     end
     if Input:GetKey(EKeys.D) then
-        obj.Location = obj.Location + Vector(-1, 0, 0) * dt * 5.0
+        --obj.Location = obj.Location + Vector(-1, 0, 0) * dt * 5.0
+        local vec = Vector(obj.RightVector.x, obj.RightVector.y, obj.RightVector.z)
+        obj:Move(vec, dt * 5.0)
+
+
     end
 
-    -- Á¡ÇÁ ÀÔ·Â
+    -- ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½
     if Input:GetKeyDown(EKeys.SpaceBar) and obj.Location.z <= 0 then
         Velocity.z = JumpVelocity
         IsJumping = true
     end
 
-    -- Áß·Â Àû¿ë
+    -- ï¿½ß·ï¿½ ï¿½ï¿½ï¿½ï¿½
     Velocity.z = Velocity.z + Gravity * dt
 
-    -- À§Ä¡ Àû¿ë
+    -- ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
     obj.Location = obj.Location + Vector(0, 0, Velocity.z * dt)
 
-    -- ¹Ù´Ú Ã¼Å© ¹× Á¤Áö
+    -- ï¿½Ù´ï¿½ Ã¼Å© ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     if obj.Location.z <= 0 then
         obj.Location = Vector(obj.Location.x, obj.Location.y, 0)
         Velocity.z = 0
         IsJumping = false
     end
 
-    -- Score¶ó´Â ÀÌ¸§ÀÇ ¾×ÅÍ Ã£±â
+    -- Scoreï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã£ï¿½ï¿½
     local scoreActor = FindActorByLabel("Score")
     if scoreActor then
         local textComp = GetUITextComponent(scoreActor)
