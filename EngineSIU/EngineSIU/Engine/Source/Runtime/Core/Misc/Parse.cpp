@@ -1,10 +1,12 @@
 #include "Parse.h"
 #include <cassert>
+#include <tchar.h>
 
 #include "Char.h"
 #include "Container/CString.h"
 #include "Math/MathUtility.h"
 #include "Math/Vector.h"
+#include "Math/Vector4.h"
 #include "Runtime/CoreUObject/UObject/NameTypes.h"
 
 
@@ -260,6 +262,7 @@ bool FParse::Bool(const TCHAR* Stream, const TCHAR* Match, bool& OnOff)
         return false;
     }
 }
+/*
 bool FParse::Value(const TCHAR* Stream, const TCHAR* Match, FVector2D& Value)
 {
     TCHAR Temp[256];
@@ -292,3 +295,42 @@ bool FParse::Value(const TCHAR* Stream, const TCHAR* Match, FVector2D& Value)
     Value = FVector2D(X, Y);
     return true;
 }
+bool FParse::Value(const TCHAR* Stream, const TCHAR* Match, FVector4& OutVec)
+{
+    TCHAR Temp[256];
+    if (!FParse::Value(Stream, Match, Temp, std::size(Temp)))
+    {
+        return false;
+    }
+
+    const TCHAR* FirstComma = FCString::Strchr(Temp, ',');
+    if (!FirstComma) return false;
+
+    const TCHAR* SecondComma = FCString::Strchr(FirstComma + 1, ',');
+    if (!SecondComma) return false;
+
+    const TCHAR* ThirdComma = FCString::Strchr(SecondComma + 1, ',');
+    if (!ThirdComma) return false;
+
+    int32 XLen = static_cast<int32>(FirstComma - Temp);
+    int32 YLen = static_cast<int32>(SecondComma - FirstComma - 1);
+    int32 ZLen = static_cast<int32>(ThirdComma - SecondComma - 1);
+
+    if (XLen <= 0 || YLen <= 0 || ZLen <= 0) return false;
+
+    TCHAR XBuf[64] = {}, YBuf[64] = {}, ZBuf[64] = {}, WBuf[64] = {};
+
+    FCString::Strncpy(XBuf, Temp, XLen + 1);
+    FCString::Strncpy(YBuf, FirstComma + 1, YLen + 1);
+    FCString::Strncpy(ZBuf, SecondComma + 1, ZLen + 1);
+    FCString::Strcpy(WBuf, ThirdComma + 1); // W는 나머지 전체
+
+    float x = FCString::Atof(XBuf);
+    float y = FCString::Atof(YBuf);
+    float z = FCString::Atof(ZBuf);
+    float w = FCString::Atof(WBuf);
+
+    OutVec = FVector4(x, y, z, w);
+    return true;
+}
+*/

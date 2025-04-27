@@ -13,7 +13,9 @@ public:
     const std::string& GetLabel() const { return Label; }
 
     void SetOnClick(const std::function<void()>& Callback) { OnClick = Callback; }
-
+    virtual UObject* Duplicate(UObject* InOuter) override;
+    virtual void GetProperties(TMap<FString, FString>& OutProperties) const override;
+    virtual void SetProperties(const TMap<FString, FString>& Properties) override;
     virtual void TickComponent(float DeltaTime) override;
     virtual void RenderUI() override;
 

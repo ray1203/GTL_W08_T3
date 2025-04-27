@@ -13,7 +13,7 @@ namespace PrivateEditorSelection
     static AActor* GActorSelected = nullptr;
     static AActor* GActorHovered = nullptr;
 
-    static USceneComponent* GComponentSelected = nullptr;
+    static UActorComponent* GComponentSelected = nullptr;
     static USceneComponent* GComponentHovered = nullptr;
 }
 
@@ -205,7 +205,7 @@ void UEditorEngine::NewWorld()
     }
 }
 
-void UEditorEngine::SelectComponent(USceneComponent* InComponent) const
+void UEditorEngine::SelectComponent(UActorComponent* InComponent) const
 {
     if (InComponent && CanSelectComponent(InComponent))
     {
@@ -217,12 +217,12 @@ void UEditorEngine::SelectComponent(USceneComponent* InComponent) const
     }
 }
 
-bool UEditorEngine::CanSelectComponent(const USceneComponent* InComponent) const
+bool UEditorEngine::CanSelectComponent(const UActorComponent* InComponent) const
 {
     return InComponent != nullptr && InComponent->GetOwner() && InComponent->GetOwner()->GetWorld() == ActiveWorld && !InComponent->GetOwner()->IsActorBeingDestroyed();
 }
 
-USceneComponent* UEditorEngine::GetSelectedComponent() const
+UActorComponent* UEditorEngine::GetSelectedComponent() const
 {
     return PrivateEditorSelection::GComponentSelected;
 }

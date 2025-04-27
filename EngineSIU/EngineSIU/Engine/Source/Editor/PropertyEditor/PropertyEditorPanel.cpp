@@ -18,6 +18,7 @@
 #include "Components/HeightFogComponent.h"
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/Lua/LuaScriptComponent.h"
+#include "Components/UI/UUITextComponent.h"
 #include "GameFramework/Actor.h"
 #include "Engine/AssetManager.h"
 #include "Lua/FLuaScriptSystem.h"
@@ -542,6 +543,59 @@ void PropertyEditorPanel::Render()
             }
             ImGui::PopStyleColor();
         }
+    if (PickedActor)
+    if (UUITextComponent* TextComp = PickedActor->GetComponentByClass<UUITextComponent>())
+    {
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+        if (ImGui::TreeNodeEx("UI Text Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            // 1. 텍스트 수정
+            std::string OriginalText = TextComp->GetText();
+            static char TextBuffer[256];
+            strcpy_s(TextBuffer, OriginalText.c_str());
+
+            if (ImGui::InputText("Text", TextBuffer, IM_ARRAYSIZE(TextBuffer)))
+            {
+                TextComp->SetText(TextBuffer);
+            }
+
+            // 2. 위치
+            FVector2D Pos = TextComp->Position;
+            float PosXY[2] = { Pos.X, Pos.Y };
+            if (ImGui::DragFloat2("Position", PosXY, 1.0f, 0.0f, 1920.0f, "%.1f"))
+            {
+                TextComp->Position = FVector2D(PosXY[0], PosXY[1]);
+            }
+
+            // 3. 크기
+            FVector2D Size = TextComp->Size;
+            float SizeXY[2] = { Size.X, Size.Y };
+            if (ImGui::DragFloat2("Size", SizeXY, 1.0f, 10.0f, 2000.0f, "%.1f"))
+            {
+                TextComp->Size = FVector2D(SizeXY[0], SizeXY[1]);
+            }
+            // 텍스트 색상
+            float Color[4] = { TextComp->TextColor.R, TextComp->TextColor.G, TextComp->TextColor.B, TextComp->TextColor.A };
+            if (ImGui::ColorEdit4("Text Color", Color))
+            {
+                TextComp->TextColor = FLinearColor(Color[0], Color[1], Color[2], Color[3]);
+            }
+
+            // 텍스트 크기
+            float Scale = TextComp->TextScale;
+            if (ImGui::SliderFloat("Text Scale", &Scale, 0.1f, 3.0f, "%.2f"))
+            {
+                TextComp->TextScale = Scale;
+            }
+            if (ImGui::Checkbox("No Background", &TextComp->bNoBackground)) {}
+            //if (ImGui::Checkbox("No Input", &TextComp->bNoInputs)) {}
+            if (ImGui::Checkbox("Auto Size", &TextComp->bAutoSize)) {}
+
+            ImGui::TreePop();
+        }
+        ImGui::PopStyleColor();
+    }
+
     ImGui::End();
 }
 
