@@ -25,12 +25,15 @@ public:
 
 protected:
     void OnRawMouseInput(const FPointerEvent& InEvent);
-    void HandleRotation(const FVector2D Vector);
+    void HandleRotation(const FVector2D& Vector);
+    void UpdateCameraTransform(float DeltaTime);
 
 protected:
 	float TargetArmLength = 300.0f; // 카메라와의 거리
 	FVector SocketOffset = FVector(0, 50.0f, 50.0f); //  캐릭터 기준 오프셋
 	FVector TargetLocation; // 최종 카메라 위치
+
+    float CurrentPitchAngle = 0.0f;
 
 	UCameraComponent* Camera = nullptr;
 

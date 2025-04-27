@@ -11,13 +11,14 @@
 #include <Camera/CameraComponent.h>
 #include "Components/Shapes/SphereComponent.h"
 #include "Physics/PhysicsScene.h"
+#include <Actors/Player.h>
 
 namespace PrivateEditorSelection
 {
     static AActor* GActorSelected = nullptr;
     static AActor* GActorHovered = nullptr;
 
-    static USceneComponent* GComponentSelected = nullptr;
+    static UActorComponent* GComponentSelected = nullptr;
     static USceneComponent* GComponentHovered = nullptr;
 }
 
@@ -41,12 +42,10 @@ void UEditorEngine::Init()
     }
 
 #ifdef _DEBUG
-    AActor* Actor = EditorWorld->SpawnActor<ACube>();
-    UCameraComponent* CameraComp = Actor->AddComponent<UCameraComponent>(TEXT("Camera"));
-    CameraComp->SetupAttachment(Actor->GetRootComponent());
-    
-    USphereComponent* SphereComp = Actor->AddComponent<USphereComponent>(TEXT("Sphere"));
-    SphereComp->SetupAttachment(Actor->GetRootComponent());
+    //AActor* Actor = EditorWorld->SpawnActor<ACube>();
+    //UCameraComponent* CameraComp = Actor->AddComponent<UCameraComponent>(TEXT("Camera"));
+    //CameraComp->SetupAttachment(Actor->GetRootComponent());
+    //APlayer* Player = EditorWorld->SpawnActor<APlayer>();
     
     ADirectionalLight* DirLight = EditorWorld->SpawnActor<ADirectionalLight>();
     DirLight->SetActorRotation(FRotator(20, -61, 11));
@@ -216,7 +215,7 @@ void UEditorEngine::NewWorld()
     }
 }
 
-void UEditorEngine::SelectComponent(USceneComponent* InComponent) const
+void UEditorEngine::SelectComponent(UActorComponent* InComponent) const
 {
     if (InComponent && CanSelectComponent(InComponent))
     {
@@ -228,12 +227,12 @@ void UEditorEngine::SelectComponent(USceneComponent* InComponent) const
     }
 }
 
-bool UEditorEngine::CanSelectComponent(const USceneComponent* InComponent) const
+bool UEditorEngine::CanSelectComponent(const UActorComponent* InComponent) const
 {
     return InComponent != nullptr && InComponent->GetOwner() && InComponent->GetOwner()->GetWorld() == ActiveWorld && !InComponent->GetOwner()->IsActorBeingDestroyed();
 }
 
-USceneComponent* UEditorEngine::GetSelectedComponent() const
+UActorComponent* UEditorEngine::GetSelectedComponent() const
 {
     return PrivateEditorSelection::GComponentSelected;
 }

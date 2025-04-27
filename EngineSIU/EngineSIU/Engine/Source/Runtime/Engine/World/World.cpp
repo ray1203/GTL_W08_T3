@@ -9,6 +9,7 @@
 #include "Components/Shapes/ShapeComponent.h"
 #include "Engine/FLoaderOBJ.h"
 #include "Actors/HeightFogActor.h"
+#include "Components/UI/UUIComponent.h"
 #include "Engine/EditorEngine.h"
 #include "Engine/Engine.h"
 #include "UnrealEd/SceneManager.h"
@@ -171,3 +172,19 @@ UWorld* UWorld::GetWorld() const
     return const_cast<UWorld*>(this);
 }
 
+void UWorld::RenderUIComponents()
+{
+    for (AActor* Actor : ActiveLevel->Actors)
+    {
+        for (UActorComponent* Comp : Actor->GetComponents())
+        {
+            if (auto UIComp = dynamic_cast<UUIComponent*>(Comp))
+            {
+                if (UIComp->IsActive())
+                {
+                    UIComp->RenderUI();
+                }
+            }
+        }
+    }
+}

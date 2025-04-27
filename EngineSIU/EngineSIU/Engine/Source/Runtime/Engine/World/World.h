@@ -58,6 +58,8 @@ public:
 
     EWorldType WorldType = EWorldType::None;
 
+    void RenderUIComponents();
+
 
     // TODO: 생성하는 위치 정하면 private로 넣기
     // 현재는 외부에서 생성하고 있음.

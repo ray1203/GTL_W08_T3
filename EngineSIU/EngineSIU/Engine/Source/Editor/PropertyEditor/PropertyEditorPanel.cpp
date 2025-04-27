@@ -18,6 +18,7 @@
 #include "Components/HeightFogComponent.h"
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/Lua/LuaScriptComponent.h"
+#include "Components/UI/UUITextComponent.h"
 #include "GameFramework/Actor.h"
 #include "Engine/AssetManager.h"
 #include "Lua/FLuaScriptSystem.h"
@@ -28,6 +29,7 @@
 #include "Renderer/Shadow/SpotLightShadowMap.h"
 #include "Renderer/Shadow/PointLightShadowMap.h"
 #include "Renderer/Shadow/DirectionalShadowMap.h"
+#include <Camera/SpringArmComponent.h>
 
 void PropertyEditorPanel::Render()
 {
@@ -62,6 +64,19 @@ void PropertyEditorPanel::Render()
     AEditorPlayer* player = Engine->GetEditorPlayer();
     AActor* PickedActor = Engine->GetSelectedActor();
     if (PickedActor)
+    {
+        // --- Actor Label 수정 ---
+        FString Label = PickedActor->GetActorLabel();
+        static char LabelBuffer[256];
+        strcpy_s(LabelBuffer, TCHAR_TO_UTF8(*Label));
+
+        if (ImGui::InputText("Actor Label", LabelBuffer, IM_ARRAYSIZE(LabelBuffer)))
+        {
+            PickedActor->SetActorLabel(FString(LabelBuffer), false); // UUID 붙이지 않도록 false
+        }
+    }
+
+    if (PickedActor && PickedActor->GetRootComponent())
     {
         ImGui::SetItemDefaultFocus();
         // TreeNode 배경색을 변경 (기본 상태)
@@ -540,6 +555,105 @@ void PropertyEditorPanel::Render()
                     FogComponent->SetEndDistance(FogEndtDistance);
                 }
 
+                ImGui::TreePop();
+            }
+            ImGui::PopStyleColor();
+        }
+    if (PickedActor)
+    if (UUITextComponent* TextComp = PickedActor->GetComponentByClass<UUITextComponent>())
+    {
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+        if (ImGui::TreeNodeEx("UI Text Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            // 1. 텍스트 수정
+            std::string OriginalText = TextComp->GetText();
+            static char TextBuffer[256];
+            strcpy_s(TextBuffer, OriginalText.c_str());
+
+            if (ImGui::InputText("Text", TextBuffer, IM_ARRAYSIZE(TextBuffer)))
+            {
+                TextComp->SetText(TextBuffer);
+            }
+
+            /*// 2. 위치
+            FVector2D Pos = TextComp->Position;
+            float PosXY[2] = { Pos.X, Pos.Y };
+            if (ImGui::DragFloat2("Position", PosXY, 1.0f, 0.0f, 1920.0f, "%.1f"))
+            {
+                TextComp->Position = FVector2D(PosXY[0], PosXY[1]);
+            }*/
+            const char* AnchorLabels[] = {
+    "TopLeft", "TopCenter", "TopRight",
+    "CenterLeft", "Center", "CenterRight",
+    "BottomLeft", "BottomCenter", "BottomRight"
+            };
+
+            int anchorIndex = static_cast<int>(TextComp->Anchor);
+            if (ImGui::Combo("Anchor", &anchorIndex, AnchorLabels, IM_ARRAYSIZE(AnchorLabels)))
+            {
+                TextComp->Anchor = static_cast<EUIAnchor>(anchorIndex);
+            }
+
+            float offset[2] = { TextComp->Offset.X, TextComp->Offset.Y };
+            if (ImGui::DragFloat2("Offset", offset, 1.0f))
+            {
+                TextComp->Offset = FVector2D(offset[0], offset[1]);
+            }
+
+            // 3. 크기
+            FVector2D Size = TextComp->Size;
+            float SizeXY[2] = { Size.X, Size.Y };
+            if (ImGui::DragFloat2("Size", SizeXY, 1.0f, 10.0f, 2000.0f, "%.1f"))
+            {
+                TextComp->Size = FVector2D(SizeXY[0], SizeXY[1]);
+            }
+            // 텍스트 색상
+            float Color[4] = { TextComp->TextColor.R, TextComp->TextColor.G, TextComp->TextColor.B, TextComp->TextColor.A };
+            if (ImGui::ColorEdit4("Text Color", Color))
+            {
+                TextComp->TextColor = FLinearColor(Color[0], Color[1], Color[2], Color[3]);
+            }
+
+            // 텍스트 크기
+            float Scale = TextComp->TextScale;
+            if (ImGui::SliderFloat("Text Scale", &Scale, 0.1f, 3.0f, "%.2f"))
+            {
+                TextComp->TextScale = Scale;
+            }
+            if (ImGui::Checkbox("No Background", &TextComp->bNoBackground)) {}
+            //if (ImGui::Checkbox("No Input", &TextComp->bNoInputs)) {}
+            if (ImGui::Checkbox("Auto Size", &TextComp->bAutoSize)) {}
+
+            ImGui::TreePop();
+        }
+        ImGui::PopStyleColor();
+    }
+
+    if(PickedActor)
+        if (USpringArmComponent* SpringArmComponent = Cast<USpringArmComponent>(PickedActor->GetComponentByClass<USpringArmComponent>()))
+        {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+            if (ImGui::TreeNodeEx("Spring Arm Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
+            {
+                Location = SpringArmComponent->GetRelativeLocation();
+                Rotation = SpringArmComponent->GetRelativeRotation();
+                Scale = SpringArmComponent->GetRelativeScale3D();
+                FImGuiWidget::DrawVec3Control("Location", Location, 0, 85);
+                ImGui::Spacing();
+                FImGuiWidget::DrawRot3Control("Rotation", Rotation, 0, 85);
+                ImGui::Spacing();
+                FImGuiWidget::DrawVec3Control("Scale", Scale, 0, 85);
+                ImGui::Spacing();
+                SpringArmComponent->SetRelativeLocation(Location);
+                SpringArmComponent->SetRelativeRotation(Rotation);
+                SpringArmComponent->SetRelativeScale3D(Scale);
+                float TargetArmLength = SpringArmComponent->GetTargetArmLength();
+                if (ImGui::SliderFloat("Target Arm Length", &TargetArmLength, 0.f, 300.f))
+                    SpringArmComponent->SetTargetArmLength(TargetArmLength);
+                ImGui::Spacing();
+                FVector SocketOffset = SpringArmComponent->GetSocketOffset();
+                FImGuiWidget::DrawVec3Control("Socket Offset", SocketOffset);
+                SpringArmComponent->SetSocketOffset(SocketOffset);
                 ImGui::TreePop();
             }
             ImGui::PopStyleColor();

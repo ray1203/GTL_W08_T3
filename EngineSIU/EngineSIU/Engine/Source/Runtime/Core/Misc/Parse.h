@@ -2,6 +2,8 @@
 #include "HAL/PlatformType.h"
 //#include "GameFramework/Actor.h"
 
+struct FVector4;
+struct FVector2D;
 class FName;
 class FString;
 
@@ -41,6 +43,10 @@ struct FParse
     /** Parses a signed double word. */
     static bool Value( const TCHAR* Stream, const TCHAR* Match, int32& Value );
 
+    static bool Value(const TCHAR* Stream, const TCHAR* Match, FVector2D& Value);
+
+    static bool Value(const TCHAR* Stream, const TCHAR* Match, FVector4& OutVec);
+
     /** Parses a string. 
  * @param Stream, the string you want to extract the value from.
  * @param Match, the identifier for the value in the stream.
@@ -55,5 +61,5 @@ struct FParse
     
     /** Parses a boolean value. */
     static bool Bool( const TCHAR* Stream, const TCHAR* Match, bool& OnOff );
-    
+
 };

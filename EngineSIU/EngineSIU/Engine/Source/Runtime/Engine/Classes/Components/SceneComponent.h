@@ -30,6 +30,8 @@ public:
     void AddRotation(const FVector& InAddValue);
     void AddScale(const FVector& InAddValue);
 
+    void AddWorldRotation(FRotator DeltaRotation);
+
     USceneComponent* GetAttachParent() const { return AttachParent; }
     const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
 

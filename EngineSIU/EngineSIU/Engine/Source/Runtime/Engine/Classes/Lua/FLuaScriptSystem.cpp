@@ -9,6 +9,10 @@
 #include <shellapi.h>
 
 #include "FInputManager.h"
+#include "Components/UI/UUIButtonComponent.h"
+#include "Components/UI/UUITextComponent.h"
+#include "Engine/Engine.h"
+#include "World/World.h"
 
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
@@ -24,63 +28,7 @@ void FLuaScriptSystem::Initialize()
     BindActor();
     BindInput();
     BindUtilities();
-    /*
-    Lua.new_usertype<FVector>("Vector",
-        sol::constructors<FVector(), FVector(float, float, float)>(),
-        "x", &FVector::X,
-        "y", &FVector::Y,
-        "z", &FVector::Z,
-        sol::meta_function::addition, [](const FVector& a, const FVector& b) { return a + b; },
-        sol::meta_function::multiplication, [](const FVector& a, float f) { return a * f; }
-    );
-    Lua["Vector"] = [](float x, float y, float z) { return FVector(x, y, z); };
-    Lua.new_usertype<FRotator>("Rotator",
-        sol::constructors<FRotator(), FRotator(float, float, float)>(),
-        "Pitch", &FRotator::Pitch,
-        "Yaw", &FRotator::Yaw,
-        "Roll", &FRotator::Roll
-    );
-    Lua.new_usertype<FString>("FString",
-        "ToString", [](const FString& Str) { return std::string(TCHAR_TO_UTF8(*Str)); }
-    );
-
-    /*Lua.new_usertype<UObject>("UObject",
-        "GetName", &UObject::GetName,
-        "GetUUID", &UObject::GetUUID
-    );#1#
-
-    Lua.new_usertype<AActor>("GameObject",
-        sol::base_classes, sol::bases<UObject>(),
-
-        "Location",
-        sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
-        "Rotation",
-        sol::property(&AActor::GetActorRotation, &AActor::SetActorRotation),
-        "Velocity",
-        sol::property(&AActor::GetLuaVelocity, &AActor::SetLuaVelocity),
-        "UUID",
-        sol::readonly_property(&AActor::GetUUID),
-
-        "PrintLocation", [](AActor* Self) {
-            auto loc = Self->GetActorLocation();
-            UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
-        }
-    );
-    Lua.set_function("print", [](const std::string& msg)
-        {
-            UE_LOG(ELogLevel::Display, TEXT("[Lua Print] %s"), *FString(msg));
-        });
-    Lua.new_usertype<FInputKeyManager>("Input", sol::no_constructor,
-        "GetKey", &FInputKeyManager::GetKey,
-        "GetKeyDown", &FInputKeyManager::GetKeyDown,
-        "GetKeyUp", &FInputKeyManager::GetKeyUp
-    );
-
-    // 글로벌로 사용 가능하도록 Input 매핑
-    Lua["Input"] = &FInputKeyManager::Get();
-    */
-
-
+    BindUI();
 }
 
 FString FLuaScriptSystem::GetScriptFullPath(const FString& ScriptName)
@@ -221,4 +169,86 @@ void FLuaScriptSystem::BindUtilities()
     Lua.set_function("print", [](const std::string& msg) {
         UE_LOG(ELogLevel::Display, TEXT("[Lua Print] %s"), *FString(msg));
         });
+    Lua.set_function("FindActorByLabel", [](const std::string& Label) -> AActor*
+        {
+            return FindActorByLabel(FString(Label));
+        });
+    //ActorComp로 가져와도 Lua에서는 형변환/하위 객체에 접근 불가
+    Lua.set_function("GetComponentByType", [](AActor* Actor, const std::string& TypeName) -> UActorComponent*
+        {
+            return GetComponentByTypeName(Actor, TypeName);
+        });
+    // 새로 추가
+    Lua.set_function("GetUITextComponent", [](AActor* Actor) -> UUITextComponent*
+        {
+            return Actor ? Actor->GetComponentByClass<UUITextComponent>() : nullptr;
+        });
+
+    Lua.set_function("GetUIButtonComponent", [](AActor* Actor) -> UUIButtonComponent*
+        {
+            return Actor ? Actor->GetComponentByClass<UUIButtonComponent>() : nullptr;
+        });
+
+}
+void FLuaScriptSystem::BindUI()
+{
+    // TextComponent
+    Lua.new_usertype<UUITextComponent>("UIText",
+        sol::base_classes, sol::bases<UActorComponent>(),
+
+        "Text", sol::property(
+            [](UUITextComponent* Comp) { return std::string(Comp->GetText()); },
+            [](UUITextComponent* Comp, const std::string& Value) { Comp->SetText(Value); }),
+
+        "SetTextColor", [](UUITextComponent* Comp, float r, float g, float b, float a = 1.0f)
+        {
+            Comp->TextColor = FLinearColor(r, g, b, a);
+        },
+        "SetTextScale", [](UUITextComponent* Comp, float scale)
+        {
+            Comp->TextScale = scale;
+        }
+    );
+
+    // ButtonComponent
+    Lua.new_usertype<UUIButtonComponent>("UIButton",
+        sol::base_classes, sol::bases<UActorComponent>(),
+
+        "Label", sol::property(
+            [](UUIButtonComponent* Comp) { return std::string(Comp->GetLabel()); },
+            [](UUIButtonComponent* Comp, const std::string& Value) { Comp->SetLabel(Value); }),
+
+        "OnClick", &UUIButtonComponent::OnClick
+    );
+}
+
+//Lua 내부에서 사용할 함수들
+AActor* FLuaScriptSystem::FindActorByLabel(const FString& Label)
+{
+    UWorld* World = GEngine->ActiveWorld;
+    if (!World) return nullptr;
+
+    for (AActor* Actor : World->GetActiveLevel()->Actors)
+    {
+        if (Actor && Actor->GetActorLabel() == Label)
+        {
+            return Actor;
+        }
+    }
+
+    return nullptr;
+}
+UActorComponent* FLuaScriptSystem::GetComponentByTypeName(AActor* Actor, const std::string& TypeName)
+{
+    if (!Actor) return nullptr;
+
+    for (UActorComponent* Comp : Actor->GetComponents())
+    {
+        if (Comp && TCHAR_TO_UTF8(*Comp->GetClass()->GetName()) == TypeName)
+        {
+            return Comp;
+        }
+    }
+
+    return nullptr;
 }

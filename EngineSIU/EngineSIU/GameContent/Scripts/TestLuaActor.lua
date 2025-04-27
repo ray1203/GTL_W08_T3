@@ -21,7 +21,7 @@ function OnOverlap(OtherActor)
 end
 
 function Tick(dt)
-    -- ï¿½Ìµï¿½ ï¿½Ô·ï¿½
+    -- ÀÌµ¿ ÀÔ·Â
     if Input:GetKey(EKeys.W) then
         obj.Location = obj.Location + Vector(0, 1, 0) * dt * 5.0
     end
@@ -35,25 +35,32 @@ function Tick(dt)
         obj.Location = obj.Location + Vector(-1, 0, 0) * dt * 5.0
     end
 
-    -- ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½
-    if Input:GetKeyDown(EKeys.SpaceBar) then
-        obj.Location = obj.Location + Vector(0,0,1)
+    -- Á¡ÇÁ ÀÔ·Â
+    if Input:GetKeyDown(EKeys.SpaceBar) and obj.Location.z <= 0 then
+        Velocity.z = JumpVelocity
         IsJumping = true
     end
 
-    -- obj.Location = obj.Location + Vector(10,10,0)
-    -- -- ï¿½ß·ï¿½ ï¿½ï¿½ï¿½ï¿½
-    -- Velocity.z = Velocity.z + Gravity * dt
+    -- Áß·Â Àû¿ë
+    Velocity.z = Velocity.z + Gravity * dt
 
-    -- -- ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
-    -- obj.Location = obj.Location + Vector(0, 0, Velocity.z * dt)
+    -- À§Ä¡ Àû¿ë
+    obj.Location = obj.Location + Vector(0, 0, Velocity.z * dt)
 
-    -- -- ï¿½Ù´ï¿½ Ã¼Å© ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
-    -- if obj.Location.z <= 0 then
-    --     obj.Location = Vector(obj.Location.x,obj.Location.y,0)
-    --     Velocity.z = 0
-    --     IsJumping = false
-    -- end
+    -- ¹Ù´Ú Ã¼Å© ¹× Á¤Áö
+    if obj.Location.z <= 0 then
+        obj.Location = Vector(obj.Location.x, obj.Location.y, 0)
+        Velocity.z = 0
+        IsJumping = false
+    end
 
-    obj:PrintLocation()
+    -- Score¶ó´Â ÀÌ¸§ÀÇ ¾×ÅÍ Ã£±â
+    local scoreActor = FindActorByLabel("Score")
+    if scoreActor then
+        local textComp = GetUITextComponent(scoreActor)
+        if textComp then
+            local z = math.floor(obj.Location.z * 100) / 100
+            textComp.Text = "Score:"..tostring(z)
+        end
+    end
 end

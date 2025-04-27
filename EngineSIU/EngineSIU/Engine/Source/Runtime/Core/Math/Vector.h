@@ -58,7 +58,12 @@ public:
         Y += Rhs.Y;
         return *this;
     }
-
+    FVector2D& operator-=(const FVector2D& Rhs)
+    {
+        X -= Rhs.X;
+        Y -= Rhs.Y;
+        return *this;
+    }
     bool operator==(const FVector2D& Vector2D) const = default;
     bool operator!=(const FVector2D& Vector2D) const = default;
 
@@ -211,6 +216,8 @@ public:
 
     bool IsNearlyZero(float Tolerance = SMALL_NUMBER) const;
     bool IsZero() const;
+
+    FRotator Rotation() const;
 
     
     FString ToString() const;
@@ -430,6 +437,21 @@ inline bool FVector::IsNearlyZero(float Tolerance) const
 inline bool FVector::IsZero() const
 {
     return X==0.f && Y==0.f && Z==0.f;
+}
+
+inline FRotator FVector::Rotation() const
+{
+    // 1. Yaw (평면에서의 각도)
+    float YawRadians = FMath::Atan2(Y, X);
+    float YawDegrees = FMath::RadiansToDegrees(YawRadians);
+
+    // 2. Pitch (수직 각도)
+    float HorizontalDist = FMath::Sqrt(X * X + Y * Y);
+    float PitchRadians = FMath::Atan2(Z, HorizontalDist);
+    float PitchDegrees = FMath::RadiansToDegrees(PitchRadians);
+
+    // 3. Roll은 0으로 고정
+    return FRotator(PitchDegrees, YawDegrees, 0.f);
 }
 
 

@@ -4,6 +4,7 @@
 #include "Components/Lua/LuaScriptComponent.h"
 #include "Lua/FLuaScriptSystem.h"
 #include "World/World.h"
+#include <Actors/Player.h>
 
 
 UObject* AActor::Duplicate(UObject* InOuter)
@@ -12,8 +13,12 @@ UObject* AActor::Duplicate(UObject* InOuter)
 
     NewActor->Owner = Owner;
     NewActor->bTickInEditor = bTickInEditor;
-
+    NewActor->SetActorLabel(GetActorLabel(), false);
     // 기본적으로 있던 컴포넌트 제거
+    if (this->IsA<APlayer>())
+    {
+        int i = 1;
+    }
     TSet CopiedComponents = NewActor->OwnedComponents;
     for (UActorComponent* Components : CopiedComponents)
     {
@@ -30,7 +35,7 @@ UObject* AActor::Duplicate(UObject* InOuter)
 
     for (UActorComponent* Component : OwnedComponents)
     {
-        UActorComponent* NewComponent = Cast<UActorComponent>(Component->Duplicate(InOuter));
+        UActorComponent* NewComponent = Cast<UActorComponent>(Component->Duplicate(NewActor));
         NewComponent->OwnerPrivate = NewActor;
         NewActor->OwnedComponents.Add(NewComponent);
 

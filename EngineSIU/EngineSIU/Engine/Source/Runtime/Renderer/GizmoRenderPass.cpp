@@ -191,13 +191,12 @@ void FGizmoRenderPass::RenderGizmoComponent(UGizmoBaseComponent* GizmoComp, cons
     {
         return;
     }
-    
+    if (!Engine->GetSelectedActor()->GetComponentByClass<USceneComponent>())return;
     OBJ::FStaticMeshRenderData* RenderData = GizmoComp->GetStaticMesh()->GetRenderData();
     if (!RenderData)
     {
         return;
     }
-
     PrepareRenderState();
     
     // 오브젝트 버퍼 업데이트

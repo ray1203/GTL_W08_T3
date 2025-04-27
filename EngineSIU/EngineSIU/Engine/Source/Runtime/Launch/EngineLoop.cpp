@@ -9,6 +9,7 @@
 #include "UnrealEd/EditorViewportClient.h"
 #include "UnrealEd/UnrealEd.h"
 #include "World/World.h"
+#include <Engine/GameEngine.h>
 #include <sol/sol.hpp>
 
 #include "FInputManager.h"
@@ -136,6 +137,8 @@ void FEngineLoop::Tick()
         Render();
         UIMgr->BeginFrame();
         UnrealEditor->Render();
+
+        GEngine->ActiveWorld->RenderUIComponents();
 
         FConsole::GetInstance().Draw();
 
