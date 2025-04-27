@@ -13,7 +13,7 @@ APlayer::APlayer()
     CameraBoom = AddComponent<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(MeshComponent);
     CameraBoom->SetTargetArmLength(10.0f);
-    CameraBoom->SetSocketOffset(FVector(0.f, 0.0f, 10.0f));
+    CameraBoom->SetSocketOffset(FVector(0.f, 0.0f, 0.0f));
 
     SetActorTickInEditor(true);
 }
