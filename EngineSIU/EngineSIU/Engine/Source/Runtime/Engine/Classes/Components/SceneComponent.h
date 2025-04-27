@@ -29,6 +29,8 @@ public:
     void AddRotation(const FVector& InAddValue);
     void AddScale(const FVector& InAddValue);
 
+    void AddWorldRotation(FRotator DeltaRotation);
+
     USceneComponent* GetAttachParent() const { return AttachParent; }
     const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
 
@@ -38,6 +40,13 @@ public:
     void SetRelativeLocation(const FVector& InNewLocation) { RelativeLocation = InNewLocation; }
     void SetRelativeRotation(const FRotator& InNewRotation) { RelativeRotation = InNewRotation; }
     void SetRelativeScale3D(const FVector& NewScale) { RelativeScale3D = NewScale; }
+
+    void SetWorldLocation(const FVector& InNewLocation);
+    void SetWorldRotation(const FRotator& InNewRotation);
+    void SetWorldScale3D(const FVector& NewScale);
+
+    void Translate(const FVector& MoveDelta);
+    void Rotate(const FRotator& RotationDelta);
     
     FVector GetRelativeLocation() const { return RelativeLocation; }
     FRotator GetRelativeRotation() const { return RelativeRotation; }

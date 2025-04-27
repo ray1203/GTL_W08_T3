@@ -2,7 +2,7 @@
 
 #include "World/World.h"
 
-#include "Actors/Player.h"
+#include "Actors/EditorPlayer.h"
 #include "Actors/LightActor.h"
 #include "Actors/FireballActor.h"
 
@@ -31,6 +31,7 @@
 #include "Actors/AmbientLightActor.h"
 #include "Actors/UI/ButtonUIActor.h"
 #include "Actors/UI/TextUIActor.h"
+#include <Actors/APlayerStart.h>
 
 void ControlEditorPanel::Render()
 {
@@ -292,6 +293,8 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             { .label = "UIText",   .obj = OBJ_UI_TEXT },
             {.label = "UIButton", .obj = OBJ_UI_BUTTON },
 
+            { .label= "Fog",       .obj= OBJ_FOG },
+            { .label= "PlayerStart", .obj= OBJ_PLAYERSTART }
         };
 
         for (const auto& primitive : primitives)
@@ -377,6 +380,12 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 {
                     SpawnedActor = World->SpawnActor<AHeightFogActor>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_FOG"));
+                    break;
+                }
+                case OBJ_PLAYERSTART:
+                {
+                    SpawnedActor = World->SpawnActor<APlayerStart>();
+                    SpawnedActor->SetActorLabel(TEXT("OBJ_PLAYERSTART"));
                     break;
                 }
                 case OBJ_UI_TEXT:
@@ -547,6 +556,11 @@ void ControlEditorPanel::CreatePIEButton(ImVec2 ButtonSize, ImFont* IconFont) co
 void ControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
 {
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+    if (!Engine)
+    {
+        ImGui::End();
+        return;
+    }
     AEditorPlayer* Player = Engine->GetEditorPlayer();
 
     ImVec4 ActiveColor = ImVec4(0.00f, 0.00f, 0.85f, 1.0f);

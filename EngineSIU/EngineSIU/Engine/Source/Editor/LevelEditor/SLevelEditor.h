@@ -2,11 +2,14 @@
 #include <sstream>
 #include "Define.h"
 #include "Container/Map.h"
+#include "Delegates/Delegate.h"
 
 class SSplitterH;
 class SSplitterV;
 class UWorld;
 class FEditorViewportClient;
+
+struct FPointerEvent;
 
 
 class SLevelEditor
@@ -72,6 +75,15 @@ private:
 public:
     void LoadConfig();
     void SaveConfig();
+
+private:
+    TArray<FDelegateHandle> InputDelegateHandles;
+
+public:
+    // 에디터 모드 입장 시
+    void BindEditorInput();
+    // 에디터 모드 나갈 때
+    void UnbindEditorInput();
 
 private:
     TMap<FString, FString> ReadIniFile(const FString& FilePath);
