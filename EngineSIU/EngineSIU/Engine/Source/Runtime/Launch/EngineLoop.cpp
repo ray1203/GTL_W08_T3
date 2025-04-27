@@ -143,6 +143,8 @@ void FEngineLoop::Tick()
         UIMgr->BeginFrame();
         UnrealEditor->Render();
 
+        GEngine->ActiveWorld->RenderUIComponents();
+
         FConsole::GetInstance().Draw();
 
         UIMgr->EndFrame();

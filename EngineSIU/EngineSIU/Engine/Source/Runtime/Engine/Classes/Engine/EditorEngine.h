@@ -41,9 +41,9 @@ public:
     
     void NewWorld();
 
-    void SelectComponent(USceneComponent* InComponent) const;
-    bool CanSelectComponent(const USceneComponent* InComponent) const;
-    USceneComponent* GetSelectedComponent() const;
+    void SelectComponent(UActorComponent* InComponent) const;
+    bool CanSelectComponent(const UActorComponent* InComponent) const;
+    UActorComponent* GetSelectedComponent() const;
 
     void HoverComponent(USceneComponent* InComponent) const;
 

@@ -13,7 +13,7 @@ UObject* AActor::Duplicate(UObject* InOuter)
 
     NewActor->Owner = Owner;
     NewActor->bTickInEditor = bTickInEditor;
-
+    NewActor->SetActorLabel(GetActorLabel(), false);
     // 기본적으로 있던 컴포넌트 제거
     if (this->IsA<APlayer>())
     {

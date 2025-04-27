@@ -6,7 +6,6 @@
 #include <cwctype>
 
 #include "HAL/PlatformType.h"
-
 template <typename T>
 struct TCString
 {
