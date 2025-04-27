@@ -56,6 +56,9 @@ private:
 private:
     void InitEditorWorld(FWorldContext& EditorWorldContext);
     bool bEditorWorldInit = false;
+
+private:
+    std::optional<FDelegateHandle> ShowCursorDelegateHandle;
 };
 
 
