@@ -1,6 +1,8 @@
 #include "ShapeComponent.h"
 
 #include "UObject/Casts.h"
+#include "World/World.h"
+#include "Physics/PhysicsScene.h"
 
 UObject* UShapeComponent::Duplicate(UObject* InOuter)
 {
@@ -12,6 +14,16 @@ UObject* UShapeComponent::Duplicate(UObject* InOuter)
 void UShapeComponent::InitializeComponent()
 {
     Super::InitializeComponent();
+}
+
+void UShapeComponent::BeginPlay()
+{
+	Super::BeginPlay();
+    if (this->GetWorld()->WorldType != EWorldType::Editor)
+    {
+    	this->GetWorld()->PhysicsScene.AddRigidBody(this);
+
+    }
 }
 
 void UShapeComponent::TickComponent(float DeltaTime)

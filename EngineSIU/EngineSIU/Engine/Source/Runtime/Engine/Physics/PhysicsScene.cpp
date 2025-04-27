@@ -1,17 +1,13 @@
 #include "PhysicsScene.h"
-#include "PhysicsSolver.h"
 #include "Components/Shapes/ShapeComponent.h"
 #include "Components/ProjectileMovementComponent.h"
 #include "Classes/GameFramework/Actor.h"
 FPhysicsScene::FPhysicsScene()
 {
-    SceneSolver = new FPhysicsSolver();
 }
 
 FPhysicsScene::~FPhysicsScene()
 {
-    delete SceneSolver;
-    SceneSolver = nullptr;
     RegisteredBodies.Empty();
 }
 
@@ -24,7 +20,7 @@ void FPhysicsScene::SyncBodies()
         {
             // 예시: Solver에서 Comp에 대한 위치/회전 정보를 가져와 반영
             FTransform SimulatedTransform;
-            if (SceneSolver && SceneSolver->GetSimulatedTransform(Comp, SimulatedTransform))
+            if (SceneSolver.GetSimulatedTransform(Comp, SimulatedTransform))
             {
                 Comp->GetOwner()->SetActorLocation(SimulatedTransform.Translation);
                 Comp->GetOwner()->SetActorRotation(SimulatedTransform.Rotation.ToRotator());
@@ -32,7 +28,7 @@ void FPhysicsScene::SyncBodies()
                 Comp->GetOwner()->SetActorScale(SimulatedTransform.Scale3D);
                 if (UProjectileMovementComponent* ProjComp = Comp->GetOwner()->GetComponentByClass<UProjectileMovementComponent>())
                 {
-                    const FPhysicsBody* Body = SceneSolver->GetBody(Comp);
+                    const FPhysicsBody* Body = SceneSolver.GetBody(Comp);
                     ProjComp->SetVelocity(Body->Velocity);
                 }
             }
@@ -43,11 +39,8 @@ void FPhysicsScene::SyncBodies()
 void FPhysicsScene::TickPhysScene(float DeltaSeconds)
 {
     DeltaTime = DeltaSeconds;
-    if (SceneSolver)
-    {
-        SceneSolver->UpdateBodyFromComponent();
-        SceneSolver->AdvanceAndDispatch(DeltaSeconds);
-    }
+    SceneSolver.UpdateBodyFromComponent();
+    SceneSolver.AdvanceAndDispatch(DeltaSeconds);
 }
 
 void FPhysicsScene::AddRigidBody(UShapeComponent* Component)
@@ -55,10 +48,7 @@ void FPhysicsScene::AddRigidBody(UShapeComponent* Component)
     if (Component && !RegisteredBodies.Contains(Component))
     {
         RegisteredBodies.Add(Component);
-        if (SceneSolver)
-        {
-            SceneSolver->AddBody(Component);
-        }
+        SceneSolver.AddBody(Component);
     }
 }
 
@@ -67,10 +57,7 @@ void FPhysicsScene::RemoveRigidBody(UShapeComponent* Component)
     if (Component && RegisteredBodies.Contains(Component))
     {
         RegisteredBodies.Remove(Component);
-        if (SceneSolver)
-        {
-            SceneSolver->RemoveBody(Component);
-        }
+        SceneSolver.RemoveBody(Component);
     }
 }
 

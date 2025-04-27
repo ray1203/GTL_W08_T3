@@ -50,8 +50,8 @@ void UWorld::Tick(float DeltaTime)
     // 물리 연산 먼저 처리
     if (this->WorldType != EWorldType::Editor)
     {
-        PhysicsScene->TickPhysScene(DeltaTime);
-        PhysicsScene->SyncBodies();
+        PhysicsScene.TickPhysScene(DeltaTime);
+        PhysicsScene.SyncBodies();
     }
 
     // SpawnActor()에 의해 Actor가 생성된 경우, 여기서 BeginPlay 호출
@@ -76,7 +76,7 @@ void UWorld::BeginPlay()
             {
                 if (UShapeComponent* ShapeComp = Cast<UShapeComponent>(Comp))
                 {
-                    PhysicsScene->AddRigidBody(ShapeComp);
+                    PhysicsScene.AddRigidBody(ShapeComp);
                 }
             }
         }
@@ -93,13 +93,6 @@ void UWorld::Release()
     }
     
     GUObjectArray.ProcessPendingDestroyObjects();
-
-    // Editor world는 physics scene이 존재하지 않음
-    if (PhysicsScene)
-    {
-        delete PhysicsScene;
-        PhysicsScene = nullptr;
-    }
 }
 
 AActor* UWorld::SpawnActor(UClass* InClass, FName InActorName)

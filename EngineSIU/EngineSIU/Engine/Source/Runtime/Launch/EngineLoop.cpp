@@ -61,7 +61,11 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     GetClientSize(ClientWidth, ClientHeight);
     LevelEditor->Initialize(ClientWidth, ClientHeight);
 
+#if GAME_BUILD
+    GEngine = FObjectFactory::ConstructObject<UGameEngine>(nullptr);
+#else
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
+#endif
     GEngine->Init();
 
     UpdateUI();

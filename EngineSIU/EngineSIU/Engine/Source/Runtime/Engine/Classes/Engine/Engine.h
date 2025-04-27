@@ -5,6 +5,7 @@
 
 #include "Container/Array.h"
 #include "World/WorldContext.h"
+#include "Physics/PhysicsScene.h"
 
 class UAssetManager;
 class UWorld;

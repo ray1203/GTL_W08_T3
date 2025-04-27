@@ -1,5 +1,5 @@
 Velocity = Vector(0, 0, 0)
-JumpVelocity = 8.0
+JumpVelocity = 100.0
 Gravity = -9.8
 IsJumping = false
 
@@ -37,7 +37,8 @@ function Tick(dt)
 
     -- ���� �Է�
     if Input:GetKeyDown(EKeys.SpaceBar) and obj.Location.z <= 0 then
-        Velocity.z = JumpVelocity
+        obj.Velocity = JumpVelocity;
+        -- Velocity.z = JumpVelocity
         IsJumping = true
     end
 

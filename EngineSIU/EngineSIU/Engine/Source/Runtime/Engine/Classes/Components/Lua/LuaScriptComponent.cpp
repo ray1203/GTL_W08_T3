@@ -3,6 +3,7 @@
 #include <filesystem>
 
 #include "GameFramework/Actor.h"
+#include "Classes/Actors/Player.h"
 #include "Classes/Components/Shapes/ShapeComponent.h"
 ULuaScriptComponent::ULuaScriptComponent()
 {
@@ -68,7 +69,14 @@ void ULuaScriptComponent::LoadLuaScript()
     }
 
     auto& lua = FLuaScriptSystem::Get().GetLuaState();
-    lua["obj"] = GetOwner();
+	if (GetOwner()->IsA<APlayer>())
+	{
+		lua["obj"] = Cast<APlayer>(GetOwner());
+	}
+	else
+	{
+		lua["obj"] = GetOwner();
+	}
     lua.script_file(UTF8Path);
 
     LuaScriptTable = lua.globals();

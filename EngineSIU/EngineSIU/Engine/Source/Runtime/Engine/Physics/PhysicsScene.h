@@ -4,9 +4,8 @@
 #include "Container/Set.h"
 #include "OverlapInfo.h"
 #include "Math/Transform.h"
+#include "PhysicsSolver.h"
 
-
-class FPhysicsSolver;
 class UShapeComponent;
 
 class FPhysicsScene
@@ -25,7 +24,7 @@ public:
     bool Overlap(const UShapeComponent& Shape, const FTransform& Transform, TArray<FOverlapInfo>& OutOverlaps) const;
 
     float DeltaTime = 0.0f;
-    FPhysicsSolver* SceneSolver = nullptr;
+    FPhysicsSolver SceneSolver;
 
 private:
     TSet<UShapeComponent*> RegisteredBodies;

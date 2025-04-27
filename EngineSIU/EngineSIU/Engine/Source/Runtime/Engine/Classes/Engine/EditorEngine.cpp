@@ -53,7 +53,6 @@ void UEditorEngine::Init()
     UProjectileMovementComponent* ProjComp = Player->AddComponent<UProjectileMovementComponent>(TEXT("Projectile"));
     ProjComp->SetupAttachment(Player->GetRootComponent());
 
-
     ADirectionalLight* DirLight = EditorWorld->SpawnActor<ADirectionalLight>();
     DirLight->SetActorRotation(FRotator(20, -61, 11));
     DirLight->SetActorLocation(FVector(0, 0, 20));
@@ -124,7 +123,6 @@ void UEditorEngine::StartPIE()
 
     // PIE의 경우에는 PhysicsScene을 여기서 생성
     // 게임의 경우에는 GameEngine에서 생성해야할듯...
-    PIEWorld->PhysicsScene = new FPhysicsScene();
 
 
     PIEWorldContext.SetCurrentWorld(PIEWorld);

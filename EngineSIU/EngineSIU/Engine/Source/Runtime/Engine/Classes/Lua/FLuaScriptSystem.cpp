@@ -5,6 +5,7 @@
 
 #include "Components/Lua/LuaScriptComponent.h"
 #include "GameFramework/Actor.h"
+#include "Classes/Actors/Player.h"
 #include "Math/Vector.h"
 #include <shellapi.h>
 
@@ -112,13 +113,18 @@ void FLuaScriptSystem::BindActor()
 
         "Location", sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
         "Rotation", sol::property(&AActor::GetActorRotation, &AActor::SetActorRotation),
-        "Velocity", sol::property(&AActor::GetLuaVelocity, &AActor::SetLuaVelocity),
+        //"Velocity", sol::property(&AActor::GetLuaVelocity, &AActor::SetLuaVelocity),
         "UUID", sol::readonly_property(&AActor::GetUUID),
 
         "PrintLocation", [](AActor* Self) {
             auto loc = Self->GetActorLocation();
             UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
         }
+    );
+
+    Lua.new_usertype<APlayer>("APlayer",
+        sol::base_classes, sol::bases<AActor>(),
+        "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity)
     );
 }
 

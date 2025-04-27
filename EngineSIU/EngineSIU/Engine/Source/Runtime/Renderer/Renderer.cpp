@@ -47,17 +47,20 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     StaticMeshRenderPass = new FStaticMeshRenderPass();
     WorldBillboardRenderPass = new FWorldBillboardRenderPass();
     //EditorBillboardRenderPass = new FEditorBillboardRenderPass();
-    GizmoRenderPass = new FGizmoRenderPass();
     UpdateLightBufferPass = new FUpdateLightBufferPass();
     //LineRenderPass = new FLineRenderPass();
     FogRenderPass = new FFogRenderPass();
-    EditorRenderPass = new FEditorRenderPass();
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
     DirectionalShadowMap = new FDirectionalShadowMap();
     SpotLightShadowMapPass = new FSpotLightShadowMap();
     PointLightShadowMapPass = new FPointLightShadowMap();
+
+#if !GAME_BUILD
+    GizmoRenderPass = new FGizmoRenderPass();
+    EditorRenderPass = new FEditorRenderPass();
+#endif
 
     StaticMeshRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     WorldBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -95,7 +98,6 @@ void FRenderer::Release()
     delete StaticMeshRenderPass;
     delete WorldBillboardRenderPass;
     //delete EditorBillboardRenderPass;
-    delete GizmoRenderPass;
     delete UpdateLightBufferPass;
     //delete LineRenderPass;
     delete FogRenderPass;
@@ -106,6 +108,12 @@ void FRenderer::Release()
     delete DirectionalShadowMap;
     delete SpotLightShadowMapPass;
     delete PointLightShadowMapPass;
+
+#if !GAME_BUILD
+    delete EditorRenderPass;
+    delete GizmoRenderPass;
+#endif
+
 }
 
 void FRenderer::RenderShadowMap()
@@ -284,11 +292,14 @@ bool FRenderer::HandleHotReloadShader() const
     if (ShaderManager->HandleHotReloadShader())
     {
         StaticMeshRenderPass->ReloadShader();
-        GizmoRenderPass->ReloadShader();
         WorldBillboardRenderPass->ReloadShader();
         //EditorBillboardRenderPass->ReloadShader();
         FogRenderPass->ReloadShader();
+
+#if !GAME_BUILD
+        GizmoRenderPass->ReloadShader();
         EditorRenderPass->ReloadShader();
+#endif
         return true;
     }
     return false;
@@ -307,12 +318,13 @@ void FRenderer::PrepareRender(FViewportResource* ViewportResource)
 void FRenderer::PrepareRenderPass()
 {
     StaticMeshRenderPass->PrepareRender();
-    GizmoRenderPass->PrepareRender();
     WorldBillboardRenderPass->PrepareRender();
-    //EditorBillboardRenderPass->PrepareRender();
     UpdateLightBufferPass->PrepareRender();
     FogRenderPass->PrepareRender();
+#if !GAME_BUILD
+    GizmoRenderPass->PrepareRender();
     EditorRenderPass->PrepareRender();
+#endif
 }
 
 void FRenderer::ClearRenderArr()
@@ -320,12 +332,14 @@ void FRenderer::ClearRenderArr()
     StaticMeshRenderPass->ClearRenderArr();
     WorldBillboardRenderPass->ClearRenderArr();
     //EditorBillboardRenderPass->ClearRenderArr();
-    GizmoRenderPass->ClearRenderArr();
     UpdateLightBufferPass->ClearRenderArr();
     FogRenderPass->ClearRenderArr();
-    EditorRenderPass->ClearRenderArr();
     SpotLightShadowMapPass->ClearRenderArr();
     PointLightShadowMapPass->ClearRenderArr();
+#if !GAME_BUILD
+    GizmoRenderPass->ClearRenderArr();
+    EditorRenderPass->ClearRenderArr();
+#endif
 }
 
 void FRenderer::UpdateCommonBuffer(const std::shared_ptr<FEditorViewportClient>& Viewport)
