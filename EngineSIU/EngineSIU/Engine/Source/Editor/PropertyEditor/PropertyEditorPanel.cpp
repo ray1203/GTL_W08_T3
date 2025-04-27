@@ -62,6 +62,19 @@ void PropertyEditorPanel::Render()
     AActor* PickedActor = Engine->GetSelectedActor();
     if (PickedActor)
     {
+        // --- Actor Label 수정 ---
+        FString Label = PickedActor->GetActorLabel();
+        static char LabelBuffer[256];
+        strcpy_s(LabelBuffer, TCHAR_TO_UTF8(*Label));
+
+        if (ImGui::InputText("Actor Label", LabelBuffer, IM_ARRAYSIZE(LabelBuffer)))
+        {
+            PickedActor->SetActorLabel(FString(LabelBuffer), false); // UUID 붙이지 않도록 false
+        }
+    }
+
+    if (PickedActor && PickedActor->GetRootComponent())
+    {
         ImGui::SetItemDefaultFocus();
         // TreeNode 배경색을 변경 (기본 상태)
         ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));

@@ -22,4 +22,5 @@ private:
     void BindActor();
     void BindInput();
     void BindUtilities();
+    void BindUI();
 };

@@ -19,8 +19,8 @@ public:
     virtual void TickComponent(float DeltaTime) override;
     virtual void RenderUI() override;
 
+    std::function<void()> OnClick = nullptr;
 
 private:
     std::string Label = "Click Me";
-    std::function<void()> OnClick = nullptr;
 };
