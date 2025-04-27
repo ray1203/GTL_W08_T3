@@ -11,6 +11,8 @@
 #include "FInputManager.h"
 #include "Components/UI/UUIButtonComponent.h"
 #include "Components/UI/UUITextComponent.h"
+#include "Engine/Engine.h"
+#include "World/World.h"
 
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
@@ -167,6 +169,26 @@ void FLuaScriptSystem::BindUtilities()
     Lua.set_function("print", [](const std::string& msg) {
         UE_LOG(ELogLevel::Display, TEXT("[Lua Print] %s"), *FString(msg));
         });
+    Lua.set_function("FindActorByLabel", [](const std::string& Label) -> AActor*
+        {
+            return FindActorByLabel(FString(Label));
+        });
+    //ActorComp로 가져와도 Lua에서는 형변환/하위 객체에 접근 불가
+    Lua.set_function("GetComponentByType", [](AActor* Actor, const std::string& TypeName) -> UActorComponent*
+        {
+            return GetComponentByTypeName(Actor, TypeName);
+        });
+    // 새로 추가
+    Lua.set_function("GetUITextComponent", [](AActor* Actor) -> UUITextComponent*
+        {
+            return Actor ? Actor->GetComponentByClass<UUITextComponent>() : nullptr;
+        });
+
+    Lua.set_function("GetUIButtonComponent", [](AActor* Actor) -> UUIButtonComponent*
+        {
+            return Actor ? Actor->GetComponentByClass<UUIButtonComponent>() : nullptr;
+        });
+
 }
 void FLuaScriptSystem::BindUI()
 {
@@ -198,4 +220,35 @@ void FLuaScriptSystem::BindUI()
 
         "OnClick", &UUIButtonComponent::OnClick
     );
+}
+
+//Lua 내부에서 사용할 함수들
+AActor* FLuaScriptSystem::FindActorByLabel(const FString& Label)
+{
+    UWorld* World = GEngine->ActiveWorld;
+    if (!World) return nullptr;
+
+    for (AActor* Actor : World->GetActiveLevel()->Actors)
+    {
+        if (Actor && Actor->GetActorLabel() == Label)
+        {
+            return Actor;
+        }
+    }
+
+    return nullptr;
+}
+UActorComponent* FLuaScriptSystem::GetComponentByTypeName(AActor* Actor, const std::string& TypeName)
+{
+    if (!Actor) return nullptr;
+
+    for (UActorComponent* Comp : Actor->GetComponents())
+    {
+        if (Comp && TCHAR_TO_UTF8(*Comp->GetClass()->GetName()) == TypeName)
+        {
+            return Comp;
+        }
+    }
+
+    return nullptr;
 }
