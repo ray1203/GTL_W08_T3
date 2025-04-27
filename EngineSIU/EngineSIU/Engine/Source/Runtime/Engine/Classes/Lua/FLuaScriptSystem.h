@@ -3,6 +3,8 @@
 
 #include "HAL/PlatformType.h"
 
+class UActorComponent;
+class AActor;
 class FString;
 
 class FLuaScriptSystem
@@ -22,4 +24,8 @@ private:
     void BindActor();
     void BindInput();
     void BindUtilities();
+    void BindUI();
+
+    static AActor* FindActorByLabel(const FString& Label);
+    static UActorComponent* GetComponentByTypeName(AActor* Actor, const std::string& TypeName);
 };

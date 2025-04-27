@@ -49,10 +49,18 @@ function Tick(dt)
 
     -- 바닥 체크 및 정지
     if obj.Location.z <= 0 then
-        obj.Location = Vector(obj.Location.x,obj.Location.y,0)
+        obj.Location = Vector(obj.Location.x, obj.Location.y, 0)
         Velocity.z = 0
         IsJumping = false
     end
 
-    obj:PrintLocation()
+    -- Score라는 이름의 액터 찾기
+    local scoreActor = FindActorByLabel("Score")
+    if scoreActor then
+        local textComp = GetUITextComponent(scoreActor)
+        if textComp then
+            local z = math.floor(obj.Location.z * 100) / 100
+            textComp.Text = "Score:"..tostring(z)
+        end
+    end
 end

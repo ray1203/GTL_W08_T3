@@ -4,6 +4,8 @@
 #include "Engine/EditorEngine.h"
 #include <functional>
 
+#include "Components/UI/UUIComponent.h"
+
 void OutlinerEditorPanel::Render()
 {
     /* Pre Setup */
@@ -33,30 +35,31 @@ void OutlinerEditorPanel::Render()
     /* Render Start */
     ImGui::Begin("Outliner", nullptr, PanelFlags);
 
-    
-    ImGui::BeginChild("Objects");
     UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
-    if (!Engine)
-        return;
+    if (!Engine) return;
 
-    std::function<void(USceneComponent*)> CreateNode = [&CreateNode, &Engine](USceneComponent* InComp)->void
+    ULevel* Level = Engine->ActiveWorld->GetActiveLevel();
+    if (!Level) return;
+
+    float ContentRegionWidth = ImGui::GetContentRegionAvail().x;
+    float HalfHeight = PanelHeight * 0.45f;
+
+    // === SceneComponent 트리 영역 ===
+    ImGui::Text("Scene Components");
+    ImGui::Separator();
+    ImGui::BeginChild("SceneTree", ImVec2(ContentRegionWidth, HalfHeight), true, ImGuiWindowFlags_AlwaysUseWindowPadding);
+
+    std::function<void(USceneComponent*)> CreateNode = [&CreateNode, &Engine](USceneComponent* InComp)
         {
-            FString Name;
+            FString Name = (InComp == InComp->GetOwner()->GetRootComponent())
+                ? InComp->GetOwner()->GetActorLabel()
+                : InComp->GetName();
 
-            if (InComp == InComp->GetOwner()->GetRootComponent())
-            {
-                Name = InComp->GetOwner()->GetActorLabel();
-            }
-            else
-            {
-                Name = InComp->GetName();
-            }
-
-            ImGuiTreeNodeFlags Flags = ImGuiTreeNodeFlags_None;
-            if (InComp->GetAttachChildren().Num() == 0)
+            ImGuiTreeNodeFlags Flags = ImGuiTreeNodeFlags_OpenOnArrow;
+            if (InComp->GetAttachChildren().IsEmpty())
                 Flags |= ImGuiTreeNodeFlags_Leaf;
 
-            bool NodeOpen = ImGui::TreeNodeEx(*Name, Flags);
+            bool bOpen = ImGui::TreeNodeEx(*Name, Flags);
 
             if (ImGui::IsItemClicked())
             {
@@ -64,23 +67,53 @@ void OutlinerEditorPanel::Render()
                 Engine->SelectComponent(InComp);
             }
 
-            if (NodeOpen)
+            if (bOpen)
             {
                 for (USceneComponent* Child : InComp->GetAttachChildren())
                 {
                     CreateNode(Child);
                 }
-                ImGui::TreePop(); // 트리 닫기
+                ImGui::TreePop();
             }
         };
 
-    for (AActor* Actor : Engine->ActiveWorld->GetActiveLevel()->Actors)
+    for (AActor* Actor : Level->Actors)
     {
-        CreateNode(Actor->GetRootComponent());
+        if (Actor && Actor->GetRootComponent())
+        {
+            CreateNode(Actor->GetRootComponent());
+        }
     }
 
     ImGui::EndChild();
 
+    // === UIComponent 트리 영역 ===
+    ImGui::Spacing();
+    ImGui::Text("UI Components");
+    ImGui::Separator();
+    ImGui::BeginChild("UIComponentList", ImVec2(ContentRegionWidth, HalfHeight), true, ImGuiWindowFlags_AlwaysUseWindowPadding);
+
+    for (AActor* Actor : Level->Actors)
+    {
+        if (!Actor) continue;
+
+        const TSet<UActorComponent*>& Components = Actor->GetComponents();
+        for (UActorComponent* Comp : Components)
+        {
+            if (UUIComponent* UIComp = Cast<UUIComponent>(Comp))
+            {
+                FString Label = FString::Printf(TEXT("%s [%s]"), *Actor->GetActorLabel(), *UIComp->GetClass()->GetName());
+
+                if (ImGui::Selectable(*Label))
+                {
+                    Engine->SelectActor(Actor);
+                    Engine->SelectComponent(UIComp);
+                }
+            }
+        }
+    }
+
+    ImGui::EndChild();
     ImGui::End();
 }
     

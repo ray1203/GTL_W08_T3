@@ -57,7 +57,8 @@ public:
 
     EWorldType WorldType = EWorldType::None;
 
-    
+    void RenderUIComponents();
+
 private:
     FString WorldName = "DefaultWorld";
 
