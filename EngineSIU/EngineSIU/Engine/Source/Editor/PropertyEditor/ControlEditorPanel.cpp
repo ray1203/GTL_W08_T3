@@ -13,6 +13,7 @@
 #include "Components/ParticleSubUVComponent.h"
 #include "Components/TextComponent.h"
 #include "Components/ProjectileMovementComponent.h"
+#include "Components/Shapes/SphereComponent.h"
 
 #include "Engine/FLoaderOBJ.h"
 #include "Engine/StaticMeshActor.h"
@@ -283,6 +284,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
         static const Primitive primitives[] = {
             { .label= "Cube",      .obj= OBJ_CUBE },
             { .label= "Sphere",    .obj= OBJ_SPHERE },
+            { .label= "Ground",    .obj= OBJ_GROUND },
             { .label= "PointLight", .obj= OBJ_POINTLIGHT },
             { .label= "SpotLight", .obj= OBJ_SPOTLIGHT },
             { .label= "DirectionalLight", .obj= OBJ_DIRECTIONALLGIHT },
@@ -312,11 +314,23 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 {
                     SpawnedActor = World->SpawnActor<AActor>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_SPHERE"));
-                    USphereComp* SphereComp = SpawnedActor->AddComponent<USphereComp>(TEXT("SphereComponent"));
+                    USphereComp* SphereComp = SpawnedActor->AddComponent<USphereComp>(TEXT("SphereComp"));
+                    SpawnedActor->SetRootComponent(SphereComp);
+                    USphereComponent* SphereCompo = SpawnedActor->AddComponent<USphereComponent>(TEXT("SphereComponent"));
+                    SphereCompo->SetupAttachment(SphereComp);
+                    UProjectileMovementComponent* ProjComp = SpawnedActor->AddComponent<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
                     SphereComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
                     break;
                 }
                 case OBJ_CUBE:
+                {
+                    // TODO: 다른 부분들 전부 Actor만 소환하도록 하고, Component 생성은 Actor가 자체적으로 하도록 변경.
+                    ACube* CubeActor = World->SpawnActor<ACube>();
+                    CubeActor->SetActorLabel(TEXT("OBJ_CUBE"));
+                    break;
+                }
+
+                case OBJ_GROUND:
                 {
                     // TODO: 다른 부분들 전부 Actor만 소환하도록 하고, Component 생성은 Actor가 자체적으로 하도록 변경.
                     ACube* CubeActor = World->SpawnActor<ACube>();

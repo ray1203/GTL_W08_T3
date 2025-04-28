@@ -65,6 +65,6 @@ void UGameEngine::InitGameWorld(FWorldContext& GameWorldContext)
 void UGameEngine::LoadInitialScene()
 {
     //Load
-    FString SceneName = TEXT("Contents\\MainGameScene.scene");
+    FString SceneName = TEXT("Contents\\soccer.scene");
     LoadWorld(SceneName);
 }

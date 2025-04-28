@@ -137,6 +137,10 @@ void FLuaScriptSystem::BindActor()
     Lua.new_usertype<APlayer>("APlayer",
         sol::base_classes, sol::bases<AActor>(),
         "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity)
+        //"Move", [](APlayer* Self, FVector Direction, float Scalar)
+        //{
+        //    Self->SetVelocity(Direction * Scalar);
+        //}
     );
 }
 

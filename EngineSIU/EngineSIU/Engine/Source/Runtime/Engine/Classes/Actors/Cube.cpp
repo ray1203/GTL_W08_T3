@@ -13,7 +13,7 @@ ACube::ACube()
     // 임시 Lua 스크립트 자동 로딩
     //LuaScriptPath = TEXT("TestLuaActor"); // 확장자 없이
     ULuaScriptComponent* LuaComp = AddComponent<ULuaScriptComponent>(TEXT("LuaActor"));
-    LuaComp->SetScriptPath(TEXT("TestLuaActor"));
+    LuaComp->SetScriptPath(TEXT("template"));
     StaticMeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Reference/Reference.obj"));
     // End Test
 }

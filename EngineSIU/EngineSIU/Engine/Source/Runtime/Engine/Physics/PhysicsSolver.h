@@ -70,4 +70,5 @@ protected:
 private:
     const float RestitutionThreshold = 1e-2f;
     float Restitution = 0.6;
+    float Friction = 0.95;
 };

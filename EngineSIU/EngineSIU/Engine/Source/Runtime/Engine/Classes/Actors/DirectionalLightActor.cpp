@@ -5,14 +5,8 @@
 ADirectionalLight::ADirectionalLight()
 {
     DirectionalLightComponent = AddComponent<UDirectionalLightComponent>(TEXT("DirectionalLightComponent"));
-    BillboardComponent = AddComponent<UBillboardComponent>(TEXT("BillboardComponent"));
 
-    RootComponent = BillboardComponent;
-
-    BillboardComponent->SetTexture(L"Assets/Editor/Icon/DirectionalLight_64x.png");
-    BillboardComponent->bIsEditorBillboard = true;
-
-    DirectionalLightComponent->AttachToComponent(RootComponent);
+    RootComponent = DirectionalLightComponent;
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst

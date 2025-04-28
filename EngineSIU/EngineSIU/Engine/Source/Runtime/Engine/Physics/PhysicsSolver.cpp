@@ -42,6 +42,11 @@ void FPhysicsSolver::ApplyForces()
 {
     for (FPhysicsBody& Body : SimulatedBodies)
     {
+        if (Body.Velocity.LengthSquared() != 0 && Body.Transform.Translation.Z < KINDA_SMALL_NUMBER)
+        {
+            Body.Acceleration.X -= Friction * Body.Velocity.X;
+            Body.Acceleration.Y -= Friction * Body.Velocity.Y;
+        }
         // UProjectileComponent의 중력가속도를 이용
     }
 }
@@ -52,7 +57,22 @@ void FPhysicsSolver::Integrate(float DeltaTime)
     {
         if (Body.bIsSimulatingPhysics)
         {
-            Body.Velocity += Body.Acceleration * DeltaTime;
+            if (Body.Velocity.Dot(Body.Acceleration) < 0) // 방향이 반대일 때만 clamp
+            {
+                FVector DeltaV = Body.Acceleration * DeltaTime;
+                if (DeltaV.LengthSquared() > Body.Velocity.LengthSquared())
+                {
+                    Body.Velocity = FVector::ZeroVector;
+                }
+                else
+                {
+                    Body.Velocity += DeltaV;
+                }
+            }
+            else
+            {
+                Body.Velocity += Body.Acceleration * DeltaTime;
+            }
             Body.Transform.AddToTranslation(Body.Velocity * DeltaTime);
         }
     }
