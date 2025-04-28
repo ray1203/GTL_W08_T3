@@ -169,7 +169,7 @@ void FLuaScriptSystem::BindActor()
                     FVector Dir = (TargetPos - ShootPos).GetSafeNormal();
                     NewActor->SetInitialSpeed(Dir * Speed);
                     NewActor->SetActorLocation(ShootPos);
-                    NewActor->GetComponentByClass<USphereComponent>()->Mass = 10000.0f;
+                    NewActor->GetComponentByClass<USphereComponent>()->Mass = 1.0f;
                 }
             }
 
@@ -180,6 +180,7 @@ void FLuaScriptSystem::BindActor()
     Lua.new_usertype<APlayer>("APlayer",
         sol::base_classes, sol::bases<AActor>(),
         "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity),
+        "Acceleration", sol::property(&APlayer::GetAcceleration, &APlayer::SetAcceleration),
         "bGrounded", sol::readonly_property(&APlayer::IsGrounded)
     );
 

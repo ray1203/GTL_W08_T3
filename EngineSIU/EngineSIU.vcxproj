@@ -468,6 +468,8 @@
     <ClCompile Include="EngineSIU\LightGridGenerator.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\SphereComponent.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\Shapes\ShapeComponent.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\LandBlock.cpp" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\GameManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Projectile.h" />
@@ -488,6 +490,8 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\PhysicsScene.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\PhysicsSolver.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\Transform.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\LandBlock.h" />
     <ClInclude Include="Pawn.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompileData.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Developer\ShaderCompileUtils\ShaderCompile.h" />

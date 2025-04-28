@@ -35,6 +35,7 @@
 #include "Actors/UI/TextUIActor.h"
 #include <Actors/PlayerStart.h>
 #include <Actors/Player.h>
+#include "Actors/LandBlock.h"
 
 void ControlEditorPanel::Render()
 {
@@ -327,15 +328,8 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 }
                 case OBJ_BOX:
                 {
-                    SpawnedActor = World->SpawnActor<AActor>();
+                    SpawnedActor = World->SpawnActor<ALandBlock>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_BOX"));
-                    UStaticMeshComponent* SMComp = SpawnedActor->AddComponent<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
-                    SMComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/helloBlender.obj"));
-                    SpawnedActor->SetRootComponent(SMComp);
-
-                    UBoxComponent* BoxComponent = SpawnedActor->AddComponent<UBoxComponent>(TEXT("BoxComponent"));
-                    BoxComponent->SetupAttachment(SMComp);
-                    BoxComponent->bIsSimulatingPhysics = false;
                     break;
                 }
                 case OBJ_CUBE:
