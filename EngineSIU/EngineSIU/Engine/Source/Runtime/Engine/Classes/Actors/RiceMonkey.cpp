@@ -55,6 +55,18 @@ void ARiceMonkey::BeginPlay()
 void ARiceMonkey::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    
+    FVector PlayerLocation = AActor::GetPlayerLocation();
+
+    FVector Direction = PlayerLocation - GetActorLocation();
+    Direction.Z = 0;
+    Direction.Normalize();
+    FRotator Rot = Direction.Rotation();
+
+    // 반시계 90도 회전해야 함
+    Rot.Yaw -= 90.0f;
+
+    SetActorRotation(Rot);
 }
 
 void ARiceMonkey::OnOverlap(const FPhysicsBody& result)
