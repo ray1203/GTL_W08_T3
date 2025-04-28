@@ -28,7 +28,6 @@ void APlayer::PostSpawn()
     
     Collider = AddComponent<UShapeComponent>(TEXT("Collider"));
     Movement = AddComponent<UProjectileMovementComponent>(TEXT("Movement"));
-    Movement->SetGravity(100.f);
     Movement->SetVelocity(FVector(0, 0, 100.f));
 
 
