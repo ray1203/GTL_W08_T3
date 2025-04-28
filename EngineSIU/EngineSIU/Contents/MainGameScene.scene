@@ -6,27 +6,6 @@
             "ActorLabel": "APlayer96",
             "Components": [
                 {
-                    "AttachParentID": "nullptr",
-                    "ComponentClass": "UProjectileMovementComponent",
-                    "ComponentID": "Movement",
-                    "Properties": {
-                        "Acceleration": "X=0.000 Y=0.000 Z=-50.000",
-                        "AccumulatedTime": "0.000000",
-                        "ComponentClass": "UProjectileMovementComponent",
-                        "ComponentName": "Movement",
-                        "ComponentOwner": "APlayer_96",
-                        "ComponentOwnerClass": "APlayer",
-                        "InitialSpeed": "0.000000",
-                        "MaxSpeed": "0.000000",
-                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "Velocity": "X=0.000 Y=0.000 Z=0.000",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
-                    }
-                },
-                {
                     "AttachParentID": "",
                     "ComponentClass": "ULuaScriptComponent",
                     "ComponentID": "LuaScriptComponent",
@@ -52,6 +31,27 @@
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": ""
+                    }
+                },
+                {
+                    "AttachParentID": "nullptr",
+                    "ComponentClass": "UProjectileMovementComponent",
+                    "ComponentID": "Movement",
+                    "Properties": {
+                        "Acceleration": "X=0.000 Y=0.000 Z=-50.000",
+                        "AccumulatedTime": "0.000000",
+                        "ComponentClass": "UProjectileMovementComponent",
+                        "ComponentName": "Movement",
+                        "ComponentOwner": "APlayer_96",
+                        "ComponentOwnerClass": "APlayer",
+                        "InitialSpeed": "0.000000",
+                        "MaxSpeed": "0.000000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "Velocity": "X=0.000 Y=0.000 Z=0.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
                     }
                 },
                 {
@@ -141,6 +141,14 @@
             "ActorLabel": "OBJ_BOX_105",
             "Components": [
                 {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                },
+                {
                     "AttachParentID": "StaticMeshComponent",
                     "ComponentClass": "UBoxComponent",
                     "ComponentID": "BoxComponent",
@@ -161,14 +169,6 @@
                         "bIsActive": "true",
                         "bIsSimulatingPhysics": "false",
                         "m_Type": ""
-                    }
-                },
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "template"
                     }
                 },
                 {
@@ -236,6 +236,14 @@
             "ActorLabel": "OBJ_STATICMESHACTOR_1716",
             "Components": [
                 {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                },
+                {
                     "AttachParentID": "nullptr",
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "StaticMeshComponent_0",
@@ -254,14 +262,6 @@
                         "bIsActive": "true",
                         "m_Type": ""
                     }
-                },
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "template"
-                    }
                 }
             ],
             "RootComponentID": "StaticMeshComponent_0"
@@ -271,26 +271,6 @@
             "ActorID": "AStaticMeshActor_1719",
             "ActorLabel": "OBJ_STATICMESHACTOR_1716",
             "Components": [
-                {
-                    "AttachParentID": "nullptr",
-                    "ComponentClass": "UStaticMeshComponent",
-                    "ComponentID": "UStaticMeshComponent_1721",
-                    "Properties": {
-                        "AABB_max": "X=13.919 Y=0.743 Z=7.330",
-                        "AABB_min": "X=-14.062 Y=-25.799 Z=-13.472",
-                        "ComponentClass": "UStaticMeshComponent",
-                        "ComponentName": "UStaticMeshComponent_1721",
-                        "ComponentOwner": "AStaticMeshActor_1719",
-                        "ComponentOwnerClass": "AStaticMeshActor",
-                        "RelativeLocation": "X=-58.094 Y=-0.485 Z=0.000",
-                        "RelativeRotation": "Pitch=0.000 Yaw=59.015 Roll=90.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "StaticMeshPath": "Contents/Tree/Lowpoly_tree_sample.obj",
-                        "bAutoActive": "true",
-                        "bIsActive": "true",
-                        "m_Type": ""
-                    }
-                },
                 {
                     "AttachParentID": "UStaticMeshComponent_1721",
                     "ComponentClass": "UStaticMeshComponent",
@@ -320,6 +300,26 @@
                     }
                 },
                 {
+                    "AttachParentID": "nullptr",
+                    "ComponentClass": "UStaticMeshComponent",
+                    "ComponentID": "UStaticMeshComponent_1721",
+                    "Properties": {
+                        "AABB_max": "X=13.919 Y=0.743 Z=7.330",
+                        "AABB_min": "X=-14.062 Y=-25.799 Z=-13.472",
+                        "ComponentClass": "UStaticMeshComponent",
+                        "ComponentName": "UStaticMeshComponent_1721",
+                        "ComponentOwner": "AStaticMeshActor_1719",
+                        "ComponentOwnerClass": "AStaticMeshActor",
+                        "RelativeLocation": "X=-58.094 Y=-0.485 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=59.015 Roll=90.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "StaticMeshPath": "Contents/Tree/Lowpoly_tree_sample.obj",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "m_Type": ""
+                    }
+                },
+                {
                     "AttachParentID": "",
                     "ComponentClass": "ULuaScriptComponent",
                     "ComponentID": "ULuaScriptComponent_1722",
@@ -335,6 +335,14 @@
             "ActorID": "AStaticMeshActor_1723",
             "ActorLabel": "OBJ_STATICMESHACTOR_1716",
             "Components": [
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                },
                 {
                     "AttachParentID": "UStaticMeshComponent_1725",
                     "ComponentClass": "UStaticMeshComponent",
@@ -353,14 +361,6 @@
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": ""
-                    }
-                },
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "template"
                     }
                 },
                 {
@@ -400,6 +400,26 @@
             "ActorLabel": "OBJ_STATICMESHACTOR_1716",
             "Components": [
                 {
+                    "AttachParentID": "nullptr",
+                    "ComponentClass": "UStaticMeshComponent",
+                    "ComponentID": "UStaticMeshComponent_1729",
+                    "Properties": {
+                        "AABB_max": "X=13.919 Y=0.743 Z=7.330",
+                        "AABB_min": "X=-14.062 Y=-25.799 Z=-13.472",
+                        "ComponentClass": "UStaticMeshComponent",
+                        "ComponentName": "UStaticMeshComponent_1729",
+                        "ComponentOwner": "AStaticMeshActor_1727",
+                        "ComponentOwnerClass": "AStaticMeshActor",
+                        "RelativeLocation": "X=40.158 Y=-50.242 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=35.523 Roll=90.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "StaticMeshPath": "Contents/Tree/Lowpoly_tree_sample.obj",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "m_Type": ""
+                    }
+                },
+                {
                     "AttachParentID": "UStaticMeshComponent_1729",
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "StaticMeshComponent_0",
@@ -422,7 +442,7 @@
                 {
                     "AttachParentID": "",
                     "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "ULuaScriptComponent_1730",
+                    "ComponentID": "LuaScriptComponent",
                     "Properties": {
                         "LuaScriptPath": "template"
                     }
@@ -430,29 +450,9 @@
                 {
                     "AttachParentID": "",
                     "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
+                    "ComponentID": "ULuaScriptComponent_1730",
                     "Properties": {
                         "LuaScriptPath": "template"
-                    }
-                },
-                {
-                    "AttachParentID": "nullptr",
-                    "ComponentClass": "UStaticMeshComponent",
-                    "ComponentID": "UStaticMeshComponent_1729",
-                    "Properties": {
-                        "AABB_max": "X=13.919 Y=0.743 Z=7.330",
-                        "AABB_min": "X=-14.062 Y=-25.799 Z=-13.472",
-                        "ComponentClass": "UStaticMeshComponent",
-                        "ComponentName": "UStaticMeshComponent_1729",
-                        "ComponentOwner": "AStaticMeshActor_1727",
-                        "ComponentOwnerClass": "AStaticMeshActor",
-                        "RelativeLocation": "X=40.158 Y=-50.242 Z=0.000",
-                        "RelativeRotation": "Pitch=0.000 Yaw=35.523 Roll=90.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "StaticMeshPath": "Contents/Tree/Lowpoly_tree_sample.obj",
-                        "bAutoActive": "true",
-                        "bIsActive": "true",
-                        "m_Type": ""
                     }
                 }
             ],
@@ -730,73 +730,6 @@
             "RootComponentID": "PointLightComponent"
         },
         {
-            "ActorClass": "ALandBlock",
-            "ActorID": "ALandBlock_206",
-            "ActorLabel": "OBJ_BOX_206",
-            "Components": [
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "LandGenerate"
-                    }
-                },
-                {
-                    "AttachParentID": "nullptr",
-                    "ComponentClass": "UStaticMeshComponent",
-                    "ComponentID": "MeshComponent",
-                    "Properties": {
-                        "AABB_max": "X=1.000 Y=1.000 Z=1.000",
-                        "AABB_min": "X=-1.000 Y=-1.000 Z=-1.000",
-                        "ComponentClass": "UStaticMeshComponent",
-                        "ComponentName": "MeshComponent",
-                        "ComponentOwner": "ALandBlock_206",
-                        "ComponentOwnerClass": "ALandBlock",
-                        "RelativeLocation": "X=4.162 Y=14.457 Z=2.665",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
-                        "RelativeScale3D": "X=3.100 Y=2.200 Z=1.000",
-                        "StaticMeshPath": "Contents/helloBlender.obj",
-                        "bAutoActive": "true",
-                        "bIsActive": "true",
-                        "m_Type": ""
-                    }
-                },
-                {
-                    "AttachParentID": "MeshComponent",
-                    "ComponentClass": "UBoxComponent",
-                    "ComponentID": "Box",
-                    "Properties": {
-                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
-                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
-                        "BoxExtent": "X=1.000 Y=1.000 Z=1.000",
-                        "ComponentClass": "UBoxComponent",
-                        "ComponentName": "Box",
-                        "ComponentOwner": "ALandBlock_206",
-                        "ComponentOwnerClass": "ALandBlock",
-                        "Mass": "1.000000",
-                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "bAutoActive": "true",
-                        "bDrawOnlyIfSelected": "false",
-                        "bIsActive": "true",
-                        "bIsSimulatingPhysics": "false",
-                        "m_Type": ""
-                    }
-                },
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "LandGenerate"
-                    }
-                }
-            ],
-            "RootComponentID": "MeshComponent"
-        },
-        {
             "ActorClass": "AButtonUIActor",
             "ActorID": "AButtonUIActor_338",
             "ActorLabel": "RestartButton",
@@ -1013,6 +946,73 @@
                 }
             ],
             "RootComponentID": ""
+        },
+        {
+            "ActorClass": "APlatform",
+            "ActorID": "APlatform_287",
+            "ActorLabel": "OBJ_BOX_287",
+            "Components": [
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "LandGenerate"
+                    }
+                },
+                {
+                    "AttachParentID": "nullptr",
+                    "ComponentClass": "UStaticMeshComponent",
+                    "ComponentID": "MeshComponent",
+                    "Properties": {
+                        "AABB_max": "X=1.000 Y=1.000 Z=1.000",
+                        "AABB_min": "X=-1.000 Y=-1.000 Z=-1.000",
+                        "ComponentClass": "UStaticMeshComponent",
+                        "ComponentName": "MeshComponent",
+                        "ComponentOwner": "APlatform_287",
+                        "ComponentOwnerClass": "APlatform",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "StaticMeshPath": "Contents/helloBlender.obj",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "m_Type": ""
+                    }
+                },
+                {
+                    "AttachParentID": "MeshComponent",
+                    "ComponentClass": "UBoxComponent",
+                    "ComponentID": "Box",
+                    "Properties": {
+                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
+                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
+                        "BoxExtent": "X=1.000 Y=1.000 Z=1.000",
+                        "ComponentClass": "UBoxComponent",
+                        "ComponentName": "Box",
+                        "ComponentOwner": "APlatform_287",
+                        "ComponentOwnerClass": "APlatform",
+                        "Mass": "1.000000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bDrawOnlyIfSelected": "false",
+                        "bIsActive": "true",
+                        "bIsSimulatingPhysics": "false",
+                        "m_Type": ""
+                    }
+                }
+            ],
+            "RootComponentID": "MeshComponent"
         }
     ],
     "NextUUID": 0,

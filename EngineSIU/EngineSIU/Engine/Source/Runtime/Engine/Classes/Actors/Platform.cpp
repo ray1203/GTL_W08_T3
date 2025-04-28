@@ -14,7 +14,7 @@ void APlatform::PostSpawn()
 {
     Super::PostSpawn();
     MeshComponent = AddComponent<UStaticMeshComponent>(TEXT("MeshComponent"));
-    MeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/helloBlender.obj"));
+    MeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/ssal.obj"));
     RootComponent = MeshComponent;
 
     Collider = AddComponent<UBoxComponent>(TEXT("Box"));
@@ -76,7 +76,7 @@ void APlatform::GenerateNextLevel()
     NewBlock->LuaComp->CallLuaFunction("OnGenerated", GetActorLocation());
 
     // 10단계마다 원숭이 생성
-    if (Level % 10 == 2)
+    if (Level % 10 == 0)
     {
         NewBlock = GetWorld()->SpawnActor<APlatform>();
         NewBlock->Level = Level + 1;
