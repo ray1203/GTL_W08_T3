@@ -106,7 +106,7 @@ public:
 
     FVector GetPlayerLocation();
     FVector GetVelocity();
-
+    FVector GetAcceleration();
 protected:
     UPROPERTY
     (USceneComponent*, RootComponent, = nullptr)

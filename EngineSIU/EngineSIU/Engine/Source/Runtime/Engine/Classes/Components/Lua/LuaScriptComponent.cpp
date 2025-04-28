@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <fstream>
 
-#include "GameFramework/Actor.h"
 #include "Classes/Actors/Player.h"
 #include "Classes/Components/Shapes/ShapeComponent.h"
 ULuaScriptComponent::ULuaScriptComponent()
@@ -117,35 +116,8 @@ void ULuaScriptComponent::SetScriptPath(const FString& InPath)
     LoadLuaScript(); //변경 즉시 Lua 스크립트 재로드
 }
 
-void ULuaScriptComponent::CallLuaFunction(const char* FunctionName, float DeltaTime, AActor* Other)
-{
-    if (!LuaScriptTable.valid())
-    {
-        UE_LOG(ELogLevel::Warning, TEXT("LuaScriptTable is invalid for Actor %s"), *GetOwner()->GetActorLabel());
-        return;
-    }
 
-    sol::function Func = LuaScriptTable[FunctionName];
-    if (!Func.valid())
-    {
-        UE_LOG(ELogLevel::Warning, TEXT("Lua function '%s' not found in script: %s"), *FString(FunctionName), *LuaScriptPath);
-        return;
-    }
 
-    sol::protected_function_result Result;
-    if (strcmp(FunctionName, "Tick") == 0)
-        Result = Func(DeltaTime);
-    else if (strcmp(FunctionName, "OnOverlap") == 0)
-        Result = Func(Other);
-    else
-        Result = Func();
-
-    if (!Result.valid())
-    {
-        sol::error err = Result;
-        UE_LOG(ELogLevel::Error, *FString::Printf(TEXT("Lua error in %s: %s"), *FString(FunctionName), err.what()));
-    }
-}
 void ULuaScriptComponent::GetProperties(TMap<FString, FString>& OutProperties) const
 {
 

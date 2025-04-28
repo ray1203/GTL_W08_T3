@@ -4,8 +4,11 @@
 #include "Camera/SpringArmComponent.h"
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/Shapes/SphereComponent.h"
+#include "Components/Shapes/CapsuleComponent.h"
+#include "Components/Shapes/BoxComponent.h"
 #include "World/World.h"
-
+#include "Actors/Projectile.h"
+#include "LandBlock.h"
 #include "Components/Lua/LuaScriptComponent.h"
 
 APlayer::APlayer()
@@ -69,7 +72,11 @@ void APlayer::Tick(float DeltaTime)
 
 void APlayer::OnOverlap(const FPhysicsBody& result)
 {
-    LuaComp->CallLuaFunction("OnOverlap", 0.f, result.Component->GetOwner());
-    //UE_LOG(ELogLevel::Warning, TEXT("APlayer : OnOverlapped"));
+    if (result.Component->GetOwner()->IsA<AProjectile>())
+    {
+        LuaComp->CallLuaFunction("OnOverlap", result.Component->GetOwner());
+        UE_LOG(ELogLevel::Warning, TEXT("APlayer : OnOverlapped"));
+
+    }
 }
 

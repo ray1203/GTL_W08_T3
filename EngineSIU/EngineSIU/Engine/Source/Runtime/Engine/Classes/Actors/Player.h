@@ -22,7 +22,9 @@ class APlayer : public AActor
     virtual void Tick(float DeltaTime) override;
 
     FVector GetVelocity() { return Movement->GetVelocity(); }
+    FVector GetAcceleration() { return Movement->GetAcceleration(); }
     void SetVelocity(FVector InVelocity) { Movement->SetVelocity(InVelocity); }
+    void SetAcceleration(FVector InAcceleration) { Movement->SetAcceleration(InAcceleration); }
 
     bool IsGrounded() {
         if (Collider)

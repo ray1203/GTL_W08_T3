@@ -319,6 +319,15 @@ FVector AActor::GetVelocity()
     return FVector::ZeroVector;
 }
 
+FVector AActor::GetAcceleration()
+{
+    if (UProjectileMovementComponent* Proj = GetComponentByClass<UProjectileMovementComponent>())
+    {
+        return Proj->GetAcceleration();
+    }
+    return FVector::ZeroVector;
+}
+
 void AActor::SetActorTickInEditor(bool InbInTickInEditor)
 {
     bTickInEditor = InbInTickInEditor;
