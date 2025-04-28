@@ -307,26 +307,25 @@ void FPhysicsSolver::HandleCollisions()
         if (Body.Transform.Translation.Z < 0.f)
         {
             Body.Transform.Translation.Z = 0.f;
-
             if (Body.bStickToGround && Body.bGrounded)
             {
                 if (Body.Velocity.Z < 0.f)
+                {
                     Body.Velocity.Z = 0.f;
+                }
             }
             else
             {
                 Body.Velocity.Z *= -Body.Restitution;
             }
-
-            // 밀려났을 때 velocity를 너무 일찍 0으로 만들지 않는다!
             if (std::abs(Body.Velocity.LengthSquared()) < RestitutionThreshold * RestitutionThreshold)
             {
                 Body.Velocity = FVector::ZeroVector;
             }
+            // bGrounded는 여기서 처리하지 않음!
         }
     }
-
-    // 충돌(오버랩) 쌍에 대해 impulse와 침투보정(PushOut) 모두 적용
+    // shape별 penetration/impulse 처리 (bGrounded 변경 X, 기존과 동일)
     for (const auto& OverlapPair : CachedOverlaps)
     {
         int32 i = OverlapPair.Key;
@@ -347,50 +346,56 @@ void FPhysicsSolver::HandleCollisions()
         float RelativeVelocity = Contact.RelativeVelocity;
         float Restitution = FMath::Max(BodyA.Restitution, BodyB.Restitution);
 
-        // --- Impulse 적용 (속도 반사/전달)
-        if (RelativeVelocity < 0.f)
-        {
-            float InvMassA = (BodyA.Mass > 0.f) ? (1.f / BodyA.Mass) : 0.f;
-            float InvMassB = (BodyB.Mass > 0.f) ? (1.f / BodyB.Mass) : 0.f;
-            float Impulse = -(1.f + Restitution) * RelativeVelocity / (InvMassA + InvMassB);
-            FVector ImpulseVec = Impulse * Normal;
+        bool bAWasGrounded = BodyA.bGrounded;
+        bool bBWasGrounded = BodyB.bGrounded;
 
-            if (BodyA.bIsSimulatingPhysics)
+        if (BodyA.bIsSimulatingPhysics && BodyB.bIsSimulatingPhysics)
+        {
+            if (RelativeVelocity < 0.f)
+            {
+                float InvMassA = (BodyA.Mass > 0.f) ? (1.f / BodyA.Mass) : 0.f;
+                float InvMassB = (BodyB.Mass > 0.f) ? (1.f / BodyB.Mass) : 0.f;
+                float Impulse = -(1.f + Restitution) * RelativeVelocity / (InvMassA + InvMassB);
+
+                FVector ImpulseVec = Impulse * Normal;
+
                 BodyA.Velocity -= ImpulseVec * InvMassA;
-            if (BodyB.bIsSimulatingPhysics)
                 BodyB.Velocity += ImpulseVec * InvMassB;
+            }
+            float Correction = Penetration * 0.5f;
+            BodyA.Transform.Translation -= Normal * Correction;
+            BodyB.Transform.Translation += Normal * Correction;
         }
-
-        // --- 침투 보정(PushOut)은 반드시 충분히 적용!
-        // Unreal Engine은 대개 침투량만큼 정확히 보정(push out)함
-        float InvMassA = (BodyA.Mass > 0.f) ? (1.f / BodyA.Mass) : 0.f;
-        float InvMassB = (BodyB.Mass > 0.f) ? (1.f / BodyB.Mass) : 0.f;
-        float TotalInvMass = InvMassA + InvMassB;
-        if (TotalInvMass > 0.f)
+        else if (BodyA.bIsSimulatingPhysics)
         {
-            float RatioA = InvMassA / TotalInvMass;
-            float RatioB = InvMassB / TotalInvMass;
-            if (BodyA.bIsSimulatingPhysics)
-                BodyA.Transform.Translation -= Normal * (Penetration * RatioA);
-            if (BodyB.bIsSimulatingPhysics)
-                BodyB.Transform.Translation += Normal * (Penetration * RatioB);
+            if (RelativeVelocity < 0.f)
+            {
+                float InvMassA = (BodyA.Mass > 0.f) ? (1.f / BodyA.Mass) : 0.f;
+                float Impulse = -(1.f + Restitution) * RelativeVelocity / InvMassA;
+                FVector ImpulseVec = Impulse * Normal;
+                BodyA.Velocity -= ImpulseVec * InvMassA;
+            }
+            BodyA.Transform.Translation -= Normal * Penetration;
         }
-        else
+        else if (BodyB.bIsSimulatingPhysics)
         {
-            // 한 쪽만 움직일 수 있을 때 (static vs dynamic)
-            if (BodyA.bIsSimulatingPhysics)
-                BodyA.Transform.Translation -= Normal * Penetration;
-            else if (BodyB.bIsSimulatingPhysics)
-                BodyB.Transform.Translation += Normal * Penetration;
+            if (RelativeVelocity < 0.f)
+            {
+                float InvMassB = (BodyB.Mass > 0.f) ? (1.f / BodyB.Mass) : 0.f;
+                float Impulse = -(1.f + Restitution) * RelativeVelocity / InvMassB;
+                FVector ImpulseVec = Impulse * Normal;
+                BodyB.Velocity += ImpulseVec * InvMassB;
+            }
+            BodyB.Transform.Translation += Normal * Penetration;
         }
 
         // StickToGround가 true && grounded였던 바디만 Normal 방향 velocity를 0으로!
-        if (BodyA.bGrounded && BodyA.bStickToGround)
+        if (bAWasGrounded && BodyA.bStickToGround)
         {
             float vDotN = FVector::DotProduct(BodyA.Velocity, Normal);
             BodyA.Velocity -= Normal * vDotN;
         }
-        if (BodyB.bGrounded && BodyB.bStickToGround)
+        if (bBWasGrounded && BodyB.bStickToGround)
         {
             float vDotN = FVector::DotProduct(BodyB.Velocity, Normal);
             BodyB.Velocity -= Normal * vDotN;
