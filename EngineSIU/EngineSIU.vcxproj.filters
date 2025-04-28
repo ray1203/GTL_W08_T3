@@ -1373,6 +1373,13 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\PhysicsScene.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\PhysicsSolver.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Projectile.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Sound\SoundManager.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\GameManager.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\UI\PanelUIActor.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\UI\UUIPanelComponent.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\RiceMonkey.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1463,6 +1470,13 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\PhysicsSolver.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\Transform.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Projectile.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Sound\SoundManager.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\GameManager.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\UI\PanelUIActor.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\RiceMonkey.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\UI\UUIPanelComponent.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultPropertySheet.props" />
