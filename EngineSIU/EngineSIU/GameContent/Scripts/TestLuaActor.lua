@@ -1,5 +1,5 @@
 Velocity = Vector(0, 0, 0)
-JumpVelocity = 15.0
+JumpVelocity = 25
 RecentlyHit = false
 HitCool = 3.0
 CoolDT = 0

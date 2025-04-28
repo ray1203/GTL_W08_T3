@@ -8,6 +8,7 @@
 #include "Classes/Engine/AssetManager.h"
 #include "Components/Light/DirectionalLightComponent.h"
 #include "Editor/LevelEditor/SLevelEditor.h"
+#include <WindowsCursor.h>
 
 void UGameEngine::Init()
 {
@@ -28,6 +29,18 @@ void UGameEngine::Init()
     SceneNames.Add(TEXT("Contents\\StartGameScene.scene"));
     SceneNames.Add(TEXT("Contents\\MainGameScene.scene"));
     LoadScene(0);
+
+    FSlateAppMessageHandler* Handler = GEngineLoop.GetAppMessageHandler();
+    if (Handler)
+    {
+        Handler->OnKeyDownDelegate.AddLambda([](const FKeyEvent& KeyEvent)
+            {
+                if (KeyEvent.GetCharacter() == VK_ESCAPE)
+                {
+                    FWindowsCursor::SetShowMouseCursor(!FWindowsCursor::GetShowMouseCursor());
+                }
+            });
+    }
 }
 
 void UGameEngine::Tick(float DeltaTime)
@@ -72,6 +85,11 @@ void UGameEngine::LoadScene(int index)
 {
     bLoadScene = true;
     LoadSceneIndex = index;
+
+    if (index == 1)
+    {
+        FWindowsCursor::SetShowMouseCursor(false);
+    }
 }
 void UGameEngine::LoadScene()
 {
