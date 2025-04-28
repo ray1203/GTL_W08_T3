@@ -48,15 +48,17 @@ function Tick(dt)
     end
 
     -- 지면 체크 : TODO : 큐브위에 있는 걸로 판정 바꿔야 함
-    if obj.Location.z <= 0 then
+--[[    if obj.Location.z <= 0 then
         obj.Location = Vector(obj.Location.x, obj.Location.y, 0) -- z 위치 고정
         obj.Velocity = Vector(obj.Velocity.x, obj.Velocity.y, 0) -- z 속도 리셋
         IsJumping = false
     end
+    ]]
 
     -- 점프 입력
-    if Input:GetKeyDown(EKeys.SpaceBar) and not IsJumping then
+    if Input:GetKeyDown(EKeys.SpaceBar) and obj.bGrounded then
         obj.Velocity = Vector(obj.Velocity.x, obj.Velocity.y, JumpVelocity)
+        --obj.Location = obj.Location + Vector(0,0,1)
         IsJumping = true
     end
     

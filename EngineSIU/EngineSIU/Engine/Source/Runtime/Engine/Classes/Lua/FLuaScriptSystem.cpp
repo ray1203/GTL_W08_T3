@@ -166,7 +166,8 @@ void FLuaScriptSystem::BindActor()
 
     Lua.new_usertype<APlayer>("APlayer",
         sol::base_classes, sol::bases<AActor>(),
-        "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity)
+        "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity),
+        "bGrounded", sol::readonly_property(&APlayer::IsGrounded)
     );
 }
 
