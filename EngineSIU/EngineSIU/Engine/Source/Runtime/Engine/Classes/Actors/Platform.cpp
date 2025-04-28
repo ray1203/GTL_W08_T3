@@ -1,15 +1,16 @@
-#include "LandBlock.h"
+#include "Platform.h"
 #include "Engine/FLoaderOBJ.h" 
 #include "World/World.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/Lua/LuaScriptComponent.h"
 #include "Actors/Player.h"
+#include "RiceMonkey.h"
 
-ALandBlock::ALandBlock()
+APlatform::APlatform()
 {
 }
 
-void ALandBlock::PostSpawn()
+void APlatform::PostSpawn()
 {
     Super::PostSpawn();
     MeshComponent = AddComponent<UStaticMeshComponent>(TEXT("MeshComponent"));
@@ -24,39 +25,38 @@ void ALandBlock::PostSpawn()
     LuaComp->SetScriptPath(TEXT("LandGenerate"));
 }
 
-UObject* ALandBlock::Duplicate(UObject* InOuter)
+UObject* APlatform::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
 
     NewActor->MeshComponent = NewActor->GetComponentByClass<UStaticMeshComponent>();
     NewActor->Collider = NewActor->GetComponentByClass<UBoxComponent>();
     NewActor->LuaComp = NewActor->GetComponentByClass<ULuaScriptComponent>();
-    NewActor->bIsStepped = false;
-    NewActor->Level = Level;
+    NewActor->bIsStepped = bIsStepped;
 
     return NewActor;
 }
 
-void ALandBlock::BeginPlay()
+void APlatform::BeginPlay()
 {
     Super::BeginPlay();
 
     FPhysicsBody* body = GetWorld()->PhysicsScene.SceneSolver.GetBody(this->Collider);
     if (body)
     {
-        body->OnOverlap.AddDynamic(this, &ALandBlock::OnOverlap);
+        body->OnOverlap.AddDynamic(this, &APlatform::OnOverlap);
     }
 
-    this->LuaComp->CallLuaFunction("OnGenerated", GetActorLocation());
+    //this->LuaComp->CallLuaFunction("OnGenerated", GetActorLocation());
 
 }
 
-void ALandBlock::Tick(float DeltaTime)
+void APlatform::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 }
 
-void ALandBlock::OnOverlap(const FPhysicsBody& result)
+void APlatform::OnOverlap(const FPhysicsBody& result)
 {
     if (result.Component->GetOwner()->IsA<class APlayer>())
     {
@@ -68,9 +68,24 @@ void ALandBlock::OnOverlap(const FPhysicsBody& result)
     }
 }
 
-void ALandBlock::GenerateNextLevel()
+void APlatform::GenerateNextLevel()
 {
-    ALandBlock* NewBlock = GetWorld()->DuplicateActor<ALandBlock>(this);
-    NewBlock->Level++;
+    APlatform* NewBlock = GetWorld()->SpawnActor<APlatform>();
+    NewBlock->Level = Level + 1;
     NewBlock->SetActorLocation(GetActorLocation());
+    NewBlock->LuaComp->CallLuaFunction("OnGenerated", GetActorLocation());
+
+    // 10단계마다 원숭이 생성
+    if (Level % 10 == 2)
+    {
+        NewBlock = GetWorld()->SpawnActor<APlatform>();
+        NewBlock->Level = Level + 1;
+        NewBlock->SetActorLocation(GetActorLocation());
+
+        NewBlock->LuaComp->CallLuaFunction("OnGenerated", GetActorLocation());
+        NewBlock->bIsStepped = true;
+        ARiceMonkey* SsalSoong = GetWorld()->SpawnActor<ARiceMonkey>();
+        SsalSoong->SetActorLocation(NewBlock->GetActorLocation() + FVector(0,0,2));
+        //ARiceMonkey
+    }
 }

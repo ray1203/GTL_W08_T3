@@ -8,7 +8,7 @@
 #include "Components/Shapes/BoxComponent.h"
 #include "World/World.h"
 #include "Actors/Projectile.h"
-#include "LandBlock.h"
+#include "Platform.h"
 #include "Components/Lua/LuaScriptComponent.h"
 
 APlayer::APlayer()

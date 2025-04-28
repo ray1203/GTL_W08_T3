@@ -2,12 +2,11 @@
 #include "GameFramework/Actor.h"
 #include "Components/Shapes/BoxComponent.h" 
 
-class ALandBlock :
-    public AActor
+class ARiceMonkey : public AActor
 {
-    DECLARE_CLASS(ALandBlock, AActor)
-public:
-    ALandBlock();
+    DECLARE_CLASS(ARiceMonkey, AActor)
+
+    ARiceMonkey();
 
     virtual void PostSpawn() override;
 
@@ -19,12 +18,13 @@ public:
 
     void OnOverlap(const FPhysicsBody& result);
 
-    void GenerateNextLevel();
+    bool bIsAngry = false;
+    float SsalMass = 1.0f;
+    float AttackSpeed = 1.0f;
+    int HP = 5;
+    FVector Color;
+
 private:
-    bool bIsStepped = false;
-
-    int Level = 1;
-
     class UStaticMeshComponent* MeshComponent = nullptr;
     class UBoxComponent* Collider = nullptr;
     class ULuaScriptComponent* LuaComp = nullptr;

@@ -20,6 +20,7 @@
 #include "Components/Shapes/SphereComponent.h"
 #include "Engine/EditorEngine.h"
 #include "Actors/Projectile.h" // Add this include to resolve "AProjectile" identifier
+#include "Actors/RiceMonkey.h"
 #include "Engine/GameEngine.h"
 #include <Actors/GameManager.h>
 
@@ -180,7 +181,8 @@ void FLuaScriptSystem::BindActor()
             }
 
         },
-        "Velocity", sol::property(&AActor::GetVelocity)
+        "Velocity", sol::property(&AActor::GetVelocity),
+        "Destroy", &AActor::Destroy
     );
 
     Lua.new_usertype<APlayer>("APlayer",
@@ -195,6 +197,17 @@ void FLuaScriptSystem::BindActor()
 		"InitGameWorld", &AGameManager::InitGameWorld,
 		"InitiateActor", &AGameManager::InitiateActor
 		);
+
+    Lua.new_usertype<ARiceMonkey>("ARiceMonkey",
+        sol::base_classes, sol::bases<AActor>(),
+
+        // 멤버 변수 바인딩 (읽기/쓰기)
+        "bIsAngry", &ARiceMonkey::bIsAngry,
+        "SsalMass", &ARiceMonkey::SsalMass,
+        "AttackSpeed", &ARiceMonkey::AttackSpeed,
+        "HP", &ARiceMonkey::HP,
+        "Color", &ARiceMonkey::Color
+    );
 }
 
 void FLuaScriptSystem::BindInput()

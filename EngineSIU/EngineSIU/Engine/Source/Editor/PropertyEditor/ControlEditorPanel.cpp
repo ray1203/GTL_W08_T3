@@ -35,7 +35,7 @@
 #include "Actors/UI/TextUIActor.h"
 #include <Actors/PlayerStart.h>
 #include <Actors/Player.h>
-#include "Actors/LandBlock.h"
+#include "Actors/Platform.h"
 
 #include "Actors/UI/PanelUIActor.h"
 
@@ -331,7 +331,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 }
                 case OBJ_BOX:
                 {
-                    SpawnedActor = World->SpawnActor<ALandBlock>();
+                    SpawnedActor = World->SpawnActor<APlatform>();
                     SpawnedActor->SetActorLabel(TEXT("OBJ_BOX"));
                     break;
                 }
