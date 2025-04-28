@@ -5,7 +5,7 @@ HitCool = 3.0
 CoolDT = 0
 MaxVelocity = 20
 HighestScore = 1.0
-
+fallTime = 0
 --- @type GameObject
 obj = obj
 
@@ -28,17 +28,16 @@ function OnOverlap(OtherActor)
         RecentlyHit = true
         PlaySFX("Hit")
     end
-
-    if obj.Velocity.z < -100 then
-        --EndGame()
-        obj.bInputBlock = true
-    end
 end
 
 function Tick(dt)
 
-    if obj.binputblock then
+    if obj.binputBlock then
     return
+    end
+
+    if obj.Location.z < 5 and obj.Velocity.z < -80 then
+        GameOver(obj)
     end
 
     -- 이동 입력 처리 (대각선 이동 가능하도록 수정)

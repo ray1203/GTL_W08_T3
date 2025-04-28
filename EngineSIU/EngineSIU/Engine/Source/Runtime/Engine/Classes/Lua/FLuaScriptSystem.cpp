@@ -26,6 +26,7 @@
 #include <Sound/SoundManager.h>
 
 #include "Components/UI/UUIPanelComponent.h"
+#include <WindowsCursor.h>
 
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
@@ -302,6 +303,20 @@ void FLuaScriptSystem::BindUtilities()
     Lua.set_function("PlaySFX", [](const std::string& sfxName)
         {
             FSoundManager::Instance().PlaySFX(FString(sfxName), 10);
+        });
+    Lua.set_function("GameOver", [](APlayer* Player)
+        {
+            UWorld* World = Player->GetWorld();
+            for (auto& actor : World->GetActiveLevel()->Actors)
+            {
+                UUIComponent* comp = actor->GetComponentByClass<UUIComponent>();
+                if (comp)
+                {
+                    comp->bVisible = true;
+                }
+            }
+            FWindowsCursor::SetShowMouseCursor(true);
+            Player->bInputBlock = true;
         });
 }
 void FLuaScriptSystem::BindUI()
