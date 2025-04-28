@@ -18,6 +18,7 @@ public:
         bNoBackground = false;
         bNoInputs = false;
         bAutoSize = false;
+        bVisible = true;
     }
     // 적용될 UI 속성
     bool bNoMove;
@@ -30,6 +31,7 @@ public:
     bool bNoInputs;
     bool bAutoSize;
 
+    bool bVisible;
     int32 ZOrder = 0; // 미래 확장용
 
 
@@ -54,6 +56,5 @@ protected:
     void EndWidget();    // End 호출
 protected:
     std::string WidgetName;
-    uint8 bVisible : 1 = true;
     static inline int32 GlobalWidgetCounter = 0;
 };

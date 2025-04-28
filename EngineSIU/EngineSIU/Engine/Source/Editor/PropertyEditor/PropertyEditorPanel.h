@@ -4,6 +4,7 @@
 #include "UnrealEd/EditorPanel.h"
 #include "Math/Rotator.h"
 
+class UUIComponent;
 class UStaticMeshComponent;
 
 // 헬퍼 함수 예시
@@ -44,6 +45,8 @@ private:
     void RenderForMaterial(UStaticMeshComponent* StaticMeshComp);
     void RenderMaterialView(UMaterial* Material);
     void RenderCreateMaterialView();
+
+    void DrawUIComponentProperties(UUIComponent* UIComp);
 private:
     float Width = 0, Height = 0;
     FVector Location = FVector(0, 0, 0);

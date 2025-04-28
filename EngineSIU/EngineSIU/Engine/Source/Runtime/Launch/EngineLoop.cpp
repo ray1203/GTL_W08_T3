@@ -133,22 +133,20 @@ void FEngineLoop::Tick()
                 break;
             }
         }
-
+        if (GEngine->bRestartGame) GEngine->RestartGame();
         GEngine->Tick(DeltaTime);
         LevelEditor->Tick(DeltaTime);
         FInputKeyManager::Get().Tick();
 
         Render();
-#if !GAME_BUILD
         UIMgr->BeginFrame();
-        UnrealEditor->Render();
-
         GEngine->ActiveWorld->RenderUIComponents();
-
+#if !GAME_BUILD
+        UnrealEditor->Render();
         FConsole::GetInstance().Draw();
+#endif
 
         UIMgr->EndFrame();
-#endif
         // Pending 처리된 오브젝트 제거
         GUObjectArray.ProcessPendingDestroyObjects();
 

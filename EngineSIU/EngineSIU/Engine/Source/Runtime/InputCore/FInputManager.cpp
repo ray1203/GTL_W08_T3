@@ -50,6 +50,7 @@ bool FInputKeyManager::GetKeyUp(EKeys::Type Key) const
 
 void FInputKeyManager::InitializeKeyMappings()
 {
+    KeyMapVirtualToEnum[0x1B] = EKeys::Escape;
     KeyMapVirtualToEnum[0x41] = EKeys::A;
     KeyMapVirtualToEnum[0x42] = EKeys::B;
     KeyMapVirtualToEnum[0x43] = EKeys::C;

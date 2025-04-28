@@ -33,7 +33,7 @@ void ULuaScriptComponent::TickComponent(float DeltaTime)
     Super::TickComponent(DeltaTime);
     CallLuaFunction("Tick", DeltaTime);
 
-    sol::object VelocityObj = LuaScriptTable["Velocity"];
+    /*sol::object VelocityObj = LuaScriptTable["Velocity"];
     if (VelocityObj.is<FVector>())
     {
        FVector a =  VelocityObj.as<FVector>();
@@ -41,7 +41,7 @@ void ULuaScriptComponent::TickComponent(float DeltaTime)
        {
            
        }
-    }
+    }*/
 }
 UObject* ULuaScriptComponent::Duplicate(UObject* InOuter)
 {
@@ -111,6 +111,11 @@ void ULuaScriptComponent::LoadLuaScript()
 
 }
 
+void ULuaScriptComponent::SetScriptPath(const FString& InPath)
+{
+    LuaScriptPath = InPath;
+    LoadLuaScript(); //변경 즉시 Lua 스크립트 재로드
+}
 
 void ULuaScriptComponent::CallLuaFunction(const char* FunctionName, float DeltaTime, AActor* Other)
 {

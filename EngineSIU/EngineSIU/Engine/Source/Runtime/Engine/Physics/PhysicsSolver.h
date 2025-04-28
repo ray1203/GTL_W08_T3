@@ -18,13 +18,19 @@ struct FPhysicsBody
     float Mass;
     bool bIsSimulatingPhysics;
     bool bBlock;
+    bool bGrounded;
+    bool bStickToGround;
+    float Restitution;
     FCollisionShape CollisionShape;
     FPhysicsBody(UShapeComponent* InComponent)
-        : Component(InComponent), Mass(1.0f), bIsSimulatingPhysics(true)
+        : Component(InComponent), Mass(1.0f)
     {
+        bIsSimulatingPhysics = InComponent->bIsSimulatingPhysics;
         Transform = InComponent->GetRelativeTransform();
         Velocity = FVector::ZeroVector;
         Acceleration = FVector::ZeroVector;
+        Restitution = 0.5f;
+        bStickToGround = true;
     }
 
     bool operator==(const FPhysicsBody& Other) const
@@ -76,7 +82,6 @@ protected:
 
 private:
     const float RestitutionThreshold = 1e-2f;
-    float Restitution = 0.0;
     float Friction = 0.95;
 
     // contanct 계산용
