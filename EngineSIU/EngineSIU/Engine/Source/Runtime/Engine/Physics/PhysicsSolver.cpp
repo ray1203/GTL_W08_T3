@@ -8,6 +8,7 @@
 #include "Classes/GameFramework/Actor.h"
 #include "Classes/Components/ProjectileMovementComponent.h"
 #include "Math/JungleCollision.h"
+#include "Delegates/DelegateCombination.h"
 
 // [참고: Unreal Engine Transform/Collision 처리 구조](https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/Runtime/Engine/Private/PhysicsEngine/BodyInstance.cpp)
 
@@ -122,6 +123,9 @@ void FPhysicsSolver::HandleOverlaps()
                     BodyA.bGrounded = true;
                 if (BodyB.Transform.Translation.Z > BodyA.Transform.Translation.Z + KINDA_SMALL_NUMBER)
                     BodyB.bGrounded = true;
+
+                BodyA.OnOverlap.Broadcast(BodyB);
+                BodyB.OnOverlap.Broadcast(BodyA);
             }
         }
     }
@@ -474,9 +478,9 @@ void FPhysicsSolver::RemoveBody(UShapeComponent* Component)
     }
 }
 
-const FPhysicsBody* FPhysicsSolver::GetBody(const UShapeComponent* Component) const
+FPhysicsBody* FPhysicsSolver::GetBody(const UShapeComponent* Component)
 {
-    for (const FPhysicsBody& Body : SimulatedBodies)
+    for (FPhysicsBody& Body : SimulatedBodies)
     {
         if (Body.Component == Component)
         {

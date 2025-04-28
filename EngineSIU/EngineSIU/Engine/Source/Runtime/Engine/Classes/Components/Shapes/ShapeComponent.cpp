@@ -83,3 +83,7 @@ void UShapeComponent::SetProperties(const TMap<FString, FString>& InProperties)
     }
 
 }
+
+void UShapeComponent::OnOverlap(const FPhysicsBody& result)
+{
+}

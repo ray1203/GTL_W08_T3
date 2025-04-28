@@ -1,5 +1,17 @@
 #include "GameManager.h"
 
+AGameManager::AGameManager()
+{
+}
+
+void AGameManager::BeginPlay()
+{
+}
+
+void AGameManager::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+}
+
 void AGameManager::InitGameWorld(AActor* Self)
 {
     // 발판 100개 랜덤 생성

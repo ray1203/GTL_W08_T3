@@ -8,6 +8,9 @@
 
 class AActor;
 struct FHitResult;
+struct FPhysicsBody;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOverlapDelegate, const FPhysicsBody&)
 
 struct FPhysicsBody
 {
@@ -37,6 +40,9 @@ struct FPhysicsBody
     {
         return Component == Other.Component;
     }
+
+public:
+    FOnOverlapDelegate OnOverlap;
 };
 
 // 간단한 PhysicsSolver 예시
@@ -59,7 +65,7 @@ public:
     // 파티클(물리 객체) 추가/삭제
     void AddBody(UShapeComponent* Component);
     void RemoveBody(UShapeComponent* Component);
-    const FPhysicsBody* GetBody(const UShapeComponent* Component) const;
+    FPhysicsBody* GetBody(const UShapeComponent* Component);
 
     // 시뮬레이션 결과를 가져옴
     bool GetSimulatedTransform(UShapeComponent* Component, FTransform& OutTransform) const;

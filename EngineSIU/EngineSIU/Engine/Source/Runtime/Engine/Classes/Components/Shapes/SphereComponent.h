@@ -1,5 +1,8 @@
 #pragma once
 #include "ShapeComponent.h"
+
+struct FPhysicsBody;
+
 class USphereComponent :
     public UShapeComponent
 {
@@ -21,6 +24,7 @@ public:
     virtual void GetProperties(TMap<FString, FString>& OutProperties) const override;
     virtual void SetProperties(const TMap<FString, FString>& InProperties) override;
 
+    virtual void OnOverlap(const FPhysicsBody& result) override;
     float GetSphereRadius() const { return SphereRadius; }
     void SetSphereRadius(float InSphereRadius)
     {
