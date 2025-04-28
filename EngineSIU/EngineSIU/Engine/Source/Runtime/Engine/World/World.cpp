@@ -41,6 +41,7 @@ UObject* UWorld::Duplicate(UObject* InOuter)
     NewWorld->ActiveLevel = Cast<ULevel>(ActiveLevel->Duplicate(NewWorld));
     NewWorld->ActiveLevel->InitLevel(NewWorld);
     
+    // PhysicsScene은 복사하지 않음.(PIE에서만 작동하므로)
 
     return NewWorld;
 }
@@ -52,14 +53,15 @@ void UWorld::Tick(float DeltaTime)
     {
         PhysicsScene.TickPhysScene(DeltaTime);
         PhysicsScene.SyncBodies();
-    }
 
-    // SpawnActor()에 의해 Actor가 생성된 경우, 여기서 BeginPlay 호출
-    for (AActor* Actor : PendingBeginPlayActors)
-    {
-        Actor->BeginPlay();
+        // Editor에서는 BeginPlay를 호출하지 않음
+        // SpawnActor()에 의해 Actor가 생성된 경우, 여기서 BeginPlay 호출
+        for (AActor* Actor : PendingBeginPlayActors)
+        {
+            Actor->BeginPlay();
+        }
+        PendingBeginPlayActors.Empty();
     }
-    PendingBeginPlayActors.Empty();
 }
 
 void UWorld::BeginPlay()
@@ -107,6 +109,7 @@ AActor* UWorld::SpawnActor(UClass* InClass, FName InActorName)
         // Actor->InitializeComponents();
         ActiveLevel->Actors.Add(NewActor);
         PendingBeginPlayActors.Add(NewActor);
+        NewActor->PostSpawn();
         return NewActor;
     }
     

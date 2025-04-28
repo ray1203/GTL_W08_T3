@@ -61,7 +61,7 @@ private:
     void UpdateTransforms(); // 변화된 위치를 업데이트
 
     bool Raycast(const FVector& Start, const FVector& End, FHitResult& OutHit) const;
-    bool Overlap(const FCollisionShape& Shape, const FTransform& Transform, TArray<AActor*>& OutOverlaps) const;
+    bool Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*>OverlappingBodies);
 
 protected:
     // 시뮬레이트 된 결과물

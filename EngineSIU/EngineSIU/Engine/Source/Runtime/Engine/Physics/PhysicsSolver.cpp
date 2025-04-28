@@ -25,7 +25,7 @@ void FPhysicsSolver::UpdateBodyFromComponent()
         if (UProjectileMovementComponent* ProjComp = Body.Component->GetOwner()->GetComponentByClass<UProjectileMovementComponent>())
         {
             Body.Velocity = ProjComp->GetVelocity();
-            Body.Acceleration.Z = ProjComp->GetGravity();
+            Body.Acceleration = ProjComp->GetAcceleration();
         }
     }
 }
@@ -42,10 +42,7 @@ void FPhysicsSolver::ApplyForces()
 {
     for (FPhysicsBody& Body : SimulatedBodies)
     {
-        //if (Body.bIsSimulatingPhysics)
-        //{
-        //    Body.Acceleration = FVector(0, 0, -9.8f * 2); // 중력 가속도
-        //}
+        // UProjectileComponent의 중력가속도를 이용
     }
 }
 
@@ -83,6 +80,56 @@ void FPhysicsSolver::HandleCollisions()
             }
         }
     }
+
+
+    // 2. 두 물체 간의 충돌 처리 (구체-구체 충돌 예시)
+    int32 NumBodies = SimulatedBodies.Num();
+    for (int32 i = 0; i < NumBodies; ++i)
+    {
+        FPhysicsBody& BodyA = SimulatedBodies[i];
+        if (!BodyA.bIsSimulatingPhysics)
+            continue;
+
+        for (int32 j = i + 1; j < NumBodies; ++j)
+        {
+            FPhysicsBody& BodyB = SimulatedBodies[j];
+            if (!BodyB.bIsSimulatingPhysics)
+                continue;
+
+            // 구체-구체 충돌 가정
+            const FVector PosA = BodyA.Transform.Translation;
+            const FVector PosB = BodyB.Transform.Translation;
+            float RadiusA = BodyA.CollisionShape.Sphere.Radius;
+            float RadiusB = BodyB.CollisionShape.Sphere.Radius;;
+
+            FVector Delta = PosB - PosA;
+            float Distance = Delta.Length();
+            float Penetration = RadiusA + RadiusB - Distance;
+
+            if (Penetration > 0.f && Distance > KINDA_SMALL_NUMBER)
+            {
+                FVector Normal = Delta / Distance;
+                float RelativeVelocity = FVector::DotProduct(BodyB.Velocity - BodyA.Velocity, Normal);
+                if (RelativeVelocity < 0.f)
+                {
+                    float InvMassA = (BodyA.Mass > 0.f) ? (1.f / BodyA.Mass) : 0.f;
+                    float InvMassB = (BodyB.Mass > 0.f) ? (1.f / BodyB.Mass) : 0.f;
+                    float Impulse = -(1.f + Restitution) * RelativeVelocity / (InvMassA + InvMassB);
+
+                    FVector ImpulseVec = Impulse * Normal;
+
+                    BodyA.Velocity -= ImpulseVec * InvMassA;
+                    BodyB.Velocity += ImpulseVec * InvMassB;
+                }
+
+                // 침투 보정
+                float Correction = Penetration * 0.5f;
+                BodyA.Transform.Translation = (PosA - Normal * Correction);
+                BodyB.Transform.Translation = (PosB + Normal * Correction);
+            }
+        }
+    }
+
 }
 
 void FPhysicsSolver::UpdateTransforms()
@@ -91,6 +138,7 @@ void FPhysicsSolver::UpdateTransforms()
 
 void FPhysicsSolver::AddBody(UShapeComponent* Component)
 {
+    static uint32 count = 0;
     FPhysicsBody Body(Component);
     if (UBoxComponent* BoxComp = Cast<UBoxComponent>(Component))
     {
@@ -98,6 +146,7 @@ void FPhysicsSolver::AddBody(UShapeComponent* Component)
         Box.ShapeType = ECollisionShape::Box;
         FVector Scale = BoxComp->GetRelativeScale3D();
         Box.Box = { Scale.X, Scale.Y, Scale.Z };
+        UE_LOG(ELogLevel::Error, "FPhysicsSolver::AddBody[%d] : Box %f, %f, %f", count++, Scale.X, Scale.Y, Scale.Z);
 
         Body.CollisionShape = Box;
     }
@@ -109,6 +158,8 @@ void FPhysicsSolver::AddBody(UShapeComponent* Component)
         Sphere.Sphere.Radius = SphereComp->GetSphereRadius();
 
         Body.CollisionShape = Sphere;
+        UE_LOG(ELogLevel::Error, "FPhysicsSolver::AddBody[%d] : Sphere %f", count++, Sphere.Sphere.Radius);
+
     }
     else if (UCapsuleComponent* CapsuleComp = Cast<UCapsuleComponent>(Component))
     {
@@ -186,53 +237,35 @@ bool FPhysicsSolver::Raycast(const FVector& Start, const FVector& End, FHitResul
     return false;
 }
 
-bool FPhysicsSolver::Overlap(const FCollisionShape& Shape, const FTransform& Transform, TArray<AActor*>& OutOverlaps) const
+bool FPhysicsSolver::Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*> OverlappingBodies)
 {
-    if (Shape.ShapeType == ECollisionShape::Box)
+    if (Body.CollisionShape.ShapeType == ECollisionShape::Sphere)
     {
-        //// BoxOverlap 처리
-        //for (const FPhysicsBody &Body : SimulatedBodies)
-        //{
-        //    if (Body.CollisionShape.ShapeType == ECollisionShape::Box)
-        //    {
-        //        FOrientedBox Target;
-        //        Target.AxisX = Transform.Rotation.GetForwardVector();
-        //        Target.AxisY = Transform.Rotation.GetRightVector();
-        //        Target.AxisZ = Transform.Rotation.GetUpVector();
-        //        Target.Center = Transform.Translation;
-        //        Target.ExtentX = Shape.Box.HalfExtentX;
-        //        Target.ExtentY = Shape.Box.HalfExtentY;
-        //        Target.ExtentZ = Shape.Box.HalfExtentZ;
-
-        //        JungleCollision::Intersects(Target, Body.CollisionShape.Box);
-        //    }
-        //}
-    }
-    else if (Shape.ShapeType == ECollisionShape::Sphere)
-    {
+        // 도형과 위치정보를 가진 구조체로 담음
         FSphere Source;
-        Source.Center = Transform.Translation;
-        Source.Radius = Shape.Sphere.Radius;
+        Source.Center = Body.Transform.Translation;
+        Source.Radius = Body.CollisionShape.Sphere.Radius;
 
-        for (const FPhysicsBody& Body : SimulatedBodies)
+        for (FPhysicsBody& Other : SimulatedBodies)
         {
-            if (Body.CollisionShape.ShapeType == ECollisionShape::Sphere)
+            if (Other == Body)
+            {
+                continue; // 자기 자신은 제외  
+            }
+            // 일단 구형끼리 체크
+            if (Other.CollisionShape.ShapeType == ECollisionShape::Sphere)
             {
                 FSphere Target;
-                Target.Center = Body.Transform.Translation;
-                Target.Radius = Body.CollisionShape.Sphere.Radius;
+                Target.Center = Other.Transform.Translation;
+                Target.Radius = Other.CollisionShape.Sphere.Radius;
                 if (JungleCollision::Intersects(Source, Target))
                 {
-                    OutOverlaps.Add(Body.Component->GetOwner());
+                    OverlappingBodies.Add(&Other);
                 }
             }
         }
     }
-    else if (Shape.ShapeType == ECollisionShape::Capsule)
-    {
-        // CapsuleOverlap 처리
-    }
-    if (OutOverlaps.Num() > 0)
+    if (OverlappingBodies.Num() > 0)
     {
         return true;
     }
@@ -241,3 +274,52 @@ bool FPhysicsSolver::Overlap(const FCollisionShape& Shape, const FTransform& Tra
         return false;
     }
 }
+//
+//bool FPhysicsSolver::Overlap(const FCollisionShape& Shape, const FTransform& Transform, TArray<AActor*>& OutOverlaps) const
+//{
+//    if (Shape.ShapeType == ECollisionShape::Box)
+//    {
+//        //// BoxOverlap 처리
+//        //for (const FPhysicsBody &Body : SimulatedBodies)
+//        //{
+//        //    if (Body.CollisionShape.ShapeType == ECollisionShape::Box)
+//        //    {
+//        //        FOrientedBox Target;
+//        //        Target.AxisX = Transform.Rotation.GetForwardVector();
+//        //        Target.AxisY = Transform.Rotation.GetRightVector();
+//        //        Target.AxisZ = Transform.Rotation.GetUpVector();
+//        //        Target.Center = Transform.Translation;
+//        //        Target.ExtentX = Shape.Box.HalfExtentX;
+//        //        Target.ExtentY = Shape.Box.HalfExtentY;
+//        //        Target.ExtentZ = Shape.Box.HalfExtentZ;
+//
+//        //        JungleCollision::Intersects(Target, Body.CollisionShape.Box);
+//        //    }
+//        //}
+//    }
+//    else if (Shape.ShapeType == ECollisionShape::Sphere)
+//    {
+//        FSphere Source;
+//        Source.Center = Transform.Translation;
+//        Source.Radius = Shape.Sphere.Radius;
+//
+//        for (const FPhysicsBody& Body : SimulatedBodies)
+//        {
+//            if (Body.CollisionShape.ShapeType == ECollisionShape::Sphere)
+//            {
+//                FSphere Target;
+//                Target.Center = Body.Transform.Translation;
+//                Target.Radius = Body.CollisionShape.Sphere.Radius;
+//                if (JungleCollision::Intersects(Source, Target))
+//                {
+//                    OutOverlaps.Add(Body.Component->GetOwner());
+//                }
+//            }
+//        }
+//    }
+//    else if (Shape.ShapeType == ECollisionShape::Capsule)
+//    {
+//        // CapsuleOverlap 처리
+//    }
+//
+//}

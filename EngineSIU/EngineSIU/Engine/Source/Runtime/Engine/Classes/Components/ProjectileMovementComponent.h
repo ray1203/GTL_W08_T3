@@ -22,31 +22,24 @@ public:
 
     float GetMaxSpeed() const { return MaxSpeed; }
 
-    void SetGravity(float NewGravity) { Gravity = NewGravity; }
+    void SetAcceleration(FVector NewAcc) { Acceleration = NewAcc; }
 
-    float GetGravity() const { return Gravity; }
-
-    void SetLifetime(float NewLifetime) { ProjectileLifetime = NewLifetime; }
-
-    float GetLifetime() const { return ProjectileLifetime; }
+    FVector GetAcceleration() const { return Acceleration; }
 
     virtual void BeginPlay() override;
 
-
     virtual void TickComponent(float DeltaTime) override;
-
     
     void GetProperties(TMap<FString, FString>& OutProperties) const override;
     void SetProperties(const TMap<FString, FString>& InProperties) override;
 
 private:
-    float ProjectileLifetime; // 생명주기
     float AccumulatedTime;
 
     float InitialSpeed;
     float MaxSpeed;
 
-    float Gravity;
+    FVector Acceleration;
     FVector Velocity;
 };
 

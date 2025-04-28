@@ -45,8 +45,10 @@ void FPhysicsScene::TickPhysScene(float DeltaSeconds)
 
 void FPhysicsScene::AddRigidBody(UShapeComponent* Component)
 {
+    static uint32 num = 0;
     if (Component && !RegisteredBodies.Contains(Component))
     {
+        UE_LOG(ELogLevel::Error, "FPhysicsScene::AddRigidBody[%d] : %s", num++,*Component->StaticClass()->GetName());
         RegisteredBodies.Add(Component);
         SceneSolver.AddBody(Component);
     }

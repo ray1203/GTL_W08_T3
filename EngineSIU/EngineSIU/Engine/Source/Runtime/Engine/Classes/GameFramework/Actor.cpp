@@ -7,6 +7,12 @@
 #include <Actors/Player.h>
 
 
+void AActor::PostSpawn()
+{
+    //lua comp
+    LuaComp = AddComponent<ULuaScriptComponent>(TEXT("LuaScriptComponent"));
+}
+
 UObject* AActor::Duplicate(UObject* InOuter)
 {
     ThisClass* NewActor = Cast<ThisClass>(Super::Duplicate(InOuter));
@@ -292,15 +298,15 @@ void AActor::SetActorTickInEditor(bool InbInTickInEditor)
 {
     bTickInEditor = InbInTickInEditor;
 }
-FVector AActor::GetLuaVelocity() const
-{
-    if (LuaComp)
-        return LuaComp->GetVelocity();
-    return FVector::ZeroVector;
-}
-
-void AActor::SetLuaVelocity(const FVector& InVelocity)
-{
-    if (LuaComp)
-        LuaComp->SetVelocity(InVelocity);
-}
+//FVector AActor::GetLuaVelocity() const
+//{
+//    if (LuaComp)
+//        return LuaComp->GetVelocity();
+//    return FVector::ZeroVector;
+//}
+//
+//void AActor::SetLuaVelocity(const FVector& InVelocity)
+//{
+//    if (LuaComp)
+//        LuaComp->SetVelocity(InVelocity);
+//}

@@ -1,6 +1,5 @@
 Velocity = Vector(0, 0, 0)
 JumpVelocity = 8.0
-Gravity = -9.8
 IsJumping = false
 
 --- @type GameObject
@@ -42,15 +41,16 @@ function Tick(dt)
         --obj.Location = obj.Location + Vector(-1, 0, 0) * dt * 5.0
         local vec = Vector(obj.RightVector.x, obj.RightVector.y, obj.RightVector.z)
         obj:Move(vec, dt * 5.0)
-
-
     end
 
+
+    -- obj.Location = obj.Location + Vector(1,0,0)
     -- ���� �Է�
-    if Input:GetKeyDown(EKeys.SpaceBar) and obj.Location.z <= 0 then
-        Velocity.z = JumpVelocity
+    if Input:GetKeyDown(EKeys.SpaceBar) then
+        obj.Velocity = Vector(0,0,JumpVelocity)
         IsJumping = true
     end
+    obj:PrintLocation()
 
     -- Score��� �̸��� ���� ã��
     local scoreActor = FindActorByLabel("Score")

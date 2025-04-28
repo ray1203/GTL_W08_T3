@@ -1,17 +1,28 @@
 #include "BoxComponent.h"
 
 #include "UObject/Casts.h"
+#include "World/World.h"
 
 UObject* UBoxComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
 
+    NewComponent->BoxExtent = BoxExtent;
     return NewComponent;
 }
 
 void UBoxComponent::InitializeComponent()
 {
     Super::InitializeComponent();
+}
+
+void UBoxComponent::BeginPlay()
+{
+    if (this->GetWorld()->WorldType != EWorldType::Editor)
+    {
+        this->GetWorld()->PhysicsScene.AddRigidBody(this);
+
+    }
 }
 
 void UBoxComponent::TickComponent(float DeltaTime)
