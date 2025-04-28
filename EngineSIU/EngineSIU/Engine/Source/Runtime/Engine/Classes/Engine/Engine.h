@@ -39,6 +39,7 @@ public:
     void SaveWorld(const FString& FileName) const;
     virtual void RestartGame();
     bool bRestartGame = false;
+    bool bLoadScene = false;
 };
 
 extern class UEngine* GEngine;

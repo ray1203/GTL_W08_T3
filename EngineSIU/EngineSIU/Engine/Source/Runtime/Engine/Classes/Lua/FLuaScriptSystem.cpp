@@ -23,6 +23,7 @@
 #include "Engine/GameEngine.h"
 #include <Actors/GameManager.h>
 
+#include "Components/UI/UUIPanelComponent.h"
 
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
@@ -261,6 +262,10 @@ void FLuaScriptSystem::BindUtilities()
         {
             return Actor ? Actor->GetComponentByClass<UUIButtonComponent>() : nullptr;
         });
+    Lua.set_function("GetUIPanelComponent", [](AActor* Actor) -> UUIPanelComponent*
+        {
+            return Actor ? Actor->GetComponentByClass<UUIPanelComponent>() : nullptr;
+        });
     Lua.set_function("RestartGame", []()
         {
                 GEngine->bRestartGame = true;
@@ -332,6 +337,10 @@ void FLuaScriptSystem::BindUI()
             [](UUIButtonComponent* Comp, const std::string& Value) { Comp->SetLabel(Value); }),
 
         "Bind", &UUIButtonComponent::BindLuaCallback
+    );
+    // UIButtonComponent
+    Lua.new_usertype<UUIPanelComponent>("UIPanel",
+        sol::base_classes, sol::bases<UUIComponent>()
     );
 }
 

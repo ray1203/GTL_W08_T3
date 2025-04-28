@@ -12,7 +12,6 @@ public:
 
     UWorld* GameWorld = nullptr;
     void LoadScene(int index);
-    bool bLoadScene = false;
 private:
     void InitGameWorld(FWorldContext& GameWorldContext);
     void LoadScene();
