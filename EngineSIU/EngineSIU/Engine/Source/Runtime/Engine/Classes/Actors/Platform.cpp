@@ -76,7 +76,7 @@ void APlatform::GenerateNextLevel()
     NewBlock->LuaComp->CallLuaFunction("OnGenerated", GetActorLocation());
 
     // 10단계마다 원숭이 생성
-    if (Level % 10 == 0)
+    if (Level % 6 == 0)
     {
         NewBlock = GetWorld()->SpawnActor<APlatform>();
         NewBlock->Level = Level + 1;

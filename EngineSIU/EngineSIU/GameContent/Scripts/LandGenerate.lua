@@ -7,7 +7,7 @@ end
 function OnGenerated(LastLocation)
     local far = 13
     local near = 7
-    -- dx, dy´Â -3~3 ±¸°£À» Á¦¿ÜÇÏ°í ·£´ý: [-6,-3) ¶Ç´Â (3,6]
+    -- dx, dyï¿½ï¿½ -3~3 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½: [-6,-3) ï¿½Ç´ï¿½ (3,6]
     local function rand_exclude(min1, max1, min2, max2)
         if math.random() < 0.5 then
             return math.random() * (max1 - min1) + min1
@@ -18,7 +18,7 @@ function OnGenerated(LastLocation)
 
     local dx = rand_exclude(-far, -near, near, far)
     local dy = rand_exclude(-far, -near, near, far)
-    local dz = math.random(2, 5) -- z´Â Ç×»ó À§·Î(3~8)
+    local dz = math.random(2, 5) -- zï¿½ï¿½ ï¿½×»ï¿½ ï¿½ï¿½ï¿½ï¿½(3~8)
 
     obj.Location = LastLocation + Vector(dx, dy, dz)
 
@@ -27,7 +27,7 @@ function OnGenerated(LastLocation)
     -- local rz = math.random() * 3.14 * 2
     -- obj.Rotation = Rotator(rx,ry,rz)
 
-    -- ·£´ý Å©±â (¿¹: 0.5~2.0)
+    -- ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ (ï¿½ï¿½: 0.5~2.0)
     local sx = math.random() * 3 + 2
     local sy = math.random() * 3 + 2
     local sz = 1

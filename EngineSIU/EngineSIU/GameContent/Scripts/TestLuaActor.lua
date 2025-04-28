@@ -36,7 +36,7 @@ function Tick(dt)
     return
     end
 
-    if obj.Location.z < 5 and obj.Velocity.z < -80 then
+    if obj.Location.z < 5 and obj.Velocity.z < -120 then
         GameOver(obj)
     end
 

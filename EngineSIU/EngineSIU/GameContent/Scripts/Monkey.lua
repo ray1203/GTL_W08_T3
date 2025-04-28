@@ -23,11 +23,22 @@ function ShootSSal()
 end
 
 local shoot_timer = 0
+local angry_timer = 0
+local timing = 2.0
 
 function Tick(dt)
     shoot_timer = shoot_timer + dt
-    if shoot_timer >= 2.0 then
+    angry_timer = angry_timer + dt
+
+    if angry_timer >= 20.0 then
+        timing = 1.0
+        angry_timer = 0
+    else
+        timing = 2.0
+    end
+
+    if shoot_timer >= timing then
         ShootSSal()
-        shoot_timer = shoot_timer - 2.0  -- 또는 shoot_timer = 0
+        shoot_timer = 0  -- 또는 shoot_timer = 0
     end
 end
