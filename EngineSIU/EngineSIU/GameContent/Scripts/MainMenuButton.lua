@@ -13,7 +13,7 @@ function OnOverlap(OtherActor)
 end
 
 function Tick(dt)
-    -- ESC ´©¸¦ ½Ã ¹öÆ° Ç¥½Ã/¼û±â±â ÀüÈ¯
+    -- ESC ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Æ° Ç¥ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
     if Input:GetKeyDown(EKeys.Esc) and buttonComp then
         buttonComp.IsVisible = not buttonComp.IsVisible
     end

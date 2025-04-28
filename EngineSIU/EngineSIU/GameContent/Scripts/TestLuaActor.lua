@@ -12,6 +12,7 @@ obj = obj
 function BeginPlay()
     print("[BeginPlay] " .. obj.UUID)
     obj:PrintLocation()
+    obj.bInputBlock = true
 end
 
 function EndPlay()
@@ -27,9 +28,19 @@ function OnOverlap(OtherActor)
         RecentlyHit = true
         PlaySFX("Hit")
     end
+
+    if obj.Velocity.Z < -100 then
+        --EndGame()
+        obj.bInputBlock = false
+    end
 end
 
 function Tick(dt)
+
+    -- if obj.bInputBlock then
+    -- return
+    -- end
+
     -- 이동 입력 처리 (대각선 이동 가능하도록 수정)
     local moveInput = Vector(0, 0, 0)
 
@@ -56,6 +67,8 @@ function Tick(dt)
         moveInput = moveInput + obj.RightVector
     end
     
+
+
     -- 이동 입력이 있는 경우 정규화 후 속도 적용
     if moveInput.x ~= 0 or moveInput.y ~= 0 then
         moveInput = moveInput:Normalize()
@@ -68,6 +81,7 @@ function Tick(dt)
         -- 이동 입력이 없으면 x, y 속도를 0으로 (z는 유지)
         -- obj.Velocity = obj.Velocity
     end
+    
 
     -- 지면 체크 : TODO : 큐브위에 있는 걸로 판정 바꿔야 함
 --[[    if obj.Location.z <= 0 then
@@ -115,4 +129,5 @@ function Tick(dt)
             textComp.Text = "Score:"..tostring(HighestScore)
         end
     end
+
 end

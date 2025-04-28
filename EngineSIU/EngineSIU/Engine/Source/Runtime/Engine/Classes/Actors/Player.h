@@ -41,4 +41,7 @@ protected:
     USpringArmComponent* CameraBoom = nullptr;
     UShapeComponent* Collider = nullptr;
     UProjectileMovementComponent* Movement = nullptr;
+
+public:
+    bool bInputBlock = false;
 };

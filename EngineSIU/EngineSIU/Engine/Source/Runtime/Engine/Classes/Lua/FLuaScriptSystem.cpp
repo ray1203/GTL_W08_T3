@@ -191,7 +191,8 @@ void FLuaScriptSystem::BindActor()
         sol::base_classes, sol::bases<AActor>(),
         "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity),
         "Acceleration", sol::property(&APlayer::GetAcceleration, &APlayer::SetAcceleration),
-        "bGrounded", sol::readonly_property(&APlayer::IsGrounded)
+        "bGrounded", sol::readonly_property(&APlayer::IsGrounded),
+        "bInputBlock", sol::property(&APlayer::bInputBlock)
     );
 
 	Lua.new_usertype<AGameManager>("AGameManager",
@@ -302,7 +303,6 @@ void FLuaScriptSystem::BindUtilities()
         {
             FSoundManager::Instance().PlaySFX(FString(sfxName), 10);
         });
-
 }
 void FLuaScriptSystem::BindUI()
 {
