@@ -25,12 +25,6 @@ void APlayer::PostSpawn()
     CameraBoom->SetupAttachment(MeshComponent);
     CameraBoom->SetTargetArmLength(10.0f);
     CameraBoom->SetSocketOffset(FVector(0.f, 0.0f, 0.0f));
-    
-    Collider = AddComponent<UShapeComponent>(TEXT("Collider"));
-    Movement = AddComponent<UProjectileMovementComponent>(TEXT("Movement"));
-    Movement->SetVelocity(FVector(0, 0, 100.f));
-
-
 
     Collider = AddComponent<USphereComponent>(TEXT("Collider"));
     Collider->SetupAttachment(MeshComponent);

@@ -69,10 +69,11 @@ struct FComponentSaveData
 {
     FString ComponentID;    // 컴포넌트의 고유 ID (액터 내에서 유일해야 함, FName) 
     FString ComponentClass; // 컴포넌트 클래스 이름 (예: "UStaticMeshComponent", "UPointLightComponent")
+    FString AttachParentID; // 현재 컴포넌트의 부모 ID (없으면 "nullptr")
 
     TMap<FString, FString> Properties;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(FComponentSaveData, ComponentID, ComponentClass, Properties)
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(FComponentSaveData, ComponentID, ComponentClass, Properties, AttachParentID)
 };
 
 // 액터 하나의 저장 정보를 담는 구조체
@@ -211,7 +212,17 @@ FSceneData SceneManager::WorldToSceneData(const UWorld& InWorld)
             
             //TMap<FString, FString> InProperties;
             Component->GetProperties(componentData.Properties);
-            
+            if (USceneComponent* SceneComp = Cast<USceneComponent>(Component))
+            {
+                if (USceneComponent* Parent = SceneComp->GetAttachParent())
+                {
+                    componentData.AttachParentID = Parent->GetName();
+                }
+                else
+                {
+                    componentData.AttachParentID = TEXT("nullptr");
+                }
+            }
             // 컴포넌트의 속성들을 JSON으로 변환하여 저장
             // for (const auto& Property : InProperties)
             // {
@@ -417,6 +428,18 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
                 else {
                     // 부모 컴포넌트를 이 액터 내에서 찾지 못함 (오류 가능성 높음)
                     UE_LOG(ELogLevel::Warning, TEXT("Could not find Parent component '%s' within Actor '%s' for '%s'."), *(*ParentIDPtr), *actorData.ActorID, *componentData.ComponentID);
+                }
+            }
+            if (!componentData.AttachParentID.IsEmpty() && componentData.AttachParentID != TEXT("nullptr"))
+            {
+                UActorComponent** FoundParent = ActorComponentsMap.Find(componentData.AttachParentID);
+                if (FoundParent && *FoundParent)
+                {
+                    USceneComponent* ParentSceneComp = Cast<USceneComponent>(*FoundParent);
+                    if (ParentSceneComp)
+                    {
+                        CurrentSceneComp->SetupAttachment(ParentSceneComp);
+                    }
                 }
             }
 
