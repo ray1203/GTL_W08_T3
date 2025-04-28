@@ -37,7 +37,7 @@ public:
 
     void LoadWorld(const FString& FileName) const;
     void SaveWorld(const FString& FileName) const;
-    virtual void RestartGame() const;
+    virtual void RestartGame();
     bool bRestartGame = false;
 };
 

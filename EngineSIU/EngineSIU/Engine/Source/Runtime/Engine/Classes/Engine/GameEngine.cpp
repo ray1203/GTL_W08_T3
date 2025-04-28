@@ -25,8 +25,9 @@ void UGameEngine::Init()
         assert(AssetManager);
         AssetManager->InitAssetManager();
     }
-
-    LoadInitialScene();
+    SceneNames.Add(TEXT("Contents\\StartGameScene.scene"));
+    SceneNames.Add(TEXT("Contents\\MainGameScene.scene"));
+    LoadScene(0);
 }
 
 void UGameEngine::Tick(float DeltaTime)
@@ -40,6 +41,7 @@ void UGameEngine::Tick(float DeltaTime)
                 GEngine->bRestartGame = false;
                 RestartGame();
             }
+            if (bLoadScene)LoadScene();
             if (UWorld* World = WorldContext->World())
             {
                 World->Tick(DeltaTime);
@@ -66,20 +68,28 @@ void UGameEngine::InitGameWorld(FWorldContext& GameWorldContext)
     GameWorldContext.SetCurrentWorld(GameWorld);
     ActiveWorld = GameWorld;
 }
-
-void UGameEngine::LoadInitialScene() const
+void UGameEngine::LoadScene(int index)
+{
+    bLoadScene = true;
+    LoadSceneIndex = index;
+}
+void UGameEngine::LoadScene()
 {
     //Load
-    FString SceneName = TEXT("Contents\\MainGameScene.scene");
-    LoadWorld(SceneName);
-}
-void UGameEngine::RestartGame() const
-{
-    if (!bRestartGame)return;
+    if (!bLoadScene)return;
+    bLoadScene = false;
     if (ActiveWorld->GetActiveLevel())
     {
         ActiveWorld->GetActiveLevel()->Release();
     }
-    
-    LoadInitialScene();
+    LoadWorld(SceneNames[LoadSceneIndex]);
+}
+void UGameEngine::RestartGame()
+{
+    if (!bRestartGame)return;
+    /*if (ActiveWorld->GetActiveLevel())
+    {
+        ActiveWorld->GetActiveLevel()->Release();
+    }*/
+    LoadScene(1);
 }

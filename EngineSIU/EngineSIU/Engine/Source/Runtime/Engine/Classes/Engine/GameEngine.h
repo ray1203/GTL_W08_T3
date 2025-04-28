@@ -11,9 +11,12 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     UWorld* GameWorld = nullptr;
-
+    void LoadScene(int index);
+    bool bLoadScene = false;
 private:
     void InitGameWorld(FWorldContext& GameWorldContext);
-    void LoadInitialScene() const;
-    virtual void RestartGame() const override;
+    void LoadScene();
+    virtual void RestartGame() override;
+    TArray<FString> SceneNames;
+    int LoadSceneIndex;
 };
