@@ -6,6 +6,14 @@
             "ActorLabel": "APlayer91",
             "Components": [
                 {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "TestLuaActor"
+                    }
+                },
+                {
                     "AttachParentID": "MeshComponent",
                     "ComponentClass": "USpringArmComponent",
                     "ComponentID": "CameraBoom",
@@ -21,14 +29,6 @@
                         "TargetArmLength": "10.000000",
                         "bAutoActive": "true",
                         "bIsActive": "true"
-                    }
-                },
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "TestLuaActor"
                     }
                 },
                 {
@@ -137,6 +137,27 @@
             "ActorLabel": "OBJ_SPHERE_100",
             "Components": [
                 {
+                    "AttachParentID": "nullptr",
+                    "ComponentClass": "UProjectileMovementComponent",
+                    "ComponentID": "ProjectileMovementComponent",
+                    "Properties": {
+                        "Acceleration": "X=0.000 Y=0.000 Z=-20.000",
+                        "AccumulatedTime": "0.000000",
+                        "ComponentClass": "UProjectileMovementComponent",
+                        "ComponentName": "ProjectileMovementComponent",
+                        "ComponentOwner": "AActor_100",
+                        "ComponentOwnerClass": "AActor",
+                        "InitialSpeed": "0.000000",
+                        "MaxSpeed": "0.000000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "Velocity": "X=0.000 Y=0.000 Z=0.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
                     "AttachParentID": "",
                     "ComponentClass": "ULuaScriptComponent",
                     "ComponentID": "LuaScriptComponent",
@@ -182,27 +203,6 @@
                         "bIsActive": "true",
                         "m_Type": ""
                     }
-                },
-                {
-                    "AttachParentID": "nullptr",
-                    "ComponentClass": "UProjectileMovementComponent",
-                    "ComponentID": "ProjectileMovementComponent",
-                    "Properties": {
-                        "Acceleration": "X=0.000 Y=0.000 Z=-20.000",
-                        "AccumulatedTime": "0.000000",
-                        "ComponentClass": "UProjectileMovementComponent",
-                        "ComponentName": "ProjectileMovementComponent",
-                        "ComponentOwner": "AActor_100",
-                        "ComponentOwnerClass": "AActor",
-                        "InitialSpeed": "0.000000",
-                        "MaxSpeed": "0.000000",
-                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "Velocity": "X=0.000 Y=0.000 Z=0.000",
-                        "bAutoActive": "true",
-                        "bIsActive": "true"
-                    }
                 }
             ],
             "RootComponentID": "SphereComp"
@@ -212,14 +212,6 @@
             "ActorID": "AActor_105",
             "ActorLabel": "OBJ_SPHERE_105",
             "Components": [
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "template"
-                    }
-                },
                 {
                     "AttachParentID": "nullptr",
                     "ComponentClass": "USphereComp",
@@ -238,6 +230,14 @@
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": "USphereComp"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
                     }
                 },
                 {
@@ -317,25 +317,6 @@
                     }
                 },
                 {
-                    "AttachParentID": "SphereComp",
-                    "ComponentClass": "USphereComponent",
-                    "ComponentID": "SphereComponent",
-                    "Properties": {
-                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
-                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
-                        "ComponentClass": "USphereComponent",
-                        "ComponentName": "SphereComponent",
-                        "ComponentOwner": "AActor_110",
-                        "ComponentOwnerClass": "AActor",
-                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
-                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "bAutoActive": "true",
-                        "bIsActive": "true",
-                        "m_Type": ""
-                    }
-                },
-                {
                     "AttachParentID": "nullptr",
                     "ComponentClass": "UProjectileMovementComponent",
                     "ComponentID": "ProjectileMovementComponent",
@@ -354,6 +335,25 @@
                         "Velocity": "X=0.000 Y=0.000 Z=0.000",
                         "bAutoActive": "true",
                         "bIsActive": "true"
+                    }
+                },
+                {
+                    "AttachParentID": "SphereComp",
+                    "ComponentClass": "USphereComponent",
+                    "ComponentID": "SphereComponent",
+                    "Properties": {
+                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
+                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
+                        "ComponentClass": "USphereComponent",
+                        "ComponentName": "SphereComponent",
+                        "ComponentOwner": "AActor_110",
+                        "ComponentOwnerClass": "AActor",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "m_Type": ""
                     }
                 }
             ],

@@ -15,10 +15,7 @@ void UUIButtonComponent::RenderUI()
 
     if (ImGui::Button(Label.c_str()))
     {
-        if (OnClick)
-        {
-            OnClick();
-        }
+        OnClick();
     }
 
     EndWidget();
@@ -42,4 +39,22 @@ void UUIButtonComponent::SetProperties(const TMap<FString, FString>& Properties)
     Super::SetProperties(Properties);
     if (const FString* Value = Properties.Find(TEXT("Label")))
         SetLabel(TCHAR_TO_UTF8(**Value));
+}
+
+void UUIButtonComponent::OnClick()
+{
+    if (NativeCallback)
+    {
+        NativeCallback();
+    }
+
+    if (LuaCallback.valid())
+    {
+        sol::protected_function_result result = LuaCallback();
+        if (!result.valid())
+        {
+            sol::error err = result;
+            UE_LOG(ELogLevel::Error, TEXT("[Lua Button Callback Error] %s"), *FString(err.what()));
+        }
+    }
 }

@@ -28,6 +28,7 @@ void APlayer::PostSpawn()
 
     Collider = AddComponent<USphereComponent>(TEXT("Collider"));
     Collider->SetupAttachment(MeshComponent);
+	Collider->Restitution = 0.3f;
     Movement = AddComponent<UProjectileMovementComponent>(TEXT("Movement"));
     Movement->SetVelocity(FVector(0, 0, 10.f));
     LuaComp->SetScriptPath(TEXT("TestLuaActor"));
@@ -58,4 +59,7 @@ void APlayer::BeginPlay()
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    auto Overlaps = this->Collider->GetOverlappingComponents();
+    UE_LOG(ELogLevel::Display, "NumOverlaps  : %d", Overlaps.Num());
 }
+

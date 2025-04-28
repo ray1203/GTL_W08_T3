@@ -1,7 +1,7 @@
 #pragma once
 #include "GameFramework/Actor.h"
 #include "Classes/Components/ProjectileMovementComponent.h"
-
+#include "Components/Shapes/ShapeComponent.h"
 
 class UStaticMeshComponent;
 class USpringArmComponent;
@@ -24,6 +24,14 @@ class APlayer : public AActor
     FVector GetVelocity() { return Movement->GetVelocity(); }
     void SetVelocity(FVector InVelocity) { Movement->SetVelocity(InVelocity); }
 
+    bool IsGrounded() {
+        if (Collider)
+        {
+            return Collider->bGrounded;
+        }
+    }
+
+    static FVector GetPlayerLocation();
 protected:
     UStaticMeshComponent* MeshComponent = nullptr;
     USpringArmComponent* CameraBoom = nullptr;

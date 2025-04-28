@@ -88,6 +88,14 @@ void SLevelEditor::Tick(float DeltaTime)
     {
         Viewport->Tick(DeltaTime);
     }
+
+    if (FWindowsCursor::GetShowMouseCursor() == false)
+    {
+        UINT Width;
+        UINT Height;
+        GEngineLoop.GetClientSize(Width, Height);
+        FWindowsCursor::SetPosition(Width / 2, Height / 2);
+    }
 }
 
 void SLevelEditor::Release()

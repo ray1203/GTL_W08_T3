@@ -319,7 +319,8 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     SpawnedActor->SetRootComponent(SphereComp);
                     USphereComponent* Spherecomponent = SpawnedActor->AddComponent<USphereComponent>(TEXT("SphereComponent"));
                     Spherecomponent->SetupAttachment(SphereComp);
-                    Spherecomponent->bIsSimulatingPhysics = false;
+                    Spherecomponent->bIsSimulatingPhysics = true;
+                    Spherecomponent->Mass = 0.1f;
                     UProjectileMovementComponent* ProjComp = SpawnedActor->AddComponent<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
                     SphereComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
                     break;
@@ -592,7 +593,17 @@ void ControlEditorPanel::CreatePIEButton(ImVec2 ButtonSize, ImFont* IconFont) co
         UE_LOG(ELogLevel::Display, TEXT("Stop Button Clicked"));
         Engine->EndPIE();
     }
-    
+    ImGui::SetCursorScreenPos(ImVec2(CenterX + 140.0f, 10.0f));
+    if (ImGui::Button("ASD", ButtonSize)) // Stop
+    {
+        UE_LOG(ELogLevel::Display, TEXT("Stop Button Clicked"));
+        Engine->EndPIE();
+
+        /*
+        Engine->NewWorld();
+        Engine->LoadWorld("parentTest.scene");*/
+        Engine->StartPIE();
+    }
 }
 
 // code is so dirty / Please refactor

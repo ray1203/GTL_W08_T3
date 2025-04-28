@@ -35,6 +35,11 @@ void UGameEngine::Tick(float DeltaTime)
     {
         if (WorldContext->WorldType == EWorldType::Game)
         {
+            if (GEngine->bRestartGame)
+            {
+                GEngine->bRestartGame = false;
+                RestartGame();
+            }
             if (UWorld* World = WorldContext->World())
             {
                 World->Tick(DeltaTime);
@@ -62,9 +67,19 @@ void UGameEngine::InitGameWorld(FWorldContext& GameWorldContext)
     ActiveWorld = GameWorld;
 }
 
-void UGameEngine::LoadInitialScene()
+void UGameEngine::LoadInitialScene() const
 {
     //Load
     FString SceneName = TEXT("Contents\\MainGameScene.scene");
     LoadWorld(SceneName);
+}
+void UGameEngine::RestartGame() const
+{
+    if (!bRestartGame)return;
+    if (ActiveWorld->GetActiveLevel())
+    {
+        ActiveWorld->GetActiveLevel()->Release();
+    }
+    
+    LoadInitialScene();
 }

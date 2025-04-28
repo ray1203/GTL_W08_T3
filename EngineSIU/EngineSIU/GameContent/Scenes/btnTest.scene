@@ -1,0 +1,179 @@
+{
+    "Actors": [
+        {
+            "ActorClass": "APlayer",
+            "ActorID": "APlayer_94",
+            "ActorLabel": "APlayer94",
+            "Components": [
+                {
+                    "AttachParentID": "nullptr",
+                    "ComponentClass": "UStaticMeshComponent",
+                    "ComponentID": "MeshComponent",
+                    "Properties": {
+                        "AABB_max": "X=1.287 Y=1.199 Z=2.555",
+                        "AABB_min": "X=-1.287 Y=-1.199 Z=-0.000",
+                        "ComponentClass": "UStaticMeshComponent",
+                        "ComponentName": "MeshComponent",
+                        "ComponentOwner": "APlayer_94",
+                        "ComponentOwnerClass": "APlayer",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "StaticMeshPath": "Contents/Reference/Reference.obj",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "m_Type": ""
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "TestLuaActor"
+                    }
+                },
+                {
+                    "AttachParentID": "MeshComponent",
+                    "ComponentClass": "USpringArmComponent",
+                    "ComponentID": "CameraBoom",
+                    "Properties": {
+                        "ComponentClass": "USpringArmComponent",
+                        "ComponentName": "CameraBoom",
+                        "ComponentOwner": "APlayer_94",
+                        "ComponentOwnerClass": "APlayer",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "SocketOffset": "X=0.000 Y=0.000 Z=0.000",
+                        "TargetArmLength": "10.000000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
+                    "AttachParentID": "MeshComponent",
+                    "ComponentClass": "USphereComponent",
+                    "ComponentID": "Collider",
+                    "Properties": {
+                        "AABB_max": "X=0.000 Y=0.000 Z=0.000",
+                        "AABB_min": "X=0.000 Y=0.000 Z=0.000",
+                        "ComponentClass": "USphereComponent",
+                        "ComponentName": "Collider",
+                        "ComponentOwner": "APlayer_94",
+                        "ComponentOwnerClass": "APlayer",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true",
+                        "m_Type": ""
+                    }
+                },
+                {
+                    "AttachParentID": "nullptr",
+                    "ComponentClass": "UProjectileMovementComponent",
+                    "ComponentID": "Movement",
+                    "Properties": {
+                        "Acceleration": "X=0.000 Y=0.000 Z=-20.000",
+                        "AccumulatedTime": "0.000000",
+                        "ComponentClass": "UProjectileMovementComponent",
+                        "ComponentName": "Movement",
+                        "ComponentOwner": "APlayer_94",
+                        "ComponentOwnerClass": "APlayer",
+                        "InitialSpeed": "0.000000",
+                        "MaxSpeed": "0.000000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "Velocity": "X=0.000 Y=0.000 Z=10.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                }
+            ],
+            "RootComponentID": "MeshComponent"
+        },
+        {
+            "ActorClass": "ADirectionalLight",
+            "ActorID": "ADirectionalLight_100",
+            "ActorLabel": "ADirectionalLight100",
+            "Components": [
+                {
+                    "AttachParentID": "nullptr",
+                    "ComponentClass": "UDirectionalLightComponent",
+                    "ComponentID": "DirectionalLightComponent",
+                    "Properties": {
+                        "AABB_Max": "X=1.000 Y=1.000 Z=0.100",
+                        "AABB_Min": "X=-1.000 Y=-1.000 Z=-0.100",
+                        "ComponentClass": "UDirectionalLightComponent",
+                        "ComponentName": "DirectionalLightComponent",
+                        "ComponentOwner": "ADirectionalLight_100",
+                        "ComponentOwnerClass": "ADirectionalLight",
+                        "Direction": "X=-0.000 Y=-0.000 Z=-1.000",
+                        "Intensity": "2.000000",
+                        "LightColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=20.000",
+                        "RelativeRotation": "Pitch=20.000 Yaw=-61.000 Roll=11.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                }
+            ],
+            "RootComponentID": "DirectionalLightComponent"
+        },
+        {
+            "ActorClass": "AButtonUIActor",
+            "ActorID": "AButtonUIActor_116",
+            "ActorLabel": "OBJ_UI_BUTTON_116",
+            "Components": [
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "UUIButtonComponent",
+                    "ComponentID": "UIButtonComponent",
+                    "Properties": {
+                        "Anchor": "4",
+                        "ComponentClass": "UUIButtonComponent",
+                        "ComponentName": "UIButtonComponent",
+                        "ComponentOwner": "AButtonUIActor_116",
+                        "ComponentOwnerClass": "AButtonUIActor",
+                        "Label": "Click Me",
+                        "Offset": "X=0.000 Y=0.000",
+                        "UISize": "X=200.000 Y=100.000",
+                        "ZOrder": "0",
+                        "bAutoActive": "true",
+                        "bAutoSize": "false",
+                        "bIsActive": "true",
+                        "bNoBackground": "false",
+                        "bNoInputs": "false",
+                        "bNoMove": "true",
+                        "bNoResize": "true",
+                        "bNoSavedSettings": "true",
+                        "bNoTitleBar": "true",
+                        "bVisible": "true"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "RestartButton"
+                    }
+                }
+            ],
+            "RootComponentID": ""
+        }
+    ],
+    "NextUUID": 0,
+    "Version": 1
+}

@@ -34,6 +34,12 @@ void UShapeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void UShapeComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
+
+    if (this->GetWorld()->WorldType != EWorldType::Editor)
+    {
+        OverlappingComponents.Empty();
+        this->GetWorld()->PhysicsScene.GetOverlappings(this, OverlappingComponents);
+    }
 }
 
 int UShapeComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
@@ -44,9 +50,36 @@ int UShapeComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirect
 void UShapeComponent::GetProperties(TMap<FString, FString>& OutProperties) const
 {
     Super::GetProperties(OutProperties);
+
+    OutProperties.Add(TEXT("bDrawOnlyIfSelected"), bDrawOnlyIfSelected ? TEXT("true") : TEXT("false"));
+    OutProperties.Add(TEXT("bIsSimulatingPhysics"), bIsSimulatingPhysics ? TEXT("true") : TEXT("false"));
+    OutProperties.Add(TEXT("Mass"), FString::Printf(TEXT("%f"), Mass));
+
 }
 
 void UShapeComponent::SetProperties(const TMap<FString, FString>& InProperties)
 {
     Super::SetProperties(InProperties);
+
+    const FString* TempStr = nullptr;
+
+
+    TempStr = InProperties.Find(TEXT("bDrawOnlyIfSelected")); // bAutoActive 변수가 있다고 가정
+    if (TempStr)
+    {
+        this->bDrawOnlyIfSelected = TempStr->ToBool();
+    }
+
+    TempStr = InProperties.Find(TEXT("bIsSimulatingPhysics"));
+    if (TempStr)
+    {
+        this->bIsSimulatingPhysics = TempStr->ToBool();
+    }
+
+    TempStr = InProperties.Find(TEXT("Mass"));
+    if (TempStr)
+    {
+        Mass = FString::ToFloat(*TempStr);
+    }
+
 }

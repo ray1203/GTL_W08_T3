@@ -78,6 +78,7 @@ UObject* UUIComponent::Duplicate(UObject* InOuter)
     NewComponent->bNoBackground = bNoBackground;
     NewComponent->bNoInputs = bNoInputs;
     NewComponent->bAutoSize = bAutoSize;
+    NewComponent->bVisible = bVisible;
     NewComponent->ZOrder = ZOrder;
 
     return NewComponent;
@@ -100,6 +101,7 @@ void UUIComponent::GetProperties(TMap<FString, FString>& OutProperties) const
     OutProperties.Add(TEXT("bNoBackground"), bNoBackground ? TEXT("true") : TEXT("false"));
     OutProperties.Add(TEXT("bNoInputs"), bNoInputs ? TEXT("true") : TEXT("false"));
     OutProperties.Add(TEXT("bAutoSize"), bAutoSize ? TEXT("true") : TEXT("false"));
+    OutProperties.Add(TEXT("bVisible"), bVisible ? TEXT("true") : TEXT("false"));
     OutProperties.Add(TEXT("ZOrder"), FString::FromInt(ZOrder));
 
 }
@@ -129,6 +131,7 @@ void UUIComponent::SetProperties(const TMap<FString, FString>& Properties)
     BoolFromMap(TEXT("bNoBackground"), bNoBackground);
     BoolFromMap(TEXT("bNoInputs"), bNoInputs);
     BoolFromMap(TEXT("bAutoSize"), bAutoSize);
+    BoolFromMap(TEXT("bVisible"), bVisible);
 
     if (const FString* Value = Properties.Find(TEXT("ZOrder")))
     {
