@@ -37,7 +37,7 @@ void UUIButtonComponent::GetProperties(TMap<FString, FString>& OutProperties) co
 {
     Super::GetProperties(OutProperties);
     OutProperties.Add(TEXT("Label"), FString(Label.c_str()));
-    OutProperties.Add(TEXT("ButtonSize"), FString::Printf(TEXT("%f,%f"), ButtonSize.X, ButtonSize.Y));
+    OutProperties.Add(TEXT("ButtonSize"), ButtonSize.ToString());
     OutProperties.Add(TEXT("FontScale"), FString::Printf(TEXT("%f"), FontScale));
 }
 

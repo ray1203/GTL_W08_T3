@@ -22,5 +22,5 @@ public:
 
 private:
     std::shared_ptr<FTexture> Texture = nullptr;
-    FString TexturePath = TEXT("Contents/Texture/bggo.png");
+    FString TexturePath = TEXT("Contents/Texture/ssal.png");
 };
