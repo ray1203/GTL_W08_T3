@@ -1,7 +1,7 @@
 #include "PrimitiveComponent.h"
 
 #include "UObject/Casts.h"
-
+#include "World/World.h"
 
 UObject* UPrimitiveComponent::Duplicate(UObject* InOuter)
 {

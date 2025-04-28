@@ -59,5 +59,7 @@ void APlayer::BeginPlay()
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+    auto Overlaps = this->Collider->GetOverlappingComponents();
+    UE_LOG(ELogLevel::Display, "NumOverlaps  : %d", Overlaps.Num());
 }
 

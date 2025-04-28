@@ -34,6 +34,12 @@ void UShapeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void UShapeComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
+
+    if (this->GetWorld()->WorldType != EWorldType::Editor)
+    {
+        OverlappingComponents.Empty();
+        this->GetWorld()->PhysicsScene.GetOverlappings(this, OverlappingComponents);
+    }
 }
 
 int UShapeComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)

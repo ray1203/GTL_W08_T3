@@ -62,8 +62,8 @@ void FPhysicsSolver::ApplyForces()
             if (Body.Acceleration.Z < 0.f)
                 Body.Acceleration.Z = 0.f;
 
-            Body.Acceleration.X -= Friction * Body.Velocity.X;
-            Body.Acceleration.Y -= Friction * Body.Velocity.Y;
+            //Body.Acceleration.X -= Friction * Body.Velocity.X;
+            //Body.Acceleration.Y -= Friction * Body.Velocity.Y;
             //UE_LOG(ELogLevel::Error, "FPhysicsScene::bGrounded[%d] : %s", count++, *Body.Component->StaticClass()->GetName());
         }
     }
@@ -392,12 +392,14 @@ void FPhysicsSolver::HandleCollisions()
         // StickToGround가 true && grounded였던 바디만 Normal 방향 velocity를 0으로!
         if (bAWasGrounded && BodyA.bStickToGround)
         {
-            float vDotN = FVector::DotProduct(BodyA.Velocity, Normal);
+            //float vDotN = FVector::DotProduct(BodyA.Velocity, Normal);
+            float vDotN = FVector::DotProduct(BodyA.Velocity, FVector::UpVector);
             BodyA.Velocity -= Normal * vDotN;
         }
         if (bBWasGrounded && BodyB.bStickToGround)
         {
-            float vDotN = FVector::DotProduct(BodyB.Velocity, Normal);
+            //float vDotN = FVector::DotProduct(BodyB.Velocity, Normal);
+            float vDotN = FVector::DotProduct(BodyB.Velocity, FVector::UpVector);
             BodyB.Velocity -= Normal * vDotN;
         }
     }
@@ -472,7 +474,7 @@ void FPhysicsSolver::RemoveBody(UShapeComponent* Component)
     }
 }
 
-const FPhysicsBody* FPhysicsSolver::GetBody(UShapeComponent* Component)
+const FPhysicsBody* FPhysicsSolver::GetBody(const UShapeComponent* Component) const
 {
     for (const FPhysicsBody& Body : SimulatedBodies)
     {
@@ -500,40 +502,28 @@ bool FPhysicsSolver::GetSimulatedTransform(UShapeComponent* Component, FTransfor
     return false;
 }
 
-bool FPhysicsSolver::Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*> OverlappingBodies)
+bool FPhysicsSolver::GetOverlappingBodies(const FPhysicsBody& Body, TArray<FPhysicsBody*>& OverlappingBodies)
 {
-    if (Body.CollisionShape.ShapeType == ECollisionShape::Sphere)
+    for (const auto& OverlapPair : CachedOverlaps)
     {
-        FSphere Source;
-        Source.Center = Body.Transform.Translation;
-        Source.Radius = Body.CollisionShape.Sphere.Radius;
-
-        for (FPhysicsBody& Other : SimulatedBodies)
+        int32 i = OverlapPair.Key;
+        int32 j = OverlapPair.Value;
+        FPhysicsBody& BodyA = SimulatedBodies[i];
+        FPhysicsBody& BodyB = SimulatedBodies[j];
+        if (BodyA == Body)
         {
-            if (Other == Body)
-            {
-                continue; // 자기 자신은 제외  
-            }
-            if (Other.CollisionShape.ShapeType == ECollisionShape::Sphere)
-            {
-                FSphere Target;
-                Target.Center = Other.Transform.Translation;
-                Target.Radius = Other.CollisionShape.Sphere.Radius;
-                if (JungleCollision::Intersects(Source, Target))
-                {
-                    OverlappingBodies.Add(&Other);
-                }
-            }
+            OverlappingBodies.Add(&BodyB);
+        }
+        else if (BodyB == Body)
+        {
+            OverlappingBodies.Add(&BodyA);
         }
     }
     if (OverlappingBodies.Num() > 0)
     {
         return true;
     }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
 bool FPhysicsSolver::IsOverlapping(const FPhysicsBody& BodyA, const FPhysicsBody& BodyB)
