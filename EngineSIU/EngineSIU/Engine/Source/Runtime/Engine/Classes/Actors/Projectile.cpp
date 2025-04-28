@@ -7,13 +7,14 @@
 
 AProjectile::AProjectile()
 {
+    FManagerOBJ::CreateStaticMesh("Contents/bap.obj");
 }
 
 void AProjectile::PostSpawn()
 {
     MeshComponent = AddComponent<UStaticMeshComponent>(TEXT("Mesh"));
     MeshComponent->SetRelativeScale3D(FVector(0.5, 0.5, 0.5));
-    MeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
+    MeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/bap.obj"));
 
     RootComponent = MeshComponent;
 
