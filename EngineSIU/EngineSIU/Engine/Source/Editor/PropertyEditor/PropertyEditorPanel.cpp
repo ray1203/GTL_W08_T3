@@ -750,6 +750,7 @@ void PropertyEditorPanel::Render()
 }
 void PropertyEditorPanel::DrawUIComponentProperties(UUIComponent* UIComp)
 {
+    if (ImGui::Checkbox("Visible", &UIComp->bVisible)) {}
     const char* AnchorLabels[] = {
         "TopLeft", "TopCenter", "TopRight",
         "CenterLeft", "Center", "CenterRight",

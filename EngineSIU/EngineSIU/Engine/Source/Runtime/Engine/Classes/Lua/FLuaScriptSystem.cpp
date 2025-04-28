@@ -266,8 +266,9 @@ void FLuaScriptSystem::BindUI()
             [](UUIButtonComponent* Comp) { return std::string(Comp->GetLabel()); },
             [](UUIButtonComponent* Comp, const std::string& Value) { Comp->SetLabel(Value); }),
 
-        "OnClick", &UUIButtonComponent::OnClick
+        "Bind", &UUIButtonComponent::BindLuaCallback // <-- Lua 측에서 :Bind(fn) 사용 가능
     );
+
 }
 
 //Lua 내부에서 사용할 함수들
