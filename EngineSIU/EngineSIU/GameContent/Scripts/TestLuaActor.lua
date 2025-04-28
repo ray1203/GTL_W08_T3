@@ -17,6 +17,9 @@ end
 
 function OnOverlap(OtherActor)
     OtherActor:PrintLocation()
+    local OtherVelocity = OtherActor.Velocity
+    obj.Velocity = obj.Velocity + OtherVelocity * 1111
+    obj.Location = Vector(0,0,0)
 end
 
 function Tick(dt)

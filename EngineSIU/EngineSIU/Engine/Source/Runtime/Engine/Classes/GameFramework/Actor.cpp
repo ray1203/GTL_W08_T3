@@ -310,6 +310,15 @@ FVector AActor::GetPlayerLocation()
     return FVector::ZeroVector;
 }
 
+FVector AActor::GetVelocity()
+{
+    if (UProjectileMovementComponent* Proj = GetComponentByClass<UProjectileMovementComponent>())
+    {
+        return Proj->GetVelocity();
+    }
+    return FVector::ZeroVector;
+}
+
 void AActor::SetActorTickInEditor(bool InbInTickInEditor)
 {
     bTickInEditor = InbInTickInEditor;

@@ -42,8 +42,5 @@ public:
     float Restitution = 1.0f;
     float Mass = 1.f;
 
-    const TArray<FOverlapInfo>& GetOverlappingComponents() const { return OverlappingComponents; }
-
-private:
-    TArray<FOverlapInfo> OverlappingComponents; // 현재 겹쳐있는 컴포넌트들
+    const TArray<FOverlapInfo> GetOverlappingComponents();
 };

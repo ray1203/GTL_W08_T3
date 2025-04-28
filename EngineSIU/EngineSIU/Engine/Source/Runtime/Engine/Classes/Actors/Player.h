@@ -31,7 +31,9 @@ class APlayer : public AActor
         }
     }
 
-    static FVector GetPlayerLocation();
+    void OnOverlap(const FPhysicsBody& result);
+
+
 protected:
     UStaticMeshComponent* MeshComponent = nullptr;
     USpringArmComponent* CameraBoom = nullptr;

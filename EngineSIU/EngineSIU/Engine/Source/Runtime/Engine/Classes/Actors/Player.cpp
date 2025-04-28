@@ -4,7 +4,7 @@
 #include "Camera/SpringArmComponent.h"
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/Shapes/SphereComponent.h"
-
+#include "World/World.h"
 
 #include "Components/Lua/LuaScriptComponent.h"
 
@@ -54,12 +54,22 @@ UObject* APlayer::Duplicate(UObject* InOuter)
 void APlayer::BeginPlay()
 {
     Super::BeginPlay();
+
+    FPhysicsBody* body = GetWorld()->PhysicsScene.SceneSolver.GetBody(this->Collider);
+    if (body)
+    {
+        body->OnOverlap.AddDynamic(this, &APlayer::OnOverlap);
+    }
 }
 
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    auto Overlaps = this->Collider->GetOverlappingComponents();
-    UE_LOG(ELogLevel::Display, "NumOverlaps  : %d", Overlaps.Num());
+}
+
+void APlayer::OnOverlap(const FPhysicsBody& result)
+{
+    LuaComp->CallLuaFunction("OnOverlap", 0.f, result.Component->GetOwner());
+    UE_LOG(ELogLevel::Warning, TEXT("APlayer : OnOverlapped"));
 }
 

@@ -2,7 +2,7 @@
 
 #include "UObject/Casts.h"
 #include "World/World.h"
-
+#include "Actors/Player.h"
 
 UObject* USphereComponent::Duplicate(UObject* InOuter)
 {
@@ -24,12 +24,6 @@ void USphereComponent::BeginPlay()
     if (this->GetWorld()->WorldType != EWorldType::Editor)
     {
         this->GetWorld()->PhysicsScene.AddRigidBody(this);
-    }
-
-    FPhysicsBody* body = GetWorld()->PhysicsScene.SceneSolver.GetBody(this);
-    if (body)
-    {
-        body->OnOverlap.AddDynamic(this, &USphereComponent::OnOverlap);
     }
 }
 
@@ -66,4 +60,5 @@ void USphereComponent::SetProperties(const TMap<FString, FString>& InProperties)
 void USphereComponent::OnOverlap(const FPhysicsBody& result)
 {
     UE_LOG(ELogLevel::Warning, TEXT("USphere Comp : OnOverlapped"));
+    
 }

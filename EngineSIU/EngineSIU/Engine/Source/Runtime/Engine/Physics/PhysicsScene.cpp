@@ -9,8 +9,6 @@ FPhysicsScene::FPhysicsScene()
 FPhysicsScene::~FPhysicsScene()
 {
     RegisteredBodies.Empty();
-    AddQueue.Empty();
-    RemoveQueue.Empty();
 }
 
 void FPhysicsScene::SyncBodies()
@@ -44,81 +42,52 @@ void FPhysicsScene::SyncBodies()
         }
     }
 }
+
 void FPhysicsScene::TickPhysScene(float DeltaSeconds)
 {
     DeltaTime = DeltaSeconds;
-
-    // tick에서 add/remove 큐 먼저 처리
-    ProcessBodyQueues();
-
     SceneSolver.UpdateBodyFromComponent();
     SceneSolver.AdvanceAndDispatch(DeltaSeconds);
 }
 
 void FPhysicsScene::AddRigidBody(UShapeComponent* Component)
 {
-    // 바로 추가하지 않고 큐에 등록
-    if (Component && !AddQueue.Contains(Component) && !RegisteredBodies.Contains(Component))
+    static uint32 num = 0;
+    if (Component && !RegisteredBodies.Contains(Component))
     {
-        AddQueue.Add(Component);
+        //UE_LOG(ELogLevel::Error, "FPhysicsScene::AddRigidBody[%d] : %s", num++,*Component->StaticClass()->GetName());
+        RegisteredBodies.Add(Component);
+        SceneSolver.AddBody(Component);
     }
 }
 
 void FPhysicsScene::RemoveRigidBody(UShapeComponent* Component)
 {
-    // 바로 제거하지 않고 큐에 등록
-    if (Component && !RemoveQueue.Contains(Component) && RegisteredBodies.Contains(Component))
+    if (Component && RegisteredBodies.Contains(Component))
     {
-        RemoveQueue.Add(Component);
+        RegisteredBodies.Remove(Component);
+        SceneSolver.RemoveBody(Component);
     }
 }
+
 
 bool FPhysicsScene::GetOverlappings(UShapeComponent* Shape, TArray<FOverlapInfo>& OutOverlaps)
 {
     const FPhysicsBody* Body = SceneSolver.GetBody(Shape);
     TArray<FPhysicsBody*> OverlappingBodies;
-    if (Body)
-    {
-        if (SceneSolver.GetOverlappingBodies(*Body, OverlappingBodies))
-        {
-            for (auto& Body : OverlappingBodies)
-            {
-                FOverlapInfo Info;
-                Info.bFromSweep = false;
-                Info.OverlapInfo.Component = Body->Component;
-                OutOverlaps.Add(Info);
-            }
+    SceneSolver.GetOverlappingBodies(*Body, OverlappingBodies);
 
-            if (OutOverlaps.Num() > 0)
-            {
-                return true;
-            }
-        }
+    for (auto& Body : OverlappingBodies)
+    {
+        FOverlapInfo Info;
+        Info.bFromSweep = false;
+        Info.OverlapInfo.Component = Body->Component;
+        OutOverlaps.Add(Info);
+    }
+
+    if (OutOverlaps.Num() > 0)
+    {
+        return true;
     }
     return false;
-}
-
-void FPhysicsScene::ProcessBodyQueues()
-{
-    // Remove 먼저 처리 (등록되어 있을 때만)
-    for (UShapeComponent* Comp : RemoveQueue)
-    {
-        if (Comp && RegisteredBodies.Contains(Comp))
-        {
-            RegisteredBodies.Remove(Comp);
-            SceneSolver.RemoveBody(Comp);
-        }
-    }
-    RemoveQueue.Empty();
-
-    // Add 처리 (등록되어 있지 않을 때만)
-    for (UShapeComponent* Comp : AddQueue)
-    {
-        if (Comp && !RegisteredBodies.Contains(Comp))
-        {
-            RegisteredBodies.Add(Comp);
-            SceneSolver.AddBody(Comp);
-        }
-    }
-    AddQueue.Empty();
 }

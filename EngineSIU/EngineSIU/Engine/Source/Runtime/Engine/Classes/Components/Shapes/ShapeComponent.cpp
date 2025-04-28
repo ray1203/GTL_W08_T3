@@ -35,11 +35,6 @@ void UShapeComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
 
-    if (this->GetWorld()->WorldType != EWorldType::Editor)
-    {
-        OverlappingComponents.Empty();
-        this->GetWorld()->PhysicsScene.GetOverlappings(this, OverlappingComponents);
-    }
 }
 
 int UShapeComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
@@ -86,4 +81,15 @@ void UShapeComponent::SetProperties(const TMap<FString, FString>& InProperties)
 
 void UShapeComponent::OnOverlap(const FPhysicsBody& result)
 {
+}
+
+const TArray<FOverlapInfo> UShapeComponent::GetOverlappingComponents() 
+{ 
+
+    if (this->GetWorld()->WorldType != EWorldType::Editor)
+    {
+        TArray<FOverlapInfo> OverlappingComponents;
+        this->GetWorld()->PhysicsScene.GetOverlappings(this, OverlappingComponents);
+        return OverlappingComponents;
+    }
 }

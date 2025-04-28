@@ -173,8 +173,8 @@ void FLuaScriptSystem::BindActor()
                 }
             }
 
-        }
-
+        },
+        "Velocity", sol::property(&AActor::GetVelocity)
     );
 
     Lua.new_usertype<APlayer>("APlayer",

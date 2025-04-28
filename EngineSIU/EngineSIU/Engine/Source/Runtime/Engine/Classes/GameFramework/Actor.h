@@ -102,6 +102,7 @@ public:
     ULuaScriptComponent* GetLuaComponent() const { return LuaComp; }
 
     FVector GetPlayerLocation();
+    FVector GetVelocity();
 
 protected:
     UPROPERTY
