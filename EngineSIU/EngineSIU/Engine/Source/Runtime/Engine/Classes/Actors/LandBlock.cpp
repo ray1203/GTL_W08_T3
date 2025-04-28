@@ -2,6 +2,7 @@
 #include "Engine/FLoaderOBJ.h" 
 #include "World/World.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/Lua/LuaScriptComponent.h"
 #include "Actors/Player.h"
 
 ALandBlock::ALandBlock()
@@ -19,6 +20,8 @@ void ALandBlock::PostSpawn()
     Collider->SetupAttachment(MeshComponent);
     Collider->bIsSimulatingPhysics = false;
 
+    LuaComp = AddComponent<ULuaScriptComponent>(TEXT("LuaScriptComponent"));
+    LuaComp->SetScriptPath(TEXT("LandGenerate"));
 }
 
 UObject* ALandBlock::Duplicate(UObject* InOuter)
@@ -27,6 +30,9 @@ UObject* ALandBlock::Duplicate(UObject* InOuter)
 
     NewActor->MeshComponent = NewActor->GetComponentByClass<UStaticMeshComponent>();
     NewActor->Collider = NewActor->GetComponentByClass<UBoxComponent>();
+    NewActor->LuaComp = NewActor->GetComponentByClass<ULuaScriptComponent>();
+    NewActor->bIsStepped = false;
+    NewActor->Level = Level;
 
     return NewActor;
 }
@@ -40,6 +46,9 @@ void ALandBlock::BeginPlay()
     {
         body->OnOverlap.AddDynamic(this, &ALandBlock::OnOverlap);
     }
+
+    this->LuaComp->CallLuaFunction("OnGenerated", GetActorLocation());
+
 }
 
 void ALandBlock::Tick(float DeltaTime)
@@ -62,6 +71,6 @@ void ALandBlock::OnOverlap(const FPhysicsBody& result)
 void ALandBlock::GenerateNextLevel()
 {
     ALandBlock* NewBlock = GetWorld()->DuplicateActor<ALandBlock>(this);
-
-    NewBlock->SetActorLocation(GetActorLocation() + FVector(0, 3, 3));
+    NewBlock->Level++;
+    NewBlock->SetActorLocation(GetActorLocation());
 }

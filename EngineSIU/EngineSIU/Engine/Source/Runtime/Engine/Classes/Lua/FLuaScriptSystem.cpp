@@ -126,6 +126,7 @@ void FLuaScriptSystem::BindActor()
 
         "Location", sol::property(&AActor::GetActorLocation, &AActor::SetActorLocation),
         "Rotation", sol::property(&AActor::GetActorRotation, &AActor::SetActorRotation),
+        "Scale", sol::property(&AActor::GetActorScale, &AActor::SetActorScale),
 
         "ForwardVector", sol::property(&AActor::GetActorForwardVector),
         "RightVector", sol::property(&AActor::GetActorRightVector),

@@ -74,7 +74,7 @@ void APlayer::OnOverlap(const FPhysicsBody& result)
 {
     if (result.Component->GetOwner()->IsA<AProjectile>())
     {
-        LuaComp->CallLuaFunction("OnOverlap", 0.f, result.Component->GetOwner());
+        LuaComp->CallLuaFunction("OnOverlap", result.Component->GetOwner());
         UE_LOG(ELogLevel::Warning, TEXT("APlayer : OnOverlapped"));
 
     }

@@ -27,5 +27,6 @@ private:
 
     class UStaticMeshComponent* MeshComponent = nullptr;
     class UBoxComponent* Collider = nullptr;
+    class ULuaScriptComponent* LuaComp = nullptr;
 };
 
