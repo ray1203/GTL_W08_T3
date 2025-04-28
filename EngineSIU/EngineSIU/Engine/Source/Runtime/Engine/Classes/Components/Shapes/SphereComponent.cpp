@@ -1,10 +1,14 @@
 #include "SphereComponent.h"
 
 #include "UObject/Casts.h"
+#include "World/World.h"
+
 
 UObject* USphereComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
+    
+    NewComponent->SphereRadius = SphereRadius;
 
     return NewComponent;
 }
@@ -12,6 +16,15 @@ UObject* USphereComponent::Duplicate(UObject* InOuter)
 void USphereComponent::InitializeComponent()
 {
     Super::InitializeComponent();
+}
+
+void USphereComponent::BeginPlay()
+{
+    if (this->GetWorld()->WorldType != EWorldType::Editor)
+    {
+        this->GetWorld()->PhysicsScene.AddRigidBody(this);
+
+    }
 }
 
 void USphereComponent::TickComponent(float DeltaTime)

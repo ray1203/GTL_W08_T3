@@ -5,9 +5,8 @@ UProjectileMovementComponent::UProjectileMovementComponent()
 {
     InitialSpeed = 0;
     MaxSpeed = 0;
-    Gravity = 0.f;
+    Acceleration = FVector(0.f, 0.f, -20.f);
     Velocity = FVector(0.f, 0.f, 0.f);
-    ProjectileLifetime = 10.0f; // 기본 생명주기 설정
     AccumulatedTime = 0;
 }
 
@@ -20,11 +19,10 @@ UObject* UProjectileMovementComponent::Duplicate(UObject* InOuter)
 
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
 
-    NewComponent->ProjectileLifetime = ProjectileLifetime;
     NewComponent->AccumulatedTime = AccumulatedTime;
     NewComponent->InitialSpeed = InitialSpeed;
     NewComponent->MaxSpeed = MaxSpeed;
-    NewComponent->Gravity = Gravity;
+    NewComponent->Acceleration = Acceleration;
     NewComponent->Velocity = Velocity;
 
     return NewComponent;
@@ -40,52 +38,25 @@ void UProjectileMovementComponent::BeginPlay()
 void UProjectileMovementComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
+    // UProjectileMovementComponent는 물리 계산, 이동을 하지 않고 property만 가집니다
+    // 물리 연산은 FPhysicsSolver에서 처리합니다.
 
-    //Velocity.Z += Gravity * DeltaTime;
-
-    //if (Velocity.Length() > MaxSpeed)
-    //{
-    //    Velocity = Velocity.GetSafeNormal() * MaxSpeed;
-    //}
-    //if (GetOwner())
-    //{
-    //    FVector NewLocation = GetOwner()->GetRootComponent()->GetRelativeLocation() + Velocity * DeltaTime;
-    //    GetOwner()->GetRootComponent()->SetRelativeLocation(NewLocation);
-    //}
-
-    ////ToDo : PIE모드 진입 후에도 PickedActor를 유지했을 때 예외발생할 수 있음.
-    //AccumulatedTime += DeltaTime;
-    //if (AccumulatedTime >= ProjectileLifetime)
-    //{
-    //    if (GetOwner())
-    //    {
-    //        GetOwner()->Destroy();
-    //    }
-    //}
 }
 
 void UProjectileMovementComponent::GetProperties(TMap<FString, FString>& OutProperties) const
 {
     Super::GetProperties(OutProperties);
-    OutProperties.Add(TEXT("ProjectileLifetime"), FString::Printf(TEXT("%f"), ProjectileLifetime));
     OutProperties.Add(TEXT("AccumulatedTime"), FString::Printf(TEXT("%f"), AccumulatedTime));
     OutProperties.Add(TEXT("InitialSpeed"), FString::Printf(TEXT("%f"), InitialSpeed));
     OutProperties.Add(TEXT("MaxSpeed"), FString::Printf(TEXT("%f"), MaxSpeed));
-    OutProperties.Add(TEXT("Gravity"), FString::Printf(TEXT("%f"), Gravity));
+    OutProperties.Add(TEXT("Acceleration"), Acceleration.ToString());
     OutProperties.Add(TEXT("Velocity"), Velocity.ToString());
-    
-    
 }
 
 void UProjectileMovementComponent::SetProperties(const TMap<FString, FString>& InProperties)
 {
     Super::SetProperties(InProperties);
     const FString* TempStr = nullptr;
-    TempStr = InProperties.Find(TEXT("ProjectileLifetime"));
-    if (TempStr)
-    {
-        ProjectileLifetime = FString::ToFloat(*TempStr);
-    }
     TempStr = InProperties.Find(TEXT("AccumulatedTime"));
     if (TempStr)
     {
@@ -101,10 +72,10 @@ void UProjectileMovementComponent::SetProperties(const TMap<FString, FString>& I
     {
         MaxSpeed = FString::ToFloat(*TempStr);
     }
-    TempStr = InProperties.Find(TEXT("Gravity"));
+    TempStr = InProperties.Find(TEXT("Acceleration"));
     if (TempStr)
     {
-        Gravity = FString::ToFloat(*TempStr);
+        Acceleration.InitFromString(*TempStr);
     }
     TempStr = InProperties.Find(TEXT("Velocity"));
     if (TempStr)

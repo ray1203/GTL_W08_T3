@@ -11,6 +11,9 @@ public:
     virtual UObject* Duplicate(UObject* InOuter) override;
 
     virtual void InitializeComponent() override;
+    /** 모든 초기화가 끝나고, 준비가 되었을 때 호출됩니다. */
+    virtual void BeginPlay() override;
+
     virtual void TickComponent(float DeltaTime) override;
     virtual int CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) override;
 
@@ -25,5 +28,6 @@ public:
     }
 private:
     // model space 기준
-    float SphereRadius;
+    float SphereRadius = 1;
+
 };

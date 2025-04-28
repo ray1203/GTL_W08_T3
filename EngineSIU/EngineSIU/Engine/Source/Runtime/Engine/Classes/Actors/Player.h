@@ -13,6 +13,10 @@ class APlayer : public AActor
     DECLARE_CLASS(APlayer, AActor)
     APlayer();
 
+    virtual void PostSpawn() override;
+
+    virtual UObject* Duplicate(UObject* InOuter) override;
+
     virtual void BeginPlay() override;
     //virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     virtual void Tick(float DeltaTime) override;

@@ -304,6 +304,12 @@ inline FVector FVector::operator*(float Scalar) const
     return {X * Scalar, Y * Scalar, Z * Scalar};
 }
 
+// 멤버함수아니라 전역함수
+inline FVector operator*(float Scalar, const FVector& Vec)
+{
+    return Vec * Scalar;
+}
+
 inline FVector& FVector::operator*=(float Scalar)
 {
     X *= Scalar; Y *= Scalar; Z *= Scalar;

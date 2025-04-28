@@ -1,6 +1,5 @@
 Velocity = Vector(0, 0, 0)
-JumpVelocity = 8.0
-Gravity = -9.8
+JumpVelocity = 20.0
 IsJumping = false
 
 --- @type GameObject
@@ -22,35 +21,29 @@ end
 
 function Tick(dt)
     -- �̵� �Է�
+    dt = dt * 1000
     if Input:GetKey(EKeys.W) then
-        --obj.Location = obj.Location + Vector(0, 1, 0) * dt * 5.0
-        local vec = Vector(obj.ForwardVector.x, obj.ForwardVector.y, obj.ForwardVector.z)
-        obj:Move(vec, dt * 5.0)
-    end
-    if Input:GetKey(EKeys.A) then
-        --obj.Location = obj.Location + Vector(1, 0, 0) * dt * 5.0
-        local vec = Vector(-obj.RightVector.x, -obj.RightVector.y, -obj.RightVector.z)
-        obj:Move(vec, dt * 5.0)
-    end
-    if Input:GetKey(EKeys.S) then
-        --obj.Location = obj.Location + Vector(0, -1, 0) * dt * 5.0
-        local vec = Vector(-obj.ForwardVector.x, -obj.ForwardVector.y, -obj.ForwardVector.z)
-        obj:Move(vec, dt * 5.0)
+        obj.Velocity = Vector(obj.ForwardVector.x * dt, obj.ForwardVector.y * dt, obj.Velocity.z)
 
-    end
-    if Input:GetKey(EKeys.D) then
-        --obj.Location = obj.Location + Vector(-1, 0, 0) * dt * 5.0
-        local vec = Vector(obj.RightVector.x, obj.RightVector.y, obj.RightVector.z)
-        obj:Move(vec, dt * 5.0)
+    elseif Input:GetKey(EKeys.A) then
+        obj.Velocity = Vector(-obj.RightVector.x * dt, -obj.RightVector.y * dt, obj.Velocity.z)
 
+    elseif Input:GetKey(EKeys.S) then
+        obj.Velocity = Vector(-obj.ForwardVector.x * dt, -obj.ForwardVector.y * dt, obj.Velocity.z)
 
+    elseif Input:GetKey(EKeys.D) then
+        obj.Velocity = Vector(obj.RightVector.x * dt, obj.RightVector.y * dt, obj.Velocity.z)
+    else
+        -- obj.Velocity = Vector(0.0,0.0, obj.Velocity.z)
     end
 
+    -- obj.Location = obj.Location + Vector(1,0,0)
     -- ���� �Է�
-    if Input:GetKeyDown(EKeys.SpaceBar) and obj.Location.z <= 0 then
-        Velocity.z = JumpVelocity
+    if Input:GetKeyDown(EKeys.SpaceBar) then
+        obj.Velocity = Vector(obj.Velocity.x,obj.Velocity.y,JumpVelocity)
         IsJumping = true
     end
+    obj:PrintLocation()
 
     -- Score��� �̸��� ���� ã��
     local scoreActor = FindActorByLabel("Score")

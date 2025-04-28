@@ -2,9 +2,14 @@
 
 #include "UObject/Casts.h"
 
+#include "World/World.h"
+
 UObject* UCapsuleComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
+
+    NewComponent->CapsuleHalfHeight = CapsuleHalfHeight;
+    NewComponent->CapsuleRadius = CapsuleRadius;
 
     return NewComponent;
 }
@@ -12,6 +17,16 @@ UObject* UCapsuleComponent::Duplicate(UObject* InOuter)
 void UCapsuleComponent::InitializeComponent()
 {
     Super::InitializeComponent();
+}
+
+
+void UCapsuleComponent::BeginPlay()
+{
+    if (this->GetWorld()->WorldType != EWorldType::Editor)
+    {
+        this->GetWorld()->PhysicsScene.AddRigidBody(this);
+
+    }
 }
 
 void UCapsuleComponent::TickComponent(float DeltaTime)

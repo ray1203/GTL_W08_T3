@@ -318,14 +318,19 @@ void PropertyEditorPanel::Render()
         {
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
 
+            // PIE에서는 두개가 만들어지므로 TObjectRange를 쓸때 world를 확인해야함
             int directionalNum = 0;
             for (const auto iter : TObjectRange<UDirectionalLightComponent>())
             {
-                if (iter != dirlightObj) {
+                if (iter->GetWorld() == Engine->ActiveWorld && iter != dirlightObj) {
                     directionalNum++;
                 }
-                else {
+                else if (iter == dirlightObj){
                     break;
+                }
+                else
+                {
+                    continue;
                 }
             }
 
@@ -394,19 +399,19 @@ void PropertyEditorPanel::Render()
                 if (ImGui::InputFloat("MaxSpeed", &MaxSpeed, 0.f, 10000.0f, "%.1f"))
                     ProjectileComp->SetMaxSpeed(MaxSpeed);
 
-                float Gravity = ProjectileComp->GetGravity();
-                if (ImGui::InputFloat("Gravity", &Gravity, 0.f, 10000.f, "%.1f"))
-                    ProjectileComp->SetGravity(Gravity);
+                FVector CurrentAcceleration = ProjectileComp->GetAcceleration();
 
-                float ProjectileLifetime = ProjectileComp->GetLifetime();
-                if (ImGui::InputFloat("Lifetime", &ProjectileLifetime, 0.f, 10000.f, "%.1f"))
-                    ProjectileComp->SetLifetime(ProjectileLifetime);
+                float Acc[3] = { CurrentAcceleration.X, CurrentAcceleration.Y, CurrentAcceleration.Z };
+
+                if (ImGui::SliderFloat3("Acceleration", Acc, -100, 100, "%.1f")) {
+                    ProjectileComp->SetAcceleration(FVector(Acc[0], Acc[1], Acc[2]));
+                }
 
                 FVector currentVelocity = ProjectileComp->GetVelocity();
 
                 float velocity[3] = { currentVelocity.X, currentVelocity.Y, currentVelocity.Z };
 
-                if (ImGui::InputFloat3("Velocity", velocity, "%.1f")) {
+                if (ImGui::SliderFloat3("Velocity", velocity, -100, 100, "%.1f")) {
                     ProjectileComp->SetVelocity(FVector(velocity[0], velocity[1], velocity[2]));
                 }
 

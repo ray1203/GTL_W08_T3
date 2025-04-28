@@ -49,10 +49,6 @@ void UEditorEngine::Init()
     //CameraComp->SetupAttachment(Actor->GetRootComponent());
     
     APlayer* Player = EditorWorld->SpawnActor<APlayer>();
-    USphereComponent* SphereComp = Player->AddComponent<USphereComponent>(TEXT("Sphere"));
-    SphereComp->SetupAttachment(Player->GetRootComponent());
-    UProjectileMovementComponent* ProjComp = Player->AddComponent<UProjectileMovementComponent>(TEXT("Projectile"));
-    ProjComp->SetupAttachment(Player->GetRootComponent());
 
     ADirectionalLight* DirLight = EditorWorld->SpawnActor<ADirectionalLight>();
     DirLight->SetActorRotation(FRotator(20, -61, 11));
@@ -144,7 +140,7 @@ void UEditorEngine::StartPIE()
     
     PIEWorld->BeginPlay();
     // 여기서 Actor들의 BeginPlay를 해줄지 안에서 해줄 지 고민.
-    WorldList.Add(GetWorldContextFromWorld(PIEWorld));
+    //WorldList.Add(GetWorldContextFromWorld(PIEWorld)); // 이미 CreateNewWorldContext에서 하고있음
 
     FWindowsCursor::SetShowMouseCursor(false);
 }

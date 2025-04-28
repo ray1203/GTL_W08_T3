@@ -20,6 +20,9 @@ class AActor : public UObject
 public:
     AActor() = default;
 
+    /** Spawn할때만 호출됩니다. Duplicate시에는 호출되지 않습니다.*/
+    virtual void PostSpawn();
+
     virtual UObject* Duplicate(UObject* InOuter) override;
 
     /** Actor가 게임에 배치되거나 스폰될 때 호출됩니다. */
@@ -93,8 +96,8 @@ public:
     bool SetActorRotation(const FRotator& NewRotation);
     bool SetActorScale(const FVector& NewScale);
 
-    FVector GetLuaVelocity() const;
-    void SetLuaVelocity(const FVector& InVelocity);
+    //FVector GetLuaVelocity() const;
+    //void SetLuaVelocity(const FVector& InVelocity);
     void SetLuaComponent(ULuaScriptComponent* InComp);
     ULuaScriptComponent* GetLuaComponent() const { return LuaComp; }
 

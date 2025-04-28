@@ -29,12 +29,12 @@ public:
     virtual void SetProperties(const TMap<FString, FString>& Properties) override;
 
 
-private:
-    FVector Velocity;
-
-public:
-    const FVector& GetVelocity() const { return Velocity; }
-    void SetVelocity(const FVector& InVelocity) { Velocity = InVelocity; }
+//private:
+//    FVector Velocity;
+//
+//public:
+//    const FVector& GetVelocity() const { return Velocity; }
+//    void SetVelocity(const FVector& InVelocity) { Velocity = InVelocity; }
 protected:
     FString LuaScriptPath = TEXT("template");
     sol::table LuaScriptTable;

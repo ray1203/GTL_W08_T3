@@ -399,6 +399,14 @@ void FEditorRenderPass::PrepareRender()
         }
     }
 
+    for (const auto iter : TObjectRange<UAmbientLightComponent>())
+    {
+        if (iter->GetWorld() == GEngine->ActiveWorld)
+        {
+            Resources.Components.AmbientLight.Add(iter);
+        }
+    }
+
     for (const auto iter : TObjectRange<UPointLightComponent>())
     {
         if (iter->GetWorld() == GEngine->ActiveWorld)
@@ -430,6 +438,7 @@ void FEditorRenderPass::ClearRenderArr()
 {
     Resources.Components.StaticMesh.Empty();
     Resources.Components.DirLight.Empty();
+    Resources.Components.AmbientLight.Empty();
     Resources.Components.PointLight.Empty();
     Resources.Components.SpotLight.Empty();
     Resources.Components.Fog.Empty();
@@ -751,6 +760,25 @@ void FEditorRenderPass::RenderIcons(const std::shared_ptr<FEditorViewportClient>
         else
         {
             b.Color = DirLightComp->GetLightColor();
+        }
+        BufferManager->UpdateConstantBuffer(IconKey, b);
+        Graphics->DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
+    }
+
+    Graphics->DeviceContext->PSSetShaderResources(0, 1, &Resources.IconTextures[IconType::AmbientLight]->TextureSRV);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &Resources.IconTextures[IconType::AmbientLight]->SamplerState);
+    for (UAmbientLightComponent* AmbientComp : Resources.Components.AmbientLight)
+    {
+        FConstantBufferDebugIcon b;
+        b.Position = AmbientComp->GetWorldLocation();
+        b.Scale = IconScale;
+        if (AmbientComp->GetOwner() == PickedActor)
+        {
+            b.Color = FLinearColor(0.5, 0.5, 0, 1);
+        }
+        else
+        {
+            b.Color = AmbientComp->GetLightColor();
         }
         BufferManager->UpdateConstantBuffer(IconKey, b);
         Graphics->DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중

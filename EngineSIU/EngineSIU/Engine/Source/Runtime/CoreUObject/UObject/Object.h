@@ -80,7 +80,7 @@ public:
 
     void operator delete(void* ptr, size_t size)
     {
-        UE_LOG(ELogLevel::Display, "UObject Deleted : %d", size);
+        //UE_LOG(ELogLevel::Display, "UObject Deleted : %d", size);
         FPlatformMemory::Free<EAT_Object>(ptr, size);
     }
 

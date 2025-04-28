@@ -8,6 +8,11 @@ UObject* UShapeComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
 
+
+    NewComponent->ShapeColor = ShapeColor;
+    NewComponent->bDrawOnlyIfSelected = bDrawOnlyIfSelected;
+    NewComponent->bIsSimulatingPhysics = bIsSimulatingPhysics;
+
     return NewComponent;
 }
 
@@ -16,15 +21,6 @@ void UShapeComponent::InitializeComponent()
     Super::InitializeComponent();
 }
 
-void UShapeComponent::BeginPlay()
-{
-	Super::BeginPlay();
-    if (this->GetWorld()->WorldType != EWorldType::Editor)
-    {
-    	this->GetWorld()->PhysicsScene.AddRigidBody(this);
-
-    }
-}
 
 void UShapeComponent::TickComponent(float DeltaTime)
 {
