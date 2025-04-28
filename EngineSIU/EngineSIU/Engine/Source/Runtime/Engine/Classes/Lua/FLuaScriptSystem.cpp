@@ -20,6 +20,7 @@
 #include "Components/Shapes/SphereComponent.h"
 #include "Engine/EditorEngine.h"
 #include "Actors/Projectile.h" // Add this include to resolve "AProjectile" identifier
+#include "Engine/GameEngine.h"
 #include <Actors/GameManager.h>
 
 
@@ -263,6 +264,17 @@ void FLuaScriptSystem::BindUtilities()
     Lua.set_function("RestartGame", []()
         {
                 GEngine->bRestartGame = true;
+        });
+    Lua.set_function("LoadScene", [](int Index)
+        {
+            if (UGameEngine* GameEngine = Cast<UGameEngine>(GEngine))
+            {
+                GameEngine->LoadScene(Index);
+            }
+        });
+    Lua.set_function("ExitGame", []()
+        {
+            PostQuitMessage(0); // Windows 메시지 루프에서 종료 메시지 발생
         });
 
 }

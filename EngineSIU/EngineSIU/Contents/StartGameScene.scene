@@ -1,0 +1,180 @@
+{
+    "Actors": [
+        {
+            "ActorClass": "ATextUIActor",
+            "ActorID": "ATextUIActor_103",
+            "ActorLabel": "OBJ_UI_TEXT_103",
+            "Components": [
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "UUITextComponent",
+                    "ComponentID": "UITextComponent",
+                    "Properties": {
+                        "Anchor": "4",
+                        "ComponentClass": "UUITextComponent",
+                        "ComponentName": "UITextComponent",
+                        "ComponentOwner": "ATextUIActor_103",
+                        "ComponentOwnerClass": "ATextUIActor",
+                        "Offset": "X=0.000 Y=-277.000",
+                        "Text": "백미의 숲",
+                        "TextColor": "R=1.000 G=1.000 B=1.000 A=1.000",
+                        "TextScale": "3.000000",
+                        "UISize": "X=252.000 Y=88.000",
+                        "ZOrder": "0",
+                        "bAutoActive": "true",
+                        "bAutoSize": "true",
+                        "bIsActive": "true",
+                        "bNoBackground": "true",
+                        "bNoInputs": "false",
+                        "bNoMove": "true",
+                        "bNoResize": "true",
+                        "bNoSavedSettings": "true",
+                        "bNoTitleBar": "true",
+                        "bVisible": "true"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                }
+            ],
+            "RootComponentID": ""
+        },
+        {
+            "ActorClass": "AButtonUIActor",
+            "ActorID": "AButtonUIActor_118",
+            "ActorLabel": "OBJ_UI_BUTTON_118",
+            "Components": [
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "GameStartButton"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "UUIButtonComponent",
+                    "ComponentID": "UIButtonComponent",
+                    "Properties": {
+                        "Anchor": "4",
+                        "ButtonSize": "X=300.000 Y=50.000",
+                        "ComponentClass": "UUIButtonComponent",
+                        "ComponentName": "UIButtonComponent",
+                        "ComponentOwner": "AButtonUIActor_118",
+                        "ComponentOwnerClass": "AButtonUIActor",
+                        "FontScale": "1.000000",
+                        "Label": "게임 시작",
+                        "Offset": "X=0.000 Y=-137.000",
+                        "UISize": "X=316.000 Y=66.000",
+                        "ZOrder": "0",
+                        "bAutoActive": "true",
+                        "bAutoSize": "true",
+                        "bIsActive": "true",
+                        "bNoBackground": "true",
+                        "bNoInputs": "false",
+                        "bNoMove": "true",
+                        "bNoResize": "true",
+                        "bNoSavedSettings": "true",
+                        "bNoTitleBar": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": ""
+        },
+        {
+            "ActorClass": "AButtonUIActor",
+            "ActorID": "AButtonUIActor_131",
+            "ActorLabel": "OBJ_UI_BUTTON_131",
+            "Components": [
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "UUIButtonComponent",
+                    "ComponentID": "UIButtonComponent",
+                    "Properties": {
+                        "Anchor": "4",
+                        "ButtonSize": "X=300.000 Y=50.000",
+                        "ComponentClass": "UUIButtonComponent",
+                        "ComponentName": "UIButtonComponent",
+                        "ComponentOwner": "AButtonUIActor_131",
+                        "ComponentOwnerClass": "AButtonUIActor",
+                        "FontScale": "1.000000",
+                        "Label": "게임 종료",
+                        "Offset": "X=0.000 Y=-68.000",
+                        "UISize": "X=316.000 Y=66.000",
+                        "ZOrder": "0",
+                        "bAutoActive": "true",
+                        "bAutoSize": "true",
+                        "bIsActive": "true",
+                        "bNoBackground": "true",
+                        "bNoInputs": "false",
+                        "bNoMove": "true",
+                        "bNoResize": "true",
+                        "bNoSavedSettings": "true",
+                        "bNoTitleBar": "true",
+                        "bVisible": "true"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "ExitButton"
+                    }
+                }
+            ],
+            "RootComponentID": ""
+        },
+        {
+            "ActorClass": "APanelUIActor",
+            "ActorID": "APanelUIActor_129",
+            "ActorLabel": "OBJ_UI_Panel_129",
+            "Components": [
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "UUIPanelComponent",
+                    "ComponentID": "UIPanelComponent",
+                    "Properties": {
+                        "Anchor": "4",
+                        "ComponentClass": "UUIPanelComponent",
+                        "ComponentName": "UIPanelComponent",
+                        "ComponentOwner": "APanelUIActor_129",
+                        "ComponentOwnerClass": "APanelUIActor",
+                        "Offset": "X=425.000 Y=-14.000",
+                        "TexturePath": "Contents/Texture/ssal.png",
+                        "UISize": "X=499.000 Y=471.000",
+                        "ZOrder": "0",
+                        "bAutoActive": "true",
+                        "bAutoSize": "false",
+                        "bIsActive": "true",
+                        "bNoBackground": "true",
+                        "bNoInputs": "false",
+                        "bNoMove": "true",
+                        "bNoResize": "true",
+                        "bNoSavedSettings": "true",
+                        "bNoTitleBar": "true",
+                        "bVisible": "true"
+                    }
+                }
+            ],
+            "RootComponentID": ""
+        }
+    ],
+    "NextUUID": 0,
+    "Version": 1
+}
