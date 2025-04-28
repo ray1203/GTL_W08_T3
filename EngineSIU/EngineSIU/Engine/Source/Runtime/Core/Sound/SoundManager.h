@@ -1,6 +1,7 @@
 #pragma once  
 #include "Container/String.h"  
 #include "Container/Map.h"  
+#include "Container/Array.h"
 #include <memory> // Ensure this is included for std::unique_ptr  
 #include <DirectXTK/Audio.h> // Corrected path for DirectX::AudioEngine and related classes  
 
@@ -25,11 +26,12 @@ public:
   void Update();  
 
 private:  
-  FSoundManager();  
-  ~FSoundManager();  
+  FSoundManager() {}
+  ~FSoundManager() {}
 
   std::unique_ptr<DirectX::AudioEngine> AudioEngine;  
   TMap<FString, std::unique_ptr<DirectX::SoundEffect>> SfxMap;  
+  TArray<std::unique_ptr<DirectX::SoundEffectInstance>> SfxInstances;
   std::unique_ptr<DirectX::SoundEffect> BgmSound;  
   std::unique_ptr<DirectX::SoundEffectInstance> BgmInstance;  
 };

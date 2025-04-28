@@ -9,6 +9,7 @@
 #include "Components/Light/DirectionalLightComponent.h"
 #include "Editor/LevelEditor/SLevelEditor.h"
 #include <WindowsCursor.h>
+#include <Sound/SoundManager.h>
 
 void UGameEngine::Init()
 {
@@ -41,6 +42,8 @@ void UGameEngine::Init()
                 }
             });
     }
+
+
 }
 
 void UGameEngine::Tick(float DeltaTime)
@@ -73,6 +76,8 @@ void UGameEngine::Tick(float DeltaTime)
             }
         }
     }
+
+    FSoundManager::Instance().Update();
 }
 
 void UGameEngine::InitGameWorld(FWorldContext& GameWorldContext)
@@ -89,6 +94,7 @@ void UGameEngine::LoadScene(int index)
     if (index == 1)
     {
         FWindowsCursor::SetShowMouseCursor(false);
+        FSoundManager::Instance().PlayBGM();
     }
 }
 void UGameEngine::LoadScene()

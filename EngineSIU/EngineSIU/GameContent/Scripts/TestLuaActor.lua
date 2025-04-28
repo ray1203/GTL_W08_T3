@@ -77,7 +77,8 @@ function Tick(dt)
 
     -- 점프 입력
     if Input:GetKeyDown(EKeys.SpaceBar) and obj.bGrounded then
-        obj.Velocity = obj.Velocity + Vector(0, 0, JumpVelocity * dt * 100)
+        obj.Velocity = obj.Velocity + Vector(0, 0, JumpVelocity)
+        PlaySFX("Jump")
         --obj.Location = obj.Location + Vector(0,0,1)
     end
 

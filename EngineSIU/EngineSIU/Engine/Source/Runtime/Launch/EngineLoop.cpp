@@ -14,6 +14,7 @@
 
 #include "FInputManager.h"
 #include "Lua/FLuaScriptSystem.h"
+#include <Sound/SoundManager.h>
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 FGraphicsDevice FEngineLoop::GraphicDevice;
@@ -67,6 +68,8 @@ int32 FEngineLoop::Init(HINSTANCE hInstance)
     GEngine = FObjectFactory::ConstructObject<UEditorEngine>(nullptr);
 #endif
     GEngine->Init();
+
+    FSoundManager::Instance().Initialize();
 
     UpdateUI();
 
