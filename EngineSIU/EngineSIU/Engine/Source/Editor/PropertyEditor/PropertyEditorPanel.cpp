@@ -31,6 +31,8 @@
 #include "Renderer/Shadow/DirectionalShadowMap.h"
 #include <Camera/SpringArmComponent.h>
 
+#include "Components/UI/UUIButtonComponent.h"
+
 void PropertyEditorPanel::Render()
 {
     /* Pre Setup */
@@ -455,6 +457,35 @@ void PropertyEditorPanel::Render()
             }
             ImGui::PopStyleColor();
         }
+    if (PickedActor)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+        if (ImGui::TreeNodeEx("Components", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Text("Add Component");
+            ImGui::SameLine();
+
+            TArray<UClass*> CompClasses;
+            GetChildOfClass(UActorComponent::StaticClass(), CompClasses);
+
+            if (ImGui::BeginCombo("##AddComponent", "Components", ImGuiComboFlags_None))
+            {
+                static uint32 NewCompIndex = 0;
+                for (UClass* Class : CompClasses)
+                {
+                    if (ImGui::Selectable(GetData(Class->GetName()), false))
+                    {
+                        FName CompName = FName(*FString::Printf(TEXT("%s_%d"), *Class->GetName(), NewCompIndex++));
+                        PickedActor->AddComponent(Class, CompName);
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            ImGui::TreePop();
+        }
+        ImGui::PopStyleColor();
+    }
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
@@ -564,76 +595,61 @@ void PropertyEditorPanel::Render()
             }
             ImGui::PopStyleColor();
         }
-    if (PickedActor)
-    if (UUITextComponent* TextComp = PickedActor->GetComponentByClass<UUITextComponent>())
-    {
-        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-        if (ImGui::TreeNodeEx("UI Text Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+    if (PickedActor) {
+        if (UUITextComponent* TextComp = PickedActor->GetComponentByClass<UUITextComponent>())
         {
-            // 1. 텍스트 수정
-            std::string OriginalText = TextComp->GetText();
-            static char TextBuffer[256];
-            strcpy_s(TextBuffer, OriginalText.c_str());
-
-            if (ImGui::InputText("Text", TextBuffer, IM_ARRAYSIZE(TextBuffer)))
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+            if (ImGui::TreeNodeEx("UI Text Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
             {
-                TextComp->SetText(TextBuffer);
+                std::string OriginalText = TextComp->GetText();
+                static char TextBuffer[256];
+                strcpy_s(TextBuffer, OriginalText.c_str());
+
+                if (ImGui::InputText("Text", TextBuffer, IM_ARRAYSIZE(TextBuffer)))
+                {
+                    TextComp->SetText(TextBuffer);
+                }
+
+                float Color[4] = { TextComp->TextColor.R, TextComp->TextColor.G, TextComp->TextColor.B, TextComp->TextColor.A };
+                if (ImGui::ColorEdit4("Text Color", Color))
+                {
+                    TextComp->TextColor = FLinearColor(Color[0], Color[1], Color[2], Color[3]);
+                }
+
+                float Scale = TextComp->TextScale;
+                if (ImGui::SliderFloat("Text Scale", &Scale, 0.1f, 3.0f))
+                {
+                    TextComp->TextScale = Scale;
+                }
+
+                DrawUIComponentProperties(TextComp);
+
+                ImGui::TreePop();
             }
-
-            /*// 2. 위치
-            FVector2D Pos = TextComp->Position;
-            float PosXY[2] = { Pos.X, Pos.Y };
-            if (ImGui::DragFloat2("Position", PosXY, 1.0f, 0.0f, 1920.0f, "%.1f"))
-            {
-                TextComp->Position = FVector2D(PosXY[0], PosXY[1]);
-            }*/
-            const char* AnchorLabels[] = {
-    "TopLeft", "TopCenter", "TopRight",
-    "CenterLeft", "Center", "CenterRight",
-    "BottomLeft", "BottomCenter", "BottomRight"
-            };
-
-            int anchorIndex = static_cast<int>(TextComp->Anchor);
-            if (ImGui::Combo("Anchor", &anchorIndex, AnchorLabels, IM_ARRAYSIZE(AnchorLabels)))
-            {
-                TextComp->Anchor = static_cast<EUIAnchor>(anchorIndex);
-            }
-
-            float offset[2] = { TextComp->Offset.X, TextComp->Offset.Y };
-            if (ImGui::DragFloat2("Offset", offset, 1.0f))
-            {
-                TextComp->Offset = FVector2D(offset[0], offset[1]);
-            }
-
-            // 3. 크기
-            FVector2D Size = TextComp->Size;
-            float SizeXY[2] = { Size.X, Size.Y };
-            if (ImGui::DragFloat2("Size", SizeXY, 1.0f, 10.0f, 2000.0f, "%.1f"))
-            {
-                TextComp->Size = FVector2D(SizeXY[0], SizeXY[1]);
-            }
-            // 텍스트 색상
-            float Color[4] = { TextComp->TextColor.R, TextComp->TextColor.G, TextComp->TextColor.B, TextComp->TextColor.A };
-            if (ImGui::ColorEdit4("Text Color", Color))
-            {
-                TextComp->TextColor = FLinearColor(Color[0], Color[1], Color[2], Color[3]);
-            }
-
-            // 텍스트 크기
-            float Scale = TextComp->TextScale;
-            if (ImGui::SliderFloat("Text Scale", &Scale, 0.1f, 3.0f, "%.2f"))
-            {
-                TextComp->TextScale = Scale;
-            }
-            if (ImGui::Checkbox("No Background", &TextComp->bNoBackground)) {}
-            //if (ImGui::Checkbox("No Input", &TextComp->bNoInputs)) {}
-            if (ImGui::Checkbox("Auto Size", &TextComp->bAutoSize)) {}
-
-            ImGui::TreePop();
+            ImGui::PopStyleColor();
         }
-        ImGui::PopStyleColor();
-    }
+        if (UUIButtonComponent* BtnComp = PickedActor->GetComponentByClass<UUIButtonComponent>())
+        {
+            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+            if (ImGui::TreeNodeEx("UI Button Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                std::string Label = BtnComp->GetLabel();
+                static char LabelBuf[256];
+                strcpy_s(LabelBuf, Label.c_str());
 
+                if (ImGui::InputText("Label", LabelBuf, IM_ARRAYSIZE(LabelBuf)))
+                {
+                    BtnComp->SetLabel(LabelBuf);
+                }
+
+                DrawUIComponentProperties(BtnComp);
+
+                ImGui::TreePop();
+            }
+            ImGui::PopStyleColor();
+        }
+
+    }
     if(PickedActor)
         if (USpringArmComponent* SpringArmComponent = Cast<USpringArmComponent>(PickedActor->GetComponentByClass<USpringArmComponent>()))
         {
@@ -732,6 +748,35 @@ void PropertyEditorPanel::Render()
 
     ImGui::End();
 }
+void PropertyEditorPanel::DrawUIComponentProperties(UUIComponent* UIComp)
+{
+    const char* AnchorLabels[] = {
+        "TopLeft", "TopCenter", "TopRight",
+        "CenterLeft", "Center", "CenterRight",
+        "BottomLeft", "BottomCenter", "BottomRight"
+    };
+
+    int anchorIndex = static_cast<int>(UIComp->Anchor);
+    if (ImGui::Combo("Anchor", &anchorIndex, AnchorLabels, IM_ARRAYSIZE(AnchorLabels)))
+    {
+        UIComp->Anchor = static_cast<EUIAnchor>(anchorIndex);
+    }
+
+    float offset[2] = { UIComp->Offset.X, UIComp->Offset.Y };
+    if (ImGui::DragFloat2("Offset", offset, 1.0f))
+    {
+        UIComp->Offset = FVector2D(offset[0], offset[1]);
+    }
+
+    float size[2] = { UIComp->Size.X, UIComp->Size.Y };
+    if (ImGui::DragFloat2("Size", size, 1.0f, 10.0f, 2000.0f))
+    {
+        UIComp->Size = FVector2D(size[0], size[1]);
+    }
+
+    ImGui::Checkbox("Auto Size", &UIComp->bAutoSize);
+    ImGui::Checkbox("No Background", &UIComp->bNoBackground);
+}
 
 void PropertyEditorPanel::RGBToHSV(float r, float g, float b, float& h, float& s, float& v) const
 {
@@ -816,43 +861,6 @@ void PropertyEditorPanel::RenderForStaticMesh(UStaticMeshComponent* StaticMeshCo
                     {
                         StaticMeshComp->SetStaticMesh(StaticMesh);
                     }
-                }
-            }
-            ImGui::EndCombo();
-        }
-
-        ImGui::TreePop();
-    }
-    ImGui::PopStyleColor();
-
-    ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-    if (ImGui::TreeNodeEx("Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen)) // 트리 노드 생성
-    {
-        ImGui::Text("Add");
-        ImGui::SameLine();
-
-        TArray<UClass*> CompClasses;
-        GetChildOfClass(UActorComponent::StaticClass(), CompClasses);
-
-        if (ImGui::BeginCombo("##AddComponent", "Components", ImGuiComboFlags_None))
-        {
-            for (UClass* Class : CompClasses)
-            {
-                if (ImGui::Selectable(GetData(Class->GetName()), false))
-                {
-                    // TODO: 임시로 static uint32 NewCompIndex사용
-                    static uint32 NewCompIndex = 0;
-                    USceneComponent* NewComp = Cast<USceneComponent>(
-                        StaticMeshComp->GetOwner()->AddComponent(
-                            Class,
-                            FString::Printf(TEXT("%s_%d"), *Class->GetName(), NewCompIndex++)
-                        )
-                    );
-                    if (NewComp)
-                    {
-                        NewComp->SetupAttachment(StaticMeshComp);
-                    }
-                    // 추후 Engine으로부터 SelectedComponent 받아서 선택된 Comp 아래로 붙일 수있으면 붙이기.
                 }
             }
             ImGui::EndCombo();

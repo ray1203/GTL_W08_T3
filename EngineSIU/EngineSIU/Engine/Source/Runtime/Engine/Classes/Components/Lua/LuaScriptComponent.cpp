@@ -33,7 +33,7 @@ void ULuaScriptComponent::TickComponent(float DeltaTime)
     Super::TickComponent(DeltaTime);
     CallLuaFunction("Tick", DeltaTime);
 
-    sol::object VelocityObj = LuaScriptTable["Velocity"];
+    /*sol::object VelocityObj = LuaScriptTable["Velocity"];
     if (VelocityObj.is<FVector>())
     {
        FVector a =  VelocityObj.as<FVector>();
@@ -41,7 +41,7 @@ void ULuaScriptComponent::TickComponent(float DeltaTime)
        {
            
        }
-    }
+    }*/
 }
 UObject* ULuaScriptComponent::Duplicate(UObject* InOuter)
 {
