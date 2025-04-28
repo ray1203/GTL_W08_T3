@@ -413,7 +413,9 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Engine\StaticMeshActor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\GameFramework\Actor.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Level.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Lua\FLuaScriptSystem.cpp">
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\PhysicsScene.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Physics\PhysicsSolver.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\UnrealClient.cpp" />

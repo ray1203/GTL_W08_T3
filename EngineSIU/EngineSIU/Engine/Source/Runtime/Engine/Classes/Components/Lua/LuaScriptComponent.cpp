@@ -111,6 +111,11 @@ void ULuaScriptComponent::LoadLuaScript()
 
 }
 
+void ULuaScriptComponent::SetScriptPath(const FString& InPath)
+{
+    LuaScriptPath = InPath;
+    LoadLuaScript(); //변경 즉시 Lua 스크립트 재로드
+}
 
 void ULuaScriptComponent::CallLuaFunction(const char* FunctionName, float DeltaTime, AActor* Other)
 {

@@ -47,7 +47,6 @@ public:
 
     HWND AppWnd;
     bool bIsEnableShaderHotReload = true; // TODO: ImGui에서 변경가능하게 설정하기
-
 private:
     UImGuiManager* UIMgr;
     //TODO: GWorld 제거, Editor들 EditorEngine으로 넣기

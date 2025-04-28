@@ -35,9 +35,10 @@ public:
 
     FWorldContext& CreateNewWorldContext(EWorldType InWorldType);
 
-    
     void LoadWorld(const FString& FileName) const;
     void SaveWorld(const FString& FileName) const;
+    virtual void RestartGame() const;
+    bool bRestartGame = false;
 };
 
 extern class UEngine* GEngine;

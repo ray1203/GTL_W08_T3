@@ -18,6 +18,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/FLoaderOBJ.h" 
 #include "Components/Shapes/SphereComponent.h"
+#include "Engine/EditorEngine.h"
 #include "Actors/Projectile.h" // Add this include to resolve "AProjectile" identifier
 
 
@@ -101,9 +102,9 @@ void FLuaScriptSystem::BindTypes()
         sol::meta_function::multiplication, [](const FVector& a, float f) { return a * f; }
     );
     Lua["Vector"] = [](float x, float y, float z) { return FVector(x, y, z); };
-   /* Lua.set_function("CreateVector", [](float x, float y, float z) {
-        return FVector(x, y, z);
-        });*/
+    /* Lua.set_function("CreateVector", [](float x, float y, float z) {
+         return FVector(x, y, z);
+         });*/
 
     Lua.new_usertype<FRotator>("Rotator",
         sol::constructors<FRotator(), FRotator(float, float, float)>(),
@@ -201,6 +202,7 @@ void FLuaScriptSystem::BindInput()
         "Y", EKeys::Y,
         "Z", EKeys::Z,
         "SpaceBar", EKeys::SpaceBar,
+        "Esc", EKeys::Escape,
         "LeftMouseButton", EKeys::LeftMouseButton,
         "RightMouseButton", EKeys::RightMouseButton
     );
@@ -230,13 +232,42 @@ void FLuaScriptSystem::BindUtilities()
         {
             return Actor ? Actor->GetComponentByClass<UUIButtonComponent>() : nullptr;
         });
+    Lua.set_function("RestartGame", []()
+        {
+                GEngine->bRestartGame = true;
+        });
 
 }
 void FLuaScriptSystem::BindUI()
 {
-    // TextComponent
-    Lua.new_usertype<UUITextComponent>("UIText",
+    // Base UIComponent 먼저 바인딩
+    Lua.new_usertype<UUIComponent>("UIComponent",
         sol::base_classes, sol::bases<UActorComponent>(),
+
+        "IsVisible", sol::property(
+            [](UUIComponent* Comp) { return Comp->bVisible; },
+            [](UUIComponent* Comp, bool b) { Comp->bVisible = b; }),
+
+        "Anchor", sol::property(
+            [](UUIComponent* Comp) { return static_cast<int>(Comp->Anchor); },
+            [](UUIComponent* Comp, int NewAnchor) { Comp->Anchor = static_cast<EUIAnchor>(NewAnchor); }),
+
+        "Offset", sol::property(
+            [](UUIComponent* Comp) { return FVector2D(Comp->Offset.X, Comp->Offset.Y); },
+            [](UUIComponent* Comp, FVector2D Value) { Comp->Offset = Value; }),
+
+        "Size", sol::property(
+            [](UUIComponent* Comp) { return FVector2D(Comp->Size.X, Comp->Size.Y); },
+            [](UUIComponent* Comp, FVector2D Value) { Comp->Size = Value; }),
+
+        "bNoBackground", sol::property(
+            [](UUIComponent* Comp) { return Comp->bNoBackground; },
+            [](UUIComponent* Comp, bool b) { Comp->bNoBackground = b; })
+    );
+
+    // UITextComponent
+    Lua.new_usertype<UUITextComponent>("UIText",
+        sol::base_classes, sol::bases<UUIComponent>(),
 
         "Text", sol::property(
             [](UUITextComponent* Comp) { return std::string(Comp->GetText()); },
@@ -252,18 +283,18 @@ void FLuaScriptSystem::BindUI()
         }
     );
 
-    // ButtonComponent
+    // UIButtonComponent
     Lua.new_usertype<UUIButtonComponent>("UIButton",
-        sol::base_classes, sol::bases<UActorComponent>(),
+        sol::base_classes, sol::bases<UUIComponent>(),
 
         "Label", sol::property(
             [](UUIButtonComponent* Comp) { return std::string(Comp->GetLabel()); },
             [](UUIButtonComponent* Comp, const std::string& Value) { Comp->SetLabel(Value); }),
 
-        "Bind", &UUIButtonComponent::BindLuaCallback // <-- Lua 측에서 :Bind(fn) 사용 가능
+        "Bind", &UUIButtonComponent::BindLuaCallback
     );
-
 }
+
 
 //Lua 내부에서 사용할 함수들
 AActor* FLuaScriptSystem::FindActorByLabel(const FString& Label)
