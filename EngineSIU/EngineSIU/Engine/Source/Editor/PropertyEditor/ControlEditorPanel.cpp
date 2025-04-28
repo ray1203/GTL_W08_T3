@@ -14,6 +14,7 @@
 #include "Components/TextComponent.h"
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/Shapes/SphereComponent.h"
+#include "Components/Shapes/BoxComponent.h"
 
 #include "Engine/FLoaderOBJ.h"
 #include "Engine/StaticMeshActor.h"
@@ -284,6 +285,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
         static const Primitive primitives[] = {
             { .label= "Cube",      .obj= OBJ_CUBE },
             { .label= "Sphere",    .obj= OBJ_SPHERE },
+            { .label= "Box",    .obj= OBJ_BOX },
             { .label= "Ground",    .obj= OBJ_GROUND },
             { .label= "PointLight", .obj= OBJ_POINTLIGHT },
             { .label= "SpotLight", .obj= OBJ_SPOTLIGHT },
@@ -316,10 +318,24 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     SpawnedActor->SetActorLabel(TEXT("OBJ_SPHERE"));
                     USphereComp* SphereComp = SpawnedActor->AddComponent<USphereComp>(TEXT("SphereComp"));
                     SpawnedActor->SetRootComponent(SphereComp);
-                    USphereComponent* SphereCompo = SpawnedActor->AddComponent<USphereComponent>(TEXT("SphereComponent"));
-                    SphereCompo->SetupAttachment(SphereComp);
+                    USphereComponent* Spherecomponent = SpawnedActor->AddComponent<USphereComponent>(TEXT("SphereComponent"));
+                    Spherecomponent->SetupAttachment(SphereComp);
+                    Spherecomponent->bIsSimulatingPhysics = false;
                     UProjectileMovementComponent* ProjComp = SpawnedActor->AddComponent<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
                     SphereComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
+                    break;
+                }
+                case OBJ_BOX:
+                {
+                    SpawnedActor = World->SpawnActor<AActor>();
+                    SpawnedActor->SetActorLabel(TEXT("OBJ_BOX"));
+                    UStaticMeshComponent* SMComp = SpawnedActor->AddComponent<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
+                    SMComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/helloBlender.obj"));
+                    SpawnedActor->SetRootComponent(SMComp);
+
+                    UBoxComponent* BoxComponent = SpawnedActor->AddComponent<UBoxComponent>(TEXT("BoxComponent"));
+                    BoxComponent->SetupAttachment(SMComp);
+                    BoxComponent->bIsSimulatingPhysics = false;
                     break;
                 }
                 case OBJ_CUBE:

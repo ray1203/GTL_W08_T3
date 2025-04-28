@@ -1,5 +1,5 @@
 Velocity = Vector(0, 0, 0)
-JumpVelocity = 20.0
+JumpVelocity = 14.0
 IsJumping = false
 
 --- @type GameObject
@@ -21,18 +21,25 @@ end
 
 function Tick(dt)
     -- �̵� �Է�
-    dt = dt * 1000
+    dt = dt * 10
     if Input:GetKey(EKeys.W) then
-        obj.Velocity = Vector(obj.ForwardVector.x * dt, obj.ForwardVector.y * dt, obj.Velocity.z)
+        obj.Location = obj.Location + obj.ForwardVector * dt;
+        -- obj.Velocity = Vector(obj.ForwardVector.x * dt, obj.ForwardVector.y * dt, obj.Velocity.z)
 
     elseif Input:GetKey(EKeys.A) then
-        obj.Velocity = Vector(-obj.RightVector.x * dt, -obj.RightVector.y * dt, obj.Velocity.z)
+            obj.Location = obj.Location + obj.RightVector * dt;
+
+        -- obj.Velocity = Vector(-obj.RightVector.x * dt, -obj.RightVector.y * dt, obj.Velocity.z)
 
     elseif Input:GetKey(EKeys.S) then
-        obj.Velocity = Vector(-obj.ForwardVector.x * dt, -obj.ForwardVector.y * dt, obj.Velocity.z)
+            obj.Location = obj.Location - obj.ForwardVector * dt;
+
+        -- obj.Velocity = Vector(-obj.ForwardVector.x * dt, -obj.ForwardVector.y * dt, obj.Velocity.z)
 
     elseif Input:GetKey(EKeys.D) then
-        obj.Velocity = Vector(obj.RightVector.x * dt, obj.RightVector.y * dt, obj.Velocity.z)
+            obj.Location = obj.Location - obj.RightVector * dt;
+
+        -- obj.Velocity = Vector(obj.RightVector.x * dt, obj.RightVector.y * dt, obj.Velocity.z)
     else
         -- obj.Velocity = Vector(0.0,0.0, obj.Velocity.z)
     end

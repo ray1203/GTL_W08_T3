@@ -7,6 +7,9 @@
 #include "Engine/World/World.h"
 #include "Classes/GameFramework/Actor.h"
 #include "Classes/Components/ProjectileMovementComponent.h"
+#include "Math/JungleCollision.h"
+
+// [참고: Unreal Engine Transform/Collision 처리 구조](https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/Runtime/Engine/Private/PhysicsEngine/BodyInstance.cpp)
 
 FPhysicsSolver::FPhysicsSolver()
 {
@@ -27,6 +30,11 @@ void FPhysicsSolver::UpdateBodyFromComponent()
             Body.Velocity = ProjComp->GetVelocity();
             Body.Acceleration = ProjComp->GetAcceleration();
         }
+        else
+        {
+            Body.Velocity = FVector::ZeroVector;
+            Body.Acceleration = FVector::ZeroVector;
+        }
     }
 }
 
@@ -34,6 +42,7 @@ void FPhysicsSolver::AdvanceAndDispatch(float DeltaTime)
 {
     ApplyForces();
     Integrate(DeltaTime);
+    HandleOverlaps();
     HandleCollisions();
     UpdateTransforms();
 }
@@ -78,78 +87,283 @@ void FPhysicsSolver::Integrate(float DeltaTime)
     }
 }
 
-void FPhysicsSolver::HandleCollisions()
+void FPhysicsSolver::HandleOverlaps()
 {
-    // 충돌 감지 및 반응(Velocity) 계산
-    // 지금은 오버랩만 하니까 쓰지 않음
-    for (FPhysicsBody& Body : SimulatedBodies)
-    {
-        if (Body.bIsSimulatingPhysics)
-        {
-            // deltaTime이 너무 커서 실패함
-            // step을 줘서 더 작게 만들던가 해야함
-            if (Body.Transform.Translation.Z < 0.f)
-            {
-                Body.Transform.Translation.Z = 0.f;      // 바닥 위로 위치 보정
-                Body.Velocity.Z *= -Restitution;         // 반발력 적용 (Restitution 예: 0.9)
-                // 임계치 이하의 속도는 0으로 처리
-                if (std::abs(Body.Velocity.LengthSquared()) < RestitutionThreshold * RestitutionThreshold)
-                {
-                    Body.Velocity = FVector::ZeroVector;
-                }
-            }
-        }
-    }
-
-
-    // 2. 두 물체 간의 충돌 처리 (구체-구체 충돌 예시)
+    CachedOverlaps.Empty();
     int32 NumBodies = SimulatedBodies.Num();
     for (int32 i = 0; i < NumBodies; ++i)
     {
         FPhysicsBody& BodyA = SimulatedBodies[i];
-        if (!BodyA.bIsSimulatingPhysics)
-            continue;
-
         for (int32 j = i + 1; j < NumBodies; ++j)
         {
             FPhysicsBody& BodyB = SimulatedBodies[j];
-            if (!BodyB.bIsSimulatingPhysics)
-                continue;
-
-            // 구체-구체 충돌 가정
-            const FVector PosA = BodyA.Transform.Translation;
-            const FVector PosB = BodyB.Transform.Translation;
-            float RadiusA = BodyA.CollisionShape.Sphere.Radius;
-            float RadiusB = BodyB.CollisionShape.Sphere.Radius;;
-
-            FVector Delta = PosB - PosA;
-            float Distance = Delta.Length();
-            float Penetration = RadiusA + RadiusB - Distance;
-
-            if (Penetration > 0.f && Distance > KINDA_SMALL_NUMBER)
+            // 오버랩 검사
+            if (IsOverlapping(BodyA, BodyB))
             {
-                FVector Normal = Delta / Distance;
-                float RelativeVelocity = FVector::DotProduct(BodyB.Velocity - BodyA.Velocity, Normal);
-                if (RelativeVelocity < 0.f)
-                {
-                    float InvMassA = (BodyA.Mass > 0.f) ? (1.f / BodyA.Mass) : 0.f;
-                    float InvMassB = (BodyB.Mass > 0.f) ? (1.f / BodyB.Mass) : 0.f;
-                    float Impulse = -(1.f + Restitution) * RelativeVelocity / (InvMassA + InvMassB);
+                CachedOverlaps.Add(TPair<int32, int32>(i, j));
+                // (여기서 OnOverlapBegin 등 이벤트 호출도 가능)
+            }
+        }
+    }
+}
 
-                    FVector ImpulseVec = Impulse * Normal;
+// --- Transform에서 실제 월드 shape 추출 람다들
+static FSphere GetWorldSphere(const FCollisionShape& Shape, const FTransform& T)
+{
+    float Scale = T.Scale3D.GetMin();
+    return FSphere{ T.Translation, Shape.Sphere.Radius * Scale };
+}
+static FOrientedBox GetWorldOrientedBox(const FCollisionShape& Shape, const FTransform& T)
+{
+    FVector Extent = Shape.GetExtent();
+    FVector Scale = T.Scale3D;
+    FVector WorldExtent = Extent * Scale;
+    FQuat Q = T.Rotation;
+    FOrientedBox OBB;
+    OBB.Center = T.Translation;
+    OBB.AxisX = Q.RotateVector(FVector(1, 0, 0));
+    OBB.AxisY = Q.RotateVector(FVector(0, 1, 0));
+    OBB.AxisZ = Q.RotateVector(FVector(0, 0, 1));
+    OBB.ExtentX = WorldExtent.X;
+    OBB.ExtentY = WorldExtent.Y;
+    OBB.ExtentZ = WorldExtent.Z;
+    return OBB;
+}
+static FCapsule GetWorldCapsule(const FCollisionShape& Shape, const FTransform& T)
+{
+    FVector Scale = T.Scale3D;
+    float HalfHeight = Shape.Capsule.HalfHeight * Scale.Z;
+    float Radius = Shape.Capsule.Radius * FMath::Max(Scale.X, Scale.Y);
+    FVector Center = T.Translation;
+    FQuat Q = T.Rotation;
+    FVector Axis = Q.RotateVector(FVector(0, 0, 1));
+    FCapsule Capsule;
+    Capsule.A = Center - Axis * HalfHeight;
+    Capsule.B = Center + Axis * HalfHeight;
+    Capsule.Radius = Radius;
+    return Capsule;
+}
 
-                    BodyA.Velocity -= ImpulseVec * InvMassA;
-                    BodyB.Velocity += ImpulseVec * InvMassB;
-                }
+// --- Contact Info 계산 (shape/type별 침투량, 노멀, 상대속도 계산)
+FPhysicsSolver::FContactInfo FPhysicsSolver::ComputeContactInfo(const FPhysicsBody& BodyA, const FPhysicsBody& BodyB)
+{
+    const FCollisionShape& ShapeA = BodyA.CollisionShape;
+    const FCollisionShape& ShapeB = BodyB.CollisionShape;
+    const FTransform& TransformA = BodyA.Transform;
+    const FTransform& TransformB = BodyB.Transform;
 
-                // 침투 보정
-                float Correction = Penetration * 0.5f;
-                BodyA.Transform.Translation = (PosA - Normal * Correction);
-                BodyB.Transform.Translation = (PosB + Normal * Correction);
+    // Sphere - Sphere
+    if (ShapeA.IsSphere() && ShapeB.IsSphere())
+    {
+        FSphere SphereA = GetWorldSphere(ShapeA, TransformA);
+        FSphere SphereB = GetWorldSphere(ShapeB, TransformB);
+        FVector Delta = SphereB.Center - SphereA.Center;
+        float Dist = Delta.Length();
+        if (Dist < KINDA_SMALL_NUMBER) return {};
+        FVector Normal = Delta / Dist;
+        float Penetration = SphereA.Radius + SphereB.Radius - Dist;
+        float RelativeVelocity = FVector::DotProduct(BodyB.Velocity - BodyA.Velocity, Normal);
+        if (Penetration > 0.f)
+            return { Normal, Penetration, RelativeVelocity, true };
+        return {};
+    }
+
+    // Box - Box (OrientedBox)
+    if (ShapeA.IsBox() && ShapeB.IsBox())
+    {
+        FOrientedBox OBB_A = GetWorldOrientedBox(ShapeA, TransformA);
+        FOrientedBox OBB_B = GetWorldOrientedBox(ShapeB, TransformB);
+        JungleCollision::FBoxContactResult Result;
+        if (JungleCollision::Intersects(OBB_A, OBB_B, &Result) && Result.bValid)
+        {
+            float RelVel = FVector::DotProduct(BodyB.Velocity - BodyA.Velocity, Result.Normal);
+            return { Result.Normal, Result.Penetration, RelVel, true };
+        }
+        return {};
+    }
+
+    // Box - Sphere
+    if (ShapeA.IsBox() && ShapeB.IsSphere())
+    {
+        FOrientedBox OBB_A = GetWorldOrientedBox(ShapeA, TransformA);
+        FSphere SphereB = GetWorldSphere(ShapeB, TransformB);
+        JungleCollision::FBoxSphereContactResult Result;
+        if (JungleCollision::Intersects(OBB_A, SphereB, &Result) && Result.bValid)
+        {
+            float RelVel = FVector::DotProduct(BodyB.Velocity - BodyA.Velocity, Result.Normal);
+            return { Result.Normal, Result.Penetration, RelVel, true };
+        }
+        return {};
+    }
+    if (ShapeA.IsSphere() && ShapeB.IsBox())
+    {
+        FContactInfo Info = ComputeContactInfo(BodyB, BodyA);
+        if (Info.bValid)
+        {
+            Info.Normal *= -1.f;
+            Info.RelativeVelocity *= -1.f;
+        }
+        return Info;
+    }
+
+    // Capsule - Capsule
+    if (ShapeA.IsCapsule() && ShapeB.IsCapsule())
+    {
+        FCapsule CapsuleA = GetWorldCapsule(ShapeA, TransformA);
+        FCapsule CapsuleB = GetWorldCapsule(ShapeB, TransformB);
+        JungleCollision::FCapsuleContactResult Result;
+        if (JungleCollision::Intersects(CapsuleA, CapsuleB, &Result) && Result.bValid)
+        {
+            float RelVel = FVector::DotProduct(BodyB.Velocity - BodyA.Velocity, Result.Normal);
+            return { Result.Normal, Result.Penetration, RelVel, true };
+        }
+        return {};
+    }
+
+    // Capsule - Sphere
+    if (ShapeA.IsCapsule() && ShapeB.IsSphere())
+    {
+        FCapsule CapsuleA = GetWorldCapsule(ShapeA, TransformA);
+        FSphere SphereB = GetWorldSphere(ShapeB, TransformB);
+        JungleCollision::FCapsuleSphereContactResult Result;
+        if (JungleCollision::Intersects(CapsuleA, SphereB, &Result) && Result.bValid)
+        {
+            float RelVel = FVector::DotProduct(BodyB.Velocity - BodyA.Velocity, Result.Normal);
+            return { Result.Normal, Result.Penetration, RelVel, true };
+        }
+        return {};
+    }
+    if (ShapeA.IsSphere() && ShapeB.IsCapsule())
+    {
+        FContactInfo Info = ComputeContactInfo(BodyB, BodyA);
+        if (Info.bValid)
+        {
+            Info.Normal *= -1.f;
+            Info.RelativeVelocity *= -1.f;
+        }
+        return Info;
+    }
+
+    // Capsule - Box
+    if (ShapeA.IsCapsule() && ShapeB.IsBox())
+    {
+        FCapsule CapsuleA = GetWorldCapsule(ShapeA, TransformA);
+        FOrientedBox OBB_B = GetWorldOrientedBox(ShapeB, TransformB);
+        JungleCollision::FCapsuleBoxContactResult Result;
+        if (JungleCollision::Intersects(CapsuleA, OBB_B, &Result) && Result.bValid)
+        {
+            float RelVel = FVector::DotProduct(BodyB.Velocity - BodyA.Velocity, Result.Normal);
+            return { Result.Normal, Result.Penetration, RelVel, true };
+        }
+        return {};
+    }
+    if (ShapeA.IsBox() && ShapeB.IsCapsule())
+    {
+        FContactInfo Info = ComputeContactInfo(BodyB, BodyA);
+        if (Info.bValid)
+        {
+            Info.Normal *= -1.f;
+            Info.RelativeVelocity *= -1.f;
+        }
+        return Info;
+    }
+
+    // 기타 조합 필요시 추가
+    return {};
+}
+
+void FPhysicsSolver::HandleCollisions()
+{
+    // 1. 바닥 충돌 예시
+    for (FPhysicsBody& Body : SimulatedBodies)
+    {
+        if (!Body.bIsSimulatingPhysics) continue;
+
+        if (Body.Transform.Translation.Z < 0.f)
+        {
+            Body.Transform.Translation.Z = 0.f;
+            Body.Velocity.Z *= -Restitution;
+            if (std::abs(Body.Velocity.LengthSquared()) < RestitutionThreshold * RestitutionThreshold)
+            {
+                Body.Velocity = FVector::ZeroVector;
             }
         }
     }
 
+    // 2. 오버랩 정보 기반 shape별 충돌 처리
+    for (const auto& OverlapPair : CachedOverlaps)
+    {
+        int32 i = OverlapPair.Key;
+        int32 j = OverlapPair.Value;
+        FPhysicsBody& BodyA = SimulatedBodies[i];
+        FPhysicsBody& BodyB = SimulatedBodies[j];
+
+        // 둘 다 물리 시뮬레이션 대상이 아니면 무시
+        if (!BodyA.bIsSimulatingPhysics && !BodyB.bIsSimulatingPhysics)
+            continue;
+
+        // 둘 중 하나라도 Block이 아니면 실제 충돌 반응은 하지 않고 Overlap 이벤트만 발생
+        // https://docs.unrealengine.com/5.0/en-US/collision-in-unreal-engine/
+        if (!BodyA.bBlock || !BodyB.bBlock)
+        {
+            continue;
+        }
+
+        // shape별 침투량/노멀 계산 (Transform/Scale/Rotation 모두 반영)
+        FContactInfo Contact = ComputeContactInfo(BodyA, BodyB);
+        if (!Contact.bValid) continue;
+
+        const FVector& Normal = Contact.Normal;
+        float Penetration = Contact.Penetration;
+        float RelativeVelocity = Contact.RelativeVelocity;
+
+        // Block + SimulatingPhysics 처리 (Unreal Engine 물리 충돌 구조 참고)
+        // https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/Runtime/Engine/Private/PhysicsEngine/PhysicsCollisionHandler.cpp
+        if (BodyA.bIsSimulatingPhysics && BodyB.bIsSimulatingPhysics)
+        {
+            if (RelativeVelocity < 0.f)
+            {
+                float InvMassA = (BodyA.Mass > 0.f) ? (1.f / BodyA.Mass) : 0.f;
+                float InvMassB = (BodyB.Mass > 0.f) ? (1.f / BodyB.Mass) : 0.f;
+                float Impulse = 0;
+                if (Restitution > 0)
+                    Impulse = -(1.f + Restitution) * RelativeVelocity / (InvMassA + InvMassB);
+                else if (RelativeVelocity < 0)
+                    Impulse = -RelativeVelocity / (InvMassA + InvMassB);
+
+                FVector ImpulseVec = Impulse * Normal;
+
+                BodyA.Velocity -= ImpulseVec * InvMassA;
+                BodyB.Velocity += ImpulseVec * InvMassB;
+            }
+            float Correction = Penetration * 0.5f;
+            BodyA.Transform.Translation -= Normal * Correction;
+            BodyB.Transform.Translation += Normal * Correction;
+        }
+        else if (BodyA.bIsSimulatingPhysics)
+        {
+            if (RelativeVelocity < 0.f)
+            {
+                float InvMassA = (BodyA.Mass > 0.f) ? (1.f / BodyA.Mass) : 0.f;
+                float Impulse = -(1.f + Restitution) * RelativeVelocity / InvMassA;
+                FVector ImpulseVec = Impulse * Normal;
+                BodyA.Velocity -= ImpulseVec * InvMassA;
+            }
+            BodyA.Transform.Translation -= Normal * Penetration;
+        }
+        else if (BodyB.bIsSimulatingPhysics)
+        {
+            if (RelativeVelocity < 0.f)
+            {
+                float InvMassB = (BodyB.Mass > 0.f) ? (1.f / BodyB.Mass) : 0.f;
+                float Impulse = -(1.f + Restitution) * RelativeVelocity / InvMassB;
+                FVector ImpulseVec = Impulse * Normal;
+                BodyB.Velocity += ImpulseVec * InvMassB;
+            }
+            BodyB.Transform.Translation += Normal * Penetration;
+        }
+        // 둘 다 Simulating이 아니면, 아무 반응하지 않음
+    }
 }
 
 void FPhysicsSolver::UpdateTransforms()
@@ -169,36 +383,38 @@ void FPhysicsSolver::AddBody(UShapeComponent* Component)
         Box.Box = { Scale.X, Scale.Y, Scale.Z };
         UE_LOG(ELogLevel::Error, "FPhysicsSolver::AddBody[%d] : Box %f, %f, %f", count++, Scale.X, Scale.Y, Scale.Z);
 
-
         Body.CollisionShape = Box;
+        Body.CollisionShape.SetExtent(Box.GetExtent());
     }
     else if (USphereComponent* SphereComp = Cast<USphereComponent>(Component))
     {
-        // SphereComponent에 대한 처리
         FCollisionShape Sphere;
         Sphere.ShapeType = ECollisionShape::Sphere;
         Sphere.Sphere.Radius = SphereComp->GetSphereRadius();
 
         Body.CollisionShape = Sphere;
         UE_LOG(ELogLevel::Error, "FPhysicsSolver::AddBody[%d] : Sphere %f", count++, Sphere.Sphere.Radius);
-
+        Body.CollisionShape.SetExtent(Sphere.GetExtent());
 
     }
     else if (UCapsuleComponent* CapsuleComp = Cast<UCapsuleComponent>(Component))
     {
-        // CapsuleComponent에 대한 처리
         FCollisionShape Capsule;
         Capsule.ShapeType = ECollisionShape::Capsule;
         Capsule.Capsule.Radius = CapsuleComp->GetCapsuleRadius();
         Capsule.Capsule.HalfHeight = CapsuleComp->GetCapsuleHalfHeight();
 
         Body.CollisionShape = Capsule;
+        UE_LOG(ELogLevel::Error, "FPhysicsSolver::AddBody[%d] : Capsule %f, %f", count++, Capsule.Capsule.Radius, Capsule.Capsule.HalfHeight);
+        Body.CollisionShape.SetExtent(Capsule.GetExtent());
     }
     else
     {
         return;
     }
     Body.Transform = Component->GetWorldTransform();
+    Body.bBlock = Component->bBlockComponent;
+    Body.bIsSimulatingPhysics = Component->bIsSimulatingPhysics;
     SimulatedBodies.Add(Body);
 }
 
@@ -245,26 +461,10 @@ bool FPhysicsSolver::GetSimulatedTransform(UShapeComponent* Component, FTransfor
     return false;
 }
 
-bool FPhysicsSolver::Raycast(const FVector& Start, const FVector& End, FHitResult& OutHit) const
-{
-    //// 아주 단순화된 예시 - 실제 구현은 엔진의 SceneQuery를 활용해야 함
-    //for (UShapeComponent* Comp : SimulatedParticles)
-    //{
-    //    if (Comp && Comp->ComponentOverlapComponent(Start, End, FQuat::Identity, Comp->GetCollisionShape()))
-    //    {
-    //        OutHit.Component = Comp;
-    //        OutHit.Location = Start;
-    //        return true;
-    //    }
-    //}
-    return false;
-}
-
 bool FPhysicsSolver::Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*> OverlappingBodies)
 {
     if (Body.CollisionShape.ShapeType == ECollisionShape::Sphere)
     {
-        // 도형과 위치정보를 가진 구조체로 담음
         FSphere Source;
         Source.Center = Body.Transform.Translation;
         Source.Radius = Body.CollisionShape.Sphere.Radius;
@@ -275,7 +475,6 @@ bool FPhysicsSolver::Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*> Ove
             {
                 continue; // 자기 자신은 제외  
             }
-            // 일단 구형끼리 체크
             if (Other.CollisionShape.ShapeType == ECollisionShape::Sphere)
             {
                 FSphere Target;
@@ -296,4 +495,69 @@ bool FPhysicsSolver::Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*> Ove
     {
         return false;
     }
+}
+
+bool FPhysicsSolver::IsOverlapping(const FPhysicsBody& BodyA, const FPhysicsBody& BodyB)
+{
+    const FCollisionShape& ShapeA = BodyA.CollisionShape;
+    const FCollisionShape& ShapeB = BodyB.CollisionShape;
+    const FTransform& TransformA = BodyA.Transform;
+    const FTransform& TransformB = BodyB.Transform;
+
+    if (ShapeA.IsSphere() && ShapeB.IsSphere())
+    {
+        FSphere SphereA = GetWorldSphere(ShapeA, TransformA);
+        FSphere SphereB = GetWorldSphere(ShapeB, TransformB);
+        return JungleCollision::Intersects(SphereA, SphereB);
+    }
+    if (ShapeA.IsBox() && ShapeB.IsBox())
+    {
+        FOrientedBox OBB_A = GetWorldOrientedBox(ShapeA, TransformA);
+        FOrientedBox OBB_B = GetWorldOrientedBox(ShapeB, TransformB);
+        return JungleCollision::Intersects(OBB_A, OBB_B);
+    }
+    if (ShapeA.IsBox() && ShapeB.IsSphere())
+    {
+        FOrientedBox OBB_A = GetWorldOrientedBox(ShapeA, TransformA);
+        FSphere SphereB = GetWorldSphere(ShapeB, TransformB);
+        return JungleCollision::Intersects(OBB_A, SphereB);
+    }
+    if (ShapeA.IsSphere() && ShapeB.IsBox())
+    {
+        FSphere SphereA = GetWorldSphere(ShapeA, TransformA);
+        FOrientedBox OBB_B = GetWorldOrientedBox(ShapeB, TransformB);
+        return JungleCollision::Intersects(SphereA, OBB_B);
+    }
+    if (ShapeA.IsCapsule() && ShapeB.IsCapsule())
+    {
+        FCapsule CapsuleA = GetWorldCapsule(ShapeA, TransformA);
+        FCapsule CapsuleB = GetWorldCapsule(ShapeB, TransformB);
+        return JungleCollision::Intersects(CapsuleA, CapsuleB);
+    }
+    if (ShapeA.IsCapsule() && ShapeB.IsSphere())
+    {
+        FCapsule CapsuleA = GetWorldCapsule(ShapeA, TransformA);
+        FSphere SphereB = GetWorldSphere(ShapeB, TransformB);
+        return JungleCollision::Intersects(CapsuleA, SphereB);
+    }
+    if (ShapeA.IsSphere() && ShapeB.IsCapsule())
+    {
+        FSphere SphereA = GetWorldSphere(ShapeA, TransformA);
+        FCapsule CapsuleB = GetWorldCapsule(ShapeB, TransformB);
+        return JungleCollision::Intersects(SphereA, CapsuleB);
+    }
+    if (ShapeA.IsCapsule() && ShapeB.IsBox())
+    {
+        FCapsule CapsuleA = GetWorldCapsule(ShapeA, TransformA);
+        FOrientedBox OBB_B = GetWorldOrientedBox(ShapeB, TransformB);
+        return JungleCollision::Intersects(CapsuleA, OBB_B);
+    }
+    if (ShapeA.IsBox() && ShapeB.IsCapsule())
+    {
+        FOrientedBox OBB_A = GetWorldOrientedBox(ShapeA, TransformA);
+        FCapsule CapsuleB = GetWorldCapsule(ShapeB, TransformB);
+        return JungleCollision::Intersects(OBB_A, CapsuleB);
+    }
+    // 기타 shape 조합 필요시 추가
+    return false;
 }
