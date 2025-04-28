@@ -94,7 +94,7 @@ void UGameEngine::LoadScene(int index)
     if (index == 1)
     {
         FWindowsCursor::SetShowMouseCursor(false);
-        FSoundManager::Instance().PlayBGM();
+        FSoundManager::Instance().PlayBGM(true);
     }
 }
 void UGameEngine::LoadScene()

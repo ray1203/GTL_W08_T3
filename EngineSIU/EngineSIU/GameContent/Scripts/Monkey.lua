@@ -1,5 +1,6 @@
 function BeginPlay()
     print("[BeginPlay] " .. obj.UUID)
+    PlaySFX("MonkeySpawn")
     obj:PrintLocation()
 end
 
@@ -17,6 +18,8 @@ function ShootSSal()
     local playerPos = obj.PlayerPosition
 
     obj:ShootProjectile(shootPos, playerPos, 100)
+    PlaySFX("Throw")
+
 end
 
 local shoot_timer = 0
