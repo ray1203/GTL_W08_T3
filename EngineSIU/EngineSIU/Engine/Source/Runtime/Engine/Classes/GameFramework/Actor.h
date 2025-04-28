@@ -72,6 +72,9 @@ public:
     template<typename T>
         requires std::derived_from<T, UActorComponent>
     T* GetComponentByClass();
+    template<typename T>
+        requires std::derived_from<T, UActorComponent>
+    TArray<T*> GetComponentsByClass();
 
     void InitializeComponents();
     void UninitializeComponents();
@@ -162,4 +165,18 @@ T* AActor::GetComponentByClass()
         }
     }
     return nullptr;
+}
+template <typename T>
+    requires std::derived_from<T, UActorComponent>
+TArray<T*> AActor::GetComponentsByClass()
+{
+    TArray<T*> Result;
+    for (UActorComponent* Component : OwnedComponents)
+    {
+        if (T* CastedComponent = Cast<T>(Component))
+        {
+            Result.Add(CastedComponent);
+        }
+    }
+    return Result;
 }
