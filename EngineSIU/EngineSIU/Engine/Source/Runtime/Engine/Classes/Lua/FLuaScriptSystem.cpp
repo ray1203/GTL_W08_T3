@@ -128,6 +128,7 @@ void FLuaScriptSystem::BindActor()
         "ForwardVector", sol::property(&AActor::GetActorForwardVector),
         "RightVector", sol::property(&AActor::GetActorRightVector),
 
+        "PlayerPosition", sol::property(&AActor::GetPlayerLocation),
         "UUID", sol::readonly_property(&AActor::GetUUID),
 
         "PrintLocation", [](AActor* Self) {
@@ -154,6 +155,21 @@ void FLuaScriptSystem::BindActor()
                     NewActor->SetActorLocation(StartPos);
                 }
             }
+        },
+        "ShootProjectile", [](AActor* Self, const FVector& ShootPos, const FVector& TargetPos, float Speed)
+        {
+            UWorld* World = Self->GetWorld();
+            if (World)
+            {
+                AProjectile* NewActor = World->SpawnActor<AProjectile>();
+                if (NewActor)
+                {
+                    FVector Dir = (TargetPos - ShootPos).GetSafeNormal();
+                    NewActor->SetInitialSpeed(Dir * Speed);
+                    NewActor->SetActorLocation(ShootPos);
+                }
+            }
+
         }
 
     );

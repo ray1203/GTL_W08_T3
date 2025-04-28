@@ -101,6 +101,8 @@ public:
     void SetLuaComponent(ULuaScriptComponent* InComp);
     ULuaScriptComponent* GetLuaComponent() const { return LuaComp; }
 
+    FVector GetPlayerLocation();
+
 protected:
     UPROPERTY
     (USceneComponent*, RootComponent, = nullptr)

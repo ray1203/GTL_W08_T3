@@ -24,6 +24,7 @@ class APlayer : public AActor
     FVector GetVelocity() { return Movement->GetVelocity(); }
     void SetVelocity(FVector InVelocity) { Movement->SetVelocity(InVelocity); }
 
+    static FVector GetPlayerLocation();
 protected:
     UStaticMeshComponent* MeshComponent = nullptr;
     USpringArmComponent* CameraBoom = nullptr;
