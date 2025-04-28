@@ -1,13 +1,16 @@
 #include "CapsuleComponent.h"
 
 #include "UObject/Casts.h"
+
 #include "World/World.h"
 
 UObject* UCapsuleComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
+
     NewComponent->CapsuleHalfHeight = CapsuleHalfHeight;
     NewComponent->CapsuleRadius = CapsuleRadius;
+
     return NewComponent;
 }
 
@@ -15,6 +18,7 @@ void UCapsuleComponent::InitializeComponent()
 {
     Super::InitializeComponent();
 }
+
 
 void UCapsuleComponent::BeginPlay()
 {

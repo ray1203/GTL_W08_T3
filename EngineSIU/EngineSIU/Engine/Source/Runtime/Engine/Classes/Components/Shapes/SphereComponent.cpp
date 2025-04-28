@@ -3,11 +3,13 @@
 #include "UObject/Casts.h"
 #include "World/World.h"
 
+
 UObject* USphereComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
     
     NewComponent->SphereRadius = SphereRadius;
+
     return NewComponent;
 }
 

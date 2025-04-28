@@ -159,6 +159,7 @@ void FPhysicsSolver::UpdateTransforms()
 void FPhysicsSolver::AddBody(UShapeComponent* Component)
 {
     static uint32 count = 0;
+
     FPhysicsBody Body(Component);
     if (UBoxComponent* BoxComp = Cast<UBoxComponent>(Component))
     {
@@ -167,6 +168,7 @@ void FPhysicsSolver::AddBody(UShapeComponent* Component)
         FVector Scale = BoxComp->GetRelativeScale3D();
         Box.Box = { Scale.X, Scale.Y, Scale.Z };
         UE_LOG(ELogLevel::Error, "FPhysicsSolver::AddBody[%d] : Box %f, %f, %f", count++, Scale.X, Scale.Y, Scale.Z);
+
 
         Body.CollisionShape = Box;
     }
@@ -179,6 +181,7 @@ void FPhysicsSolver::AddBody(UShapeComponent* Component)
 
         Body.CollisionShape = Sphere;
         UE_LOG(ELogLevel::Error, "FPhysicsSolver::AddBody[%d] : Sphere %f", count++, Sphere.Sphere.Radius);
+
 
     }
     else if (UCapsuleComponent* CapsuleComp = Cast<UCapsuleComponent>(Component))
@@ -294,52 +297,3 @@ bool FPhysicsSolver::Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*> Ove
         return false;
     }
 }
-//
-//bool FPhysicsSolver::Overlap(const FCollisionShape& Shape, const FTransform& Transform, TArray<AActor*>& OutOverlaps) const
-//{
-//    if (Shape.ShapeType == ECollisionShape::Box)
-//    {
-//        //// BoxOverlap 처리
-//        //for (const FPhysicsBody &Body : SimulatedBodies)
-//        //{
-//        //    if (Body.CollisionShape.ShapeType == ECollisionShape::Box)
-//        //    {
-//        //        FOrientedBox Target;
-//        //        Target.AxisX = Transform.Rotation.GetForwardVector();
-//        //        Target.AxisY = Transform.Rotation.GetRightVector();
-//        //        Target.AxisZ = Transform.Rotation.GetUpVector();
-//        //        Target.Center = Transform.Translation;
-//        //        Target.ExtentX = Shape.Box.HalfExtentX;
-//        //        Target.ExtentY = Shape.Box.HalfExtentY;
-//        //        Target.ExtentZ = Shape.Box.HalfExtentZ;
-//
-//        //        JungleCollision::Intersects(Target, Body.CollisionShape.Box);
-//        //    }
-//        //}
-//    }
-//    else if (Shape.ShapeType == ECollisionShape::Sphere)
-//    {
-//        FSphere Source;
-//        Source.Center = Transform.Translation;
-//        Source.Radius = Shape.Sphere.Radius;
-//
-//        for (const FPhysicsBody& Body : SimulatedBodies)
-//        {
-//            if (Body.CollisionShape.ShapeType == ECollisionShape::Sphere)
-//            {
-//                FSphere Target;
-//                Target.Center = Body.Transform.Translation;
-//                Target.Radius = Body.CollisionShape.Sphere.Radius;
-//                if (JungleCollision::Intersects(Source, Target))
-//                {
-//                    OutOverlaps.Add(Body.Component->GetOwner());
-//                }
-//            }
-//        }
-//    }
-//    else if (Shape.ShapeType == ECollisionShape::Capsule)
-//    {
-//        // CapsuleOverlap 처리
-//    }
-//
-//}

@@ -43,6 +43,7 @@ UObject* UWorld::Duplicate(UObject* InOuter)
     
     // PhysicsScene은 복사하지 않음.(PIE에서만 작동하므로)
 
+
     return NewWorld;
 }
 

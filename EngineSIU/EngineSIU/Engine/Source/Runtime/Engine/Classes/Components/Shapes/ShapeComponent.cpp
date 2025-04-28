@@ -8,9 +8,11 @@ UObject* UShapeComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComponent = Cast<ThisClass>(Super::Duplicate(InOuter));
 
+
     NewComponent->ShapeColor = ShapeColor;
     NewComponent->bDrawOnlyIfSelected = bDrawOnlyIfSelected;
     NewComponent->bIsSimulatingPhysics = bIsSimulatingPhysics;
+
     return NewComponent;
 }
 
@@ -18,6 +20,7 @@ void UShapeComponent::InitializeComponent()
 {
     Super::InitializeComponent();
 }
+
 
 void UShapeComponent::TickComponent(float DeltaTime)
 {

@@ -40,6 +40,7 @@ void UProjectileMovementComponent::TickComponent(float DeltaTime)
     Super::TickComponent(DeltaTime);
     // UProjectileMovementComponent는 물리 계산, 이동을 하지 않고 property만 가집니다
     // 물리 연산은 FPhysicsSolver에서 처리합니다.
+
 }
 
 void UProjectileMovementComponent::GetProperties(TMap<FString, FString>& OutProperties) const

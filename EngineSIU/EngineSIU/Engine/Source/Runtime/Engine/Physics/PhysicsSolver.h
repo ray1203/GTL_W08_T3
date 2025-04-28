@@ -63,6 +63,7 @@ private:
     bool Raycast(const FVector& Start, const FVector& End, FHitResult& OutHit) const;
     bool Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*>OverlappingBodies);
 
+
 protected:
     // 시뮬레이트 된 결과물
     TArray<FPhysicsBody> SimulatedBodies;
@@ -71,4 +72,5 @@ private:
     const float RestitutionThreshold = 1e-2f;
     float Restitution = 0.6;
     float Friction = 0.95;
+
 };
