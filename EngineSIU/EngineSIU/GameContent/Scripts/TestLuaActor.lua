@@ -25,6 +25,7 @@ function OnOverlap(OtherActor)
         local OtherVelocity = OtherActor.Velocity
         obj.Velocity = obj.Velocity + OtherVelocity
         RecentlyHit = true
+        PlaySFX("Hit")
     end
 end
 

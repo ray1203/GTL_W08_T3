@@ -18,6 +18,9 @@ void FSoundManager::Initialize()
 
     LoadBGM(L"Contents/Sounds/elinia.wav");
     LoadSFX(TEXT("Jump"), L"Contents/Sounds/jump.wav");
+    LoadSFX(TEXT("Throw"), L"Contents/Sounds/throw.wav");
+    LoadSFX(TEXT("Hit"), L"Contents/Sounds/hit.wav");
+    LoadSFX(TEXT("MonkeySpawn"), L"Contents/Sounds/monkeyspawn.wav");
 }
 
 void FSoundManager::Shutdown()
@@ -60,7 +63,7 @@ void FSoundManager::PlayBGM(float volume, bool loop)
     if (BgmInstance)
     {
         BgmInstance->SetVolume(volume);
-        BgmInstance->Play();
+        BgmInstance->Play(loop);
     }
 }
 
