@@ -22,7 +22,7 @@ void APlayer::PostSpawn()
     MeshComponent = AddComponent<UStaticMeshComponent>(TEXT("MeshComponent"));
     RootComponent = MeshComponent;
 
-    MeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Reference/Reference.obj"));
+    MeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/soong.obj"));
 
     CameraBoom = AddComponent<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(MeshComponent);
