@@ -38,6 +38,7 @@
 #include "Actors/Platform.h"
 
 #include "Actors/UI/PanelUIActor.h"
+#include <Actors/RiceMonkey.h>
 
 void ControlEditorPanel::Render()
 {
@@ -303,7 +304,9 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             {.label = "UIButton", .obj = OBJ_UI_BUTTON },
             {.label = "UIPanel", .obj = OBJ_UI_PANEL },
             { .label= "PlayerStart", .obj= OBJ_PLAYERSTART },
-            {.label= "StaticMeshActor", .obj = OBJ_STATICMESHACTOR }
+            {.label= "StaticMeshActor", .obj = OBJ_STATICMESHACTOR },
+            {.label = "Monkey",    .obj = OBJ_MONKEY },
+            {.label = "End",       .obj = OBJ_END }
         };
 
         for (const auto& primitive : primitives)
@@ -455,6 +458,13 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     StaticMeshActor->SetActorLabel(TEXT("OBJ_STATICMESHACTOR"));
                     StaticMeshActor->GetStaticMeshComponent()->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
                     SpawnedActor = StaticMeshActor;
+                    break;
+                }
+                case OBJ_MONKEY:
+                {
+                    ARiceMonkey* MonkeyActor = World->SpawnActor<ARiceMonkey>();
+                    MonkeyActor->SetActorLabel(TEXT("OBJ_MONKEY"));
+                    SpawnedActor = MonkeyActor;
                     break;
                 }
                 case OBJ_TRIANGLE:

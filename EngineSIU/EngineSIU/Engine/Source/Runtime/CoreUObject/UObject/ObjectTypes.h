@@ -23,6 +23,7 @@ enum OBJECTS : uint8
     OBJ_UI_PANEL,
     OBJ_PLAYERSTART,
     OBJ_STATICMESHACTOR,
+    OBJ_MONKEY,
     OBJ_END
 };
 

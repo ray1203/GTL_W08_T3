@@ -6,22 +6,26 @@
 
 ARiceMonkey::ARiceMonkey()
 {
+
 }
 
 void ARiceMonkey::PostSpawn()
 {
-    Super::PostSpawn();
+    //Super::PostSpawn();
+
+
+    //Collider = AddComponent<UBoxComponent>(TEXT("Box"));
+    //Collider->SetupAttachment(MeshComponent);
+    //Collider->bIsSimulatingPhysics = false;
     MeshComponent = AddComponent<UStaticMeshComponent>(TEXT("MeshComponent"));
     MeshComponent->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/12958_Spider_Monkey_v1_l2.obj"));
     MeshComponent->SetRelativeScale3D(FVector(0.05, 0.05, 0.05));
     RootComponent = MeshComponent;
 
-    Collider = AddComponent<UBoxComponent>(TEXT("Box"));
-    Collider->SetupAttachment(MeshComponent);
-    Collider->bIsSimulatingPhysics = false;
-
     LuaComp = AddComponent<ULuaScriptComponent>(TEXT("LuaScriptComponent"));
     LuaComp->SetScriptPath(TEXT("Monkey"));
+
+
 }
 
 UObject* ARiceMonkey::Duplicate(UObject* InOuter)
