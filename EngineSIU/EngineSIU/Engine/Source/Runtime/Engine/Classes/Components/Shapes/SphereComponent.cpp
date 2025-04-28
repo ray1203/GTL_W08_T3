@@ -20,6 +20,7 @@ void USphereComponent::InitializeComponent()
 
 void USphereComponent::BeginPlay()
 {
+    Super::BeginPlay();
     if (this->GetWorld()->WorldType != EWorldType::Editor)
     {
         this->GetWorld()->PhysicsScene.AddRigidBody(this);

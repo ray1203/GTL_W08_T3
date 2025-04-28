@@ -21,6 +21,15 @@ void UShapeComponent::InitializeComponent()
     Super::InitializeComponent();
 }
 
+void UShapeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (this->GetWorld()->WorldType != EWorldType::Editor)
+    {
+         this->GetWorld()->PhysicsScene.RemoveRigidBody(this);
+    }
+
+    Super::EndPlay(EndPlayReason);
+}
 
 void UShapeComponent::TickComponent(float DeltaTime)
 {

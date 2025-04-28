@@ -61,7 +61,7 @@ function Tick(dt)
     end
     
     if Input:GetKeyDown(EKeys.G) then
-        obj:Instantiate("StaticMeshActor", obj.Location + obj.ForwardVector * 3);
+        obj:Instantiate("Projectile", obj.Location + obj.ForwardVector * 3);
     end
     -- 위치 출력 (디버깅용)
     -- obj:PrintLocation()

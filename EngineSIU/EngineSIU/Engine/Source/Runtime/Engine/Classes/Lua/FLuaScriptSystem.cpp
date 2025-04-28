@@ -18,6 +18,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/FLoaderOBJ.h" 
 #include "Components/Shapes/SphereComponent.h"
+#include "Actors/Projectile.h" // Add this include to resolve "AProjectile" identifier
+
 
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
@@ -145,18 +147,10 @@ void FLuaScriptSystem::BindActor()
             UWorld* World = Self->GetWorld();
             if (World)
             {
-                if (TypeName == "StaticMeshActor")
+                if (TypeName == "Projectile")
                 {
-                    AStaticMeshActor* NewActor = World->SpawnActor<AStaticMeshActor>();
-                    UStaticMeshComponent* StaticMeshComp = NewActor->GetStaticMeshComponent();
-                    StaticMeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
-                    NewActor->AddComponent<USphereComponent>(TEXT("Sphere"))->SetupAttachment(StaticMeshComp);
-
-                    UProjectileMovementComponent* comp = NewActor->AddComponent<UProjectileMovementComponent>(TEXT("Proj"));
-                    comp->SetVelocity(Self->GetActorForwardVector() * 10);
-                    //comp->BeginPlay();
-
-
+                    AProjectile* NewActor = World->SpawnActor<AProjectile>();
+                    NewActor->SetInitialSpeed(Self->GetActorForwardVector() * 100);
                     NewActor->SetActorLocation(StartPos);
                 }
             }

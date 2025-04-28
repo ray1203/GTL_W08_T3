@@ -134,4 +134,26 @@ struct FCollisionShape
 
         return FVector::ZeroVector;
     }
+
+    void SetExtent(FVector InExtent)
+    {
+        switch (ShapeType)
+        {
+            case ECollisionShape::Box:
+            {
+                Box.HalfExtentX = InExtent.X;
+                Box.HalfExtentY = InExtent.Y;
+                Box.HalfExtentZ = InExtent.Z;
+            }
+            case  ECollisionShape::Sphere:
+            {
+                Sphere.Radius = InExtent.X;
+            }
+            case ECollisionShape::Capsule:
+            {
+                Capsule.Radius = InExtent.X;
+                Capsule.HalfHeight = InExtent.Z;
+            }
+        }
+    }
 };

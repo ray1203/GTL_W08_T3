@@ -265,6 +265,215 @@ bool JungleCollision::Intersects(const FBox& AABB, const FOrientedBox& Box)
     return false;
 }
 
+bool JungleCollision::Intersects(const FOrientedBox& A, const FOrientedBox& B, FBoxContactResult* OutResult)
+{
+    // SAT(Separating Axis Theorem) 기반 충돌 및 penetration 계산
+    FVector AxisA[3] = { A.AxisX, A.AxisY, A.AxisZ };
+    FVector AxisB[3] = { B.AxisX, B.AxisY, B.AxisZ };
+    FVector D = B.Center - A.Center;
+
+    float minPenetration = FLT_MAX;
+    FVector minAxis = FVector::ZeroVector;
+    int minAxisType = -1; // 0: A, 1: B, 2: Cross
+
+    // 1. A의 축
+    for (int i = 0; i < 3; ++i)
+    {
+        FVector axis = AxisA[i].GetSafeNormal();
+        float aProj = A.ExtentX * FMath::Abs(FVector::DotProduct(axis, A.AxisX)) +
+            A.ExtentY * FMath::Abs(FVector::DotProduct(axis, A.AxisY)) +
+            A.ExtentZ * FMath::Abs(FVector::DotProduct(axis, A.AxisZ));
+        float bProj = B.ExtentX * FMath::Abs(FVector::DotProduct(axis, B.AxisX)) +
+            B.ExtentY * FMath::Abs(FVector::DotProduct(axis, B.AxisY)) +
+            B.ExtentZ * FMath::Abs(FVector::DotProduct(axis, B.AxisZ));
+        float dist = FMath::Abs(FVector::DotProduct(D, axis));
+        float penetration = (aProj + bProj) - dist;
+        if (penetration < 0.f)
+        {
+            if (OutResult) *OutResult = JungleCollision::FBoxContactResult{};
+            return false;
+        }
+        if (penetration < minPenetration)
+        {
+            minPenetration = penetration;
+            minAxis = axis;
+            minAxisType = 0;
+        }
+    }
+
+    // 2. B의 축
+    for (int i = 0; i < 3; ++i)
+    {
+        FVector axis = AxisB[i].GetSafeNormal();
+        float aProj = A.ExtentX * FMath::Abs(FVector::DotProduct(axis, A.AxisX)) +
+            A.ExtentY * FMath::Abs(FVector::DotProduct(axis, A.AxisY)) +
+            A.ExtentZ * FMath::Abs(FVector::DotProduct(axis, A.AxisZ));
+        float bProj = B.ExtentX * FMath::Abs(FVector::DotProduct(axis, B.AxisX)) +
+            B.ExtentY * FMath::Abs(FVector::DotProduct(axis, B.AxisY)) +
+            B.ExtentZ * FMath::Abs(FVector::DotProduct(axis, B.AxisZ));
+        float dist = FMath::Abs(FVector::DotProduct(D, axis));
+        float penetration = (aProj + bProj) - dist;
+        if (penetration < 0.f)
+        {
+            if (OutResult) *OutResult = JungleCollision::FBoxContactResult{};
+            return false;
+        }
+        if (penetration < minPenetration)
+        {
+            minPenetration = penetration;
+            minAxis = axis;
+            minAxisType = 1;
+        }
+    }
+
+    // 3. 교차축
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            FVector axis = FVector::CrossProduct(AxisA[i], AxisB[j]);
+            if (axis.LengthSquared() < KINDA_SMALL_NUMBER) continue;
+            axis = axis.GetSafeNormal();
+            float aProj = A.ExtentX * FMath::Abs(FVector::DotProduct(axis, A.AxisX)) +
+                A.ExtentY * FMath::Abs(FVector::DotProduct(axis, A.AxisY)) +
+                A.ExtentZ * FMath::Abs(FVector::DotProduct(axis, A.AxisZ));
+            float bProj = B.ExtentX * FMath::Abs(FVector::DotProduct(axis, B.AxisX)) +
+                B.ExtentY * FMath::Abs(FVector::DotProduct(axis, B.AxisY)) +
+                B.ExtentZ * FMath::Abs(FVector::DotProduct(axis, B.AxisZ));
+            float dist = FMath::Abs(FVector::DotProduct(D, axis));
+            float penetration = (aProj + bProj) - dist;
+            if (penetration < 0.f)
+            {
+                if (OutResult) *OutResult = JungleCollision::FBoxContactResult{};
+                return false;
+            }
+            if (penetration < minPenetration)
+            {
+                minPenetration = penetration;
+                minAxis = axis;
+                minAxisType = 2;
+            }
+        }
+    }
+
+    // 접촉점 대략 계산: 두 박스의 projection center를 minAxis(침투축)으로 투영해서 만나는 지점
+    FVector contactA = A.Center + minAxis * (
+        FMath::Clamp(FVector::DotProduct(B.Center - A.Center, minAxis), -A.ExtentX, A.ExtentX)
+        );
+    FVector contactB = B.Center - minAxis * (
+        FMath::Clamp(FVector::DotProduct(B.Center - A.Center, minAxis), -B.ExtentX, B.ExtentX)
+        );
+
+    if (OutResult)
+    {
+        OutResult->Normal = minAxis;
+        OutResult->Penetration = minPenetration;
+        OutResult->ContactA = contactA;
+        OutResult->ContactB = contactB;
+        OutResult->bValid = true;
+    }
+    return true;
+}
+
+bool JungleCollision::Intersects(const FOrientedBox& Box, const FSphere& Sphere, JungleCollision::FBoxSphereContactResult* OutResult)
+{
+    // 가장 가까운 점 찾기
+    FVector Local = Sphere.Center - Box.Center;
+    FVector Closest = Box.Center;
+    FVector Axes[3] = { Box.AxisX, Box.AxisY, Box.AxisZ };
+    float Extents[3] = { Box.ExtentX, Box.ExtentY, Box.ExtentZ };
+
+    for (int i = 0; i < 3; ++i)
+    {
+        float Distance = FVector::DotProduct(Local, Axes[i]);
+        Distance = FMath::Clamp(Distance, -Extents[i], Extents[i]);
+        Closest += Axes[i] * Distance;
+    }
+
+    FVector Normal = (Sphere.Center - Closest);
+    float Dist = Normal.Length();
+    if (Dist > KINDA_SMALL_NUMBER) Normal /= Dist;
+    float Penetration = Sphere.Radius - Dist;
+
+    if (OutResult)
+    {
+        OutResult->Normal = (Dist > KINDA_SMALL_NUMBER) ? Normal : FVector(1, 0, 0);
+        OutResult->Penetration = Penetration;
+        OutResult->PointOnBox = Closest;
+        OutResult->PointOnSphere = Sphere.Center - OutResult->Normal * Sphere.Radius;
+        OutResult->bValid = Penetration > 0.f;
+    }
+    return Penetration > 0.f;
+}
+
+bool JungleCollision::Intersects(const FCapsule& A, const FCapsule& B, JungleCollision::FCapsuleContactResult* OutResult)
+{
+    // 선분-선분 최소거리
+    float S, T;
+    FVector C1, C2;
+    FVector::SegmentDistToSegmentSafe(A.A, A.B, B.A, B.B, S, T, C1, C2);
+    FVector Delta = C2 - C1;
+    float Dist = Delta.Length();
+    FVector Normal = (Dist > KINDA_SMALL_NUMBER) ? Delta / Dist : FVector(1, 0, 0);
+    float Penetration = A.Radius + B.Radius - Dist;
+
+    if (OutResult)
+    {
+        OutResult->Normal = Normal;
+        OutResult->Penetration = Penetration;
+        OutResult->PointA = C1 + Normal * A.Radius * 0.5f;
+        OutResult->PointB = C2 - Normal * B.Radius * 0.5f;
+        OutResult->bValid = Penetration > 0.f;
+    }
+    return Penetration > 0.f;
+}
+
+bool JungleCollision::Intersects(const FCapsule& Capsule, const FSphere& Sphere, JungleCollision::FCapsuleSphereContactResult* OutResult)
+{
+    // 선분-점 최소거리
+    FVector Closest = JungleCollision::ClosestPointOnSegment(Capsule.A, Capsule.B, Sphere.Center);
+    FVector Delta = Sphere.Center - Closest;
+    float Dist = Delta.Length();
+    FVector Normal = (Dist > KINDA_SMALL_NUMBER) ? Delta / Dist : FVector(1, 0, 0);
+    float Penetration = Capsule.Radius + Sphere.Radius - Dist;
+
+    if (OutResult)
+    {
+        OutResult->Normal = Normal;
+        OutResult->Penetration = Penetration;
+        OutResult->PointOnCapsule = Closest + Normal * Capsule.Radius;
+        OutResult->PointOnSphere = Sphere.Center - Normal * Sphere.Radius;
+        OutResult->bValid = Penetration > 0.f;
+    }
+    return Penetration > 0.f;
+}
+
+
+bool JungleCollision::Intersects(const FCapsule& Capsule, const FOrientedBox& Box, JungleCollision::FCapsuleBoxContactResult* OutResult)
+{
+    // 캡슐 세그먼트의 Closest Point를 OBB에 대해 찾는다
+    FVector ClosestA = JungleCollision::ClosestPointOnOBB(Box, Capsule.A);
+    FVector ClosestB = JungleCollision::ClosestPointOnOBB(Box, Capsule.B);
+    FVector ClosestOnSegment = JungleCollision::ClosestPointOnSegment(Capsule.A, Capsule.B, (ClosestA + ClosestB) * 0.5f);
+    FVector ClosestOnBox = JungleCollision::ClosestPointOnOBB(Box, ClosestOnSegment);
+
+    FVector Delta = ClosestOnBox - ClosestOnSegment;
+    float Dist = Delta.Length();
+    FVector Normal = (Dist > KINDA_SMALL_NUMBER) ? Delta / Dist : FVector(1, 0, 0);
+    float Penetration = Capsule.Radius - Dist;
+
+    if (OutResult)
+    {
+        OutResult->Normal = Normal;
+        OutResult->Penetration = Penetration;
+        OutResult->PointOnCapsule = ClosestOnSegment + Normal * Capsule.Radius;
+        OutResult->PointOnBox = ClosestOnBox;
+        OutResult->bValid = Penetration > 0.f;
+    }
+    return Penetration > 0.f;
+}
+
+
 inline float JungleCollision::dot3(__m128 v1, __m128 v2)
 {
     __m128 dot = _mm_dp_ps(v1, v2, 0x71);

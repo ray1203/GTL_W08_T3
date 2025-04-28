@@ -1,7 +1,8 @@
 #pragma once
 #include "Serialization/Archive.h"
 
-struct FVector;
+#include "Math/Vector.h"
+//struct FVector;
 struct FMatrix;
 struct FRotator;
 
@@ -52,6 +53,19 @@ struct FQuat
     FQuat Inverse();
 
     FRotator ToRotator() const;
+
+    FVector GetAxisX() const
+    {
+        return RotateVector(FVector(1, 0, 0));
+    }
+    FVector GetAxisY() const
+    {
+        return RotateVector(FVector(0, 1, 0));
+    }
+    FVector GetAxisZ() const
+    {
+        return RotateVector(FVector(0, 0, 1));
+    }
 };
 
 inline FArchive& operator<<(FArchive& Ar, FQuat& Q)
