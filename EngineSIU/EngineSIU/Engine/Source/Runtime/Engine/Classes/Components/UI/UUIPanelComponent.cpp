@@ -5,6 +5,7 @@
 UUIPanelComponent::UUIPanelComponent()
 {
     SetTexture(TexturePath.ToWideString());
+    bNoFocus = true;
 }
 
 UObject* UUIPanelComponent::Duplicate(UObject* InOuter)

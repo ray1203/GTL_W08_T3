@@ -3,6 +3,7 @@
 #include "ImGUI/imgui.h"
 #include "UObject/Casts.h"
 
+
 void UUIButtonComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
@@ -13,18 +14,22 @@ void UUIButtonComponent::RenderUI()
     if (!BeginWidget())
         return;
 
-    if (ImGui::Button(Label.c_str()))
+    ImGui::SetWindowFontScale(FontScale);
+    if (ImGui::Button(Label.c_str(), ImVec2(ButtonSize.X, ButtonSize.Y)))
     {
         OnClick();
     }
+    ImGui::SetWindowFontScale(1.0f); // reset after
 
     EndWidget();
 }
+
 UObject* UUIButtonComponent::Duplicate(UObject* InOuter)
 {
     ThisClass* NewComp = Cast<ThisClass>(Super::Duplicate(InOuter));
     NewComp->SetLabel(GetLabel());
-    // OnClick은 복사되지 않음 (런타임 함수 포인터이므로)
+    NewComp->SetButtonSize(ButtonSize);
+    NewComp->SetFontScale(FontScale);
     return NewComp;
 }
 
@@ -32,6 +37,8 @@ void UUIButtonComponent::GetProperties(TMap<FString, FString>& OutProperties) co
 {
     Super::GetProperties(OutProperties);
     OutProperties.Add(TEXT("Label"), FString(Label.c_str()));
+    OutProperties.Add(TEXT("ButtonSize"), FString::Printf(TEXT("%f,%f"), ButtonSize.X, ButtonSize.Y));
+    OutProperties.Add(TEXT("FontScale"), FString::Printf(TEXT("%f"), FontScale));
 }
 
 void UUIButtonComponent::SetProperties(const TMap<FString, FString>& Properties)
@@ -39,6 +46,10 @@ void UUIButtonComponent::SetProperties(const TMap<FString, FString>& Properties)
     Super::SetProperties(Properties);
     if (const FString* Value = Properties.Find(TEXT("Label")))
         SetLabel(TCHAR_TO_UTF8(**Value));
+    if (const FString* Value = Properties.Find(TEXT("ButtonSize")))
+        ButtonSize.InitFromString(*Value);
+    if (const FString* Value = Properties.Find(TEXT("FontScale")))
+        FontScale = FString::ToFloat(*Value);
 }
 
 void UUIButtonComponent::OnClick()

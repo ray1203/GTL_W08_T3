@@ -637,12 +637,24 @@ void PropertyEditorPanel::Render()
                     std::string Label = BtnComp->GetLabel();
                     static char LabelBuf[256];
                     strcpy_s(LabelBuf, Label.c_str());
-
                     if (ImGui::InputText("Label", LabelBuf, IM_ARRAYSIZE(LabelBuf)))
                     {
                         BtnComp->SetLabel(LabelBuf);
                     }
+
+                    float size[2] = { BtnComp->GetButtonSize().X, BtnComp->GetButtonSize().Y };
+                    if (ImGui::DragFloat2("Button Size", size, 1.0f, 0.0f, 1000.0f))
+                    {
+                        BtnComp->SetButtonSize(FVector2D(size[0], size[1]));
+                    }
+
+                    float scale = BtnComp->GetFontScale();
+                    if (ImGui::DragFloat("Font Scale", &scale, 0.01f, 0.1f, 5.0f))
+                    {
+                        BtnComp->SetFontScale(scale);
+                    }
                 }
+
                 else if (UUIPanelComponent* PanelComp = Cast<UUIPanelComponent>(UIComp))
                 {
                     std::string texPath = TCHAR_TO_UTF8(*PanelComp->GetTexturePath());
@@ -794,6 +806,7 @@ void PropertyEditorPanel::DrawUIComponentProperties(UUIComponent* UIComp)
 
     ImGui::Checkbox("Auto Size", &UIComp->bAutoSize);
     ImGui::Checkbox("No Background", &UIComp->bNoBackground);
+    //if (ImGui::DragInt("ZOrder", &UIComp->ZOrder, 1.0f, -1000, 1000)) {}
 }
 
 void PropertyEditorPanel::RGBToHSV(float r, float g, float b, float& h, float& s, float& v) const
