@@ -43,6 +43,52 @@ struct FCapsule
 class JungleCollision
 {
 public:
+
+    struct FBoxContactResult
+    {
+        FVector Normal = FVector::ZeroVector;    // penetration 방향 (A→B)
+        float Penetration = 0.f;                 // penetration 깊이(+) or 0
+        FVector ContactA = FVector::ZeroVector;  // A의 접촉점
+        FVector ContactB = FVector::ZeroVector;  // B의 접촉점
+        bool bValid = false;                     // 충돌 여부
+    };
+
+    struct FBoxSphereContactResult
+    {
+        FVector Normal = FVector::ZeroVector;    // penetration 방향 (A→B)
+        float Penetration = 0.f;                 // penetration 깊이(+) or 0
+        FVector PointOnBox = FVector::ZeroVector;   // Box 쪽 접촉점
+        FVector PointOnSphere = FVector::ZeroVector; // Sphere 쪽 접촉점
+        bool bValid = false;
+    };
+
+    struct FCapsuleContactResult
+    {
+        FVector Normal = FVector::ZeroVector;
+        float Penetration = 0.f;
+        FVector PointA = FVector::ZeroVector;
+        FVector PointB = FVector::ZeroVector;
+        bool bValid = false;
+    };
+
+    struct FCapsuleSphereContactResult
+    {
+        FVector Normal = FVector::ZeroVector;
+        float Penetration = 0.f;
+        FVector PointOnCapsule = FVector::ZeroVector;
+        FVector PointOnSphere = FVector::ZeroVector;
+        bool bValid = false;
+    };
+
+    struct FCapsuleBoxContactResult
+    {
+        FVector Normal = FVector::ZeroVector;
+        float Penetration = 0.f;
+        FVector PointOnCapsule = FVector::ZeroVector;
+        FVector PointOnBox = FVector::ZeroVector;
+        bool bValid = false;
+    };
+
     static bool RayIntersectsAABB(const FRay& Ray, const FBox& AABB, float* outT);
 
     static bool RayIntersectsSphere(const FRay& Ray, const FSphere& Sphere, float* outT);
@@ -80,6 +126,13 @@ public:
     static bool Intersects(const FOrientedBox& Box, const FBox& AABB);
 
     static bool Intersects(const FBox& AABB, const FOrientedBox& Box);
+
+    static bool Intersects(const FOrientedBox& A, const FOrientedBox& B, JungleCollision::FBoxContactResult* OutResult);
+    static bool Intersects(const FOrientedBox& Box, const FSphere& Sphere, JungleCollision::FBoxSphereContactResult* OutResult);
+    static bool Intersects(const FCapsule& A, const FCapsule& B, JungleCollision::FCapsuleContactResult* OutResult);
+    static bool Intersects(const FCapsule& Capsule, const FSphere& Sphere, JungleCollision::FCapsuleSphereContactResult* OutResult);
+    static bool Intersects(const FCapsule& Capsule, const FOrientedBox& Box, JungleCollision::FCapsuleBoxContactResult* OutResult);
+
 
     // 내부 계산은 SIMD로 작동
 private:
