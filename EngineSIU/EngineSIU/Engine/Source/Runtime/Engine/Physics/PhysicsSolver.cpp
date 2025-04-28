@@ -21,20 +21,28 @@ FPhysicsSolver::~FPhysicsSolver()
     SimulatedBodies.Empty();
 }
 
+void FPhysicsSolver::Clear()
+{
+    SimulatedBodies.Empty();
+    CachedOverlaps.Empty();
+}
+
 void FPhysicsSolver::UpdateBodyFromComponent()
 {
     for (FPhysicsBody& Body : SimulatedBodies)
     {
         Body.Transform = Body.Component->GetWorldTransform();
-        if (UProjectileMovementComponent* ProjComp = Body.Component->GetOwner()->GetComponentByClass<UProjectileMovementComponent>())
-        {
-            Body.Velocity = ProjComp->GetVelocity();
-            Body.Acceleration = ProjComp->GetAcceleration();
-        }
-        else
-        {
-            Body.Velocity = FVector::ZeroVector;
-            Body.Acceleration = FVector::ZeroVector;
+        if (Body.Component->GetOwner()) {
+            if (UProjectileMovementComponent* ProjComp = Body.Component->GetOwner()->GetComponentByClass<UProjectileMovementComponent>())
+            {
+                Body.Velocity = ProjComp->GetVelocity();
+                Body.Acceleration = ProjComp->GetAcceleration();
+            }
+            else
+            {
+                Body.Velocity = FVector::ZeroVector;
+                Body.Acceleration = FVector::ZeroVector;
+            }
         }
     }
 }

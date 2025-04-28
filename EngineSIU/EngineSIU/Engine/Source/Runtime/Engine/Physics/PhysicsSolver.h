@@ -52,6 +52,8 @@ public:
     FPhysicsSolver();
     ~FPhysicsSolver();
 
+    void Clear();
+
     // 복사 생성자와 복사 대입 연산자를 delete로 명시적으로 삭제
     FPhysicsSolver(const FPhysicsSolver&) = delete;
     FPhysicsSolver& operator=(const FPhysicsSolver&) = delete;

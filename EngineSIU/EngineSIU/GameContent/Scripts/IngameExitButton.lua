@@ -20,5 +20,5 @@ function Tick(dt)
 end
 
 function OnButtonPressed()
-    LoadScene(1)
+    ExitGame()
 end

@@ -13,6 +13,8 @@ class FPhysicsScene
 public:
     FPhysicsScene();
     ~FPhysicsScene();
+
+    void Clear();
     void TickPhysScene(float DeltaSeconds);
     void SyncBodies();
 
@@ -27,9 +29,4 @@ public:
 
 private:
     TSet<UShapeComponent*> RegisteredBodies;
-
-    void ProcessBodyQueues();
-
-    TArray<UShapeComponent*> AddQueue;
-    TArray<UShapeComponent*> RemoveQueue;
 };

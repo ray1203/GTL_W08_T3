@@ -1,5 +1,6 @@
 #include "GameEngine.h"
 
+#include "EditorEngine.h"
 #include "World/World.h"
 #include "Level.h"
 #include "Actors/Cube.h"
@@ -32,16 +33,10 @@ void UGameEngine::Init()
 
 void UGameEngine::Tick(float DeltaTime)
 {
-    for (FWorldContext* WorldContext : WorldList)
+     for (FWorldContext* WorldContext : WorldList)
     {
         if (WorldContext->WorldType == EWorldType::Game)
         {
-            if (GEngine->bRestartGame)
-            {
-                GEngine->bRestartGame = false;
-                RestartGame();
-            }
-            if (bLoadScene)LoadScene();
             if (UWorld* World = WorldContext->World())
             {
                 World->Tick(DeltaTime);
@@ -58,6 +53,13 @@ void UGameEngine::Tick(float DeltaTime)
                     }
                 }
             }
+
+            /*if (GEngine->bRestartGame)
+            {
+                GEngine->bRestartGame = false;
+                RestartGame();
+            }*/
+            LoadScene();
         }
     }
 }
@@ -78,10 +80,13 @@ void UGameEngine::LoadScene()
     //Load
     if (!bLoadScene)return;
     bLoadScene = false;
+    for (auto i : ActiveWorld->GetActiveLevel()->Actors)i->Destroy();
     if (ActiveWorld->GetActiveLevel())
     {
         ActiveWorld->GetActiveLevel()->Release();
     }
+    ActiveWorld->PhysicsScene.Clear();
+    //ActiveWorld->Release();
     LoadWorld(SceneNames[LoadSceneIndex]);
 }
 void UGameEngine::RestartGame()

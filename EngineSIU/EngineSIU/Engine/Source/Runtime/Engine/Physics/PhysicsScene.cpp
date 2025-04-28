@@ -43,6 +43,12 @@ void FPhysicsScene::SyncBodies()
     }
 }
 
+void FPhysicsScene::Clear()
+{
+    RegisteredBodies.Empty();
+    SceneSolver.Clear();
+}
+
 void FPhysicsScene::TickPhysScene(float DeltaSeconds)
 {
     DeltaTime = DeltaSeconds;

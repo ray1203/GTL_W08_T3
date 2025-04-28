@@ -12,6 +12,7 @@
 #include "Components/UI/UUIComponent.h"
 #include "Engine/EditorEngine.h"
 #include "Engine/Engine.h"
+#include "Engine/GameEngine.h"
 #include "UnrealEd/SceneManager.h"
 #include "Engine/Physics/PhysicsScene.h"
 
@@ -52,6 +53,10 @@ void UWorld::Tick(float DeltaTime)
     // 물리 연산 먼저 처리
     if (this->WorldType != EWorldType::Editor)
     {
+        if (this->WorldType == EWorldType::Game)
+        {
+            if (GEngine->bLoadScene)return;
+        }
         PhysicsScene.TickPhysScene(DeltaTime);
         PhysicsScene.SyncBodies();
 
