@@ -14,5 +14,6 @@ public:
 
 private:
     void InitGameWorld(FWorldContext& GameWorldContext);
-    void LoadInitialScene();
+    void LoadInitialScene() const;
+    virtual void RestartGame() const override;
 };

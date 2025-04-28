@@ -1,6 +1,7 @@
 #include "SceneManager.h"
 #include <fstream>
 #include "EditorViewportClient.h"
+#include "Engine/EditorEngine.h"
 #include "Engine/FLoaderOBJ.h"
 #include "Engine/StaticMeshActor.h"
 #include "UObject/Casts.h"
@@ -64,45 +65,45 @@ static void from_json(const json& Json, TMap<KeyType, ValueType, Allocator>& Map
 
 namespace NS_SceneManagerData
 {
-// 컴포넌트 하나의 저장 정보를 담는 구조체
-struct FComponentSaveData
-{
-    FString ComponentID;    // 컴포넌트의 고유 ID (액터 내에서 유일해야 함, FName) 
-    FString ComponentClass; // 컴포넌트 클래스 이름 (예: "UStaticMeshComponent", "UPointLightComponent")
-    FString AttachParentID; // 현재 컴포넌트의 부모 ID (없으면 "nullptr")
+    // 컴포넌트 하나의 저장 정보를 담는 구조체
+    struct FComponentSaveData
+    {
+        FString ComponentID;    // 컴포넌트의 고유 ID (액터 내에서 유일해야 함, FName) 
+        FString ComponentClass; // 컴포넌트 클래스 이름 (예: "UStaticMeshComponent", "UPointLightComponent")
+        FString AttachParentID; // 현재 컴포넌트의 부모 ID (없으면 "nullptr")
 
-    TMap<FString, FString> Properties;
+        TMap<FString, FString> Properties;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(FComponentSaveData, ComponentID, ComponentClass, Properties, AttachParentID)
-};
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(FComponentSaveData, ComponentID, ComponentClass, Properties, AttachParentID)
+    };
 
-// 액터 하나의 저장 정보를 담는 구조체
-struct FActorSaveData
-{
-    FString ActorID;    // 액터의 고유 ID FName
-    FString ActorClass; // 액터의 클래스 이름 (예: "AStaticMeshActor", "APointLight")
-    FString ActorLabel; // 에디터에서 보이는 이름 (선택적)
-    // FTransform ActorTransform; // 액터 자체의 트랜스폼 (보통 루트 컴포넌트가 결정) - 필요 여부 검토
+    // 액터 하나의 저장 정보를 담는 구조체
+    struct FActorSaveData
+    {
+        FString ActorID;    // 액터의 고유 ID FName
+        FString ActorClass; // 액터의 클래스 이름 (예: "AStaticMeshActor", "APointLight")
+        FString ActorLabel; // 에디터에서 보이는 이름 (선택적)
+        // FTransform ActorTransform; // 액터 자체의 트랜스폼 (보통 루트 컴포넌트가 결정) - 필요 여부 검토
 
-    FString RootComponentID;               // 이 액터의 루트 컴포넌트 ID (아래 Components 리스트 내 ID 참조)
-    TArray<FComponentSaveData> Components; // 이 액터가 소유한 컴포넌트 목록
+        FString RootComponentID;               // 이 액터의 루트 컴포넌트 ID (아래 Components 리스트 내 ID 참조)
+        TArray<FComponentSaveData> Components; // 이 액터가 소유한 컴포넌트 목록
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(FActorSaveData, ActorID, ActorClass, ActorLabel, RootComponentID, Components)
-};
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(FActorSaveData, ActorID, ActorClass, ActorLabel, RootComponentID, Components)
+    };
 
-struct FSceneData
-{
-    int32 Version = 0;
-    int32 NextUUID = 0;
-    //TMap<int32, UObject*> Primitives;
+    struct FSceneData
+    {
+        int32 Version = 0;
+        int32 NextUUID = 0;
+        //TMap<int32, UObject*> Primitives;
 
-    TArray<FActorSaveData> Actors; // 씬에 있는 모든 액터 정보
-    //TMap<int32, UObject*> Cameras;
+        TArray<FActorSaveData> Actors; // 씬에 있는 모든 액터 정보
+        //TMap<int32, UObject*> Cameras;
 
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(FSceneData, Version, NextUUID, Actors)
-};
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(FSceneData, Version, NextUUID, Actors)
+    };
 
-//TODO : 레벨 데이타 구현
+    //TODO : 레벨 데이타 구현
 }
 
 
@@ -125,11 +126,11 @@ void SceneManager::LoadSceneFromJsonFile(const std::filesystem::path& FilePath, 
     JsonFile.close();
 
     FSceneData SceneData;
-    bool Result = JsonToSceneData(JsonString,SceneData);
+    bool Result = JsonToSceneData(JsonString, SceneData);
     if (!Result)
     {
         UE_LOG(ELogLevel::Error, "Failed to parse scene data from file: %s", FilePath.c_str());
-        return ;
+        return;
     }
 
     LoadWorldFromData(SceneData, &OutWorld);
@@ -189,7 +190,7 @@ FSceneData SceneManager::WorldToSceneData(const UWorld& InWorld)
     FSceneData sceneData;
     sceneData.Version = 1;
 
-    const TArray<AActor*>& Actors =  InWorld.GetActiveLevel()->Actors;
+    const TArray<AActor*>& Actors = InWorld.GetActiveLevel()->Actors;
 
     sceneData.Actors.Reserve(Actors.Num());
 
@@ -203,13 +204,13 @@ FSceneData SceneManager::WorldToSceneData(const UWorld& InWorld)
 
         USceneComponent* RootComp = Actor->GetRootComponent();
         actorData.RootComponentID = (RootComp != nullptr) ? RootComp->GetName() : TEXT(""); // 루트 없으면 빈 문자열
-        
+
         for (const auto& Component : Actor->GetComponents())
         {
             FComponentSaveData componentData;
             componentData.ComponentID = Component->GetName();
             componentData.ComponentClass = Component->GetClass()->GetName();
-            
+
             //TMap<FString, FString> InProperties;
             Component->GetProperties(componentData.Properties);
             if (USceneComponent* SceneComp = Cast<USceneComponent>(Component))
@@ -240,25 +241,26 @@ FSceneData SceneManager::WorldToSceneData(const UWorld& InWorld)
 
 bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* targetWorld)
 {
-        if (targetWorld == nullptr)
+    if (targetWorld == nullptr)
     {
         UE_LOG(ELogLevel::Error, TEXT("LoadSceneFromData: Target World is null!"));
         return false;
     }
-
+    /*UEditorEngine* Engine = Cast<UEditorEngine>(GEngine);
+    Engine->EndPIE();*/
     // 임시 맵: 저장된 ID와 새로 생성된 객체 포인터를 매핑
     TMap<FString, AActor*> SpawnedActorsMap;
     //TMap<FString, UActorComponent*> SpawnedComponentsMap;
-    
+
 
     // --- 1단계: 액터 및 컴포넌트 생성 ---
     UE_LOG(ELogLevel::Display, TEXT("Loading Scene Data: Phase 1 - Spawning Actors and Components..."));
     for (const FActorSaveData& actorData : sceneData.Actors)
     {
         // 1.1. 액터 클래스 찾기
-        
+
         UClass* classAActor = UClass::FindClass(FName(actorData.ActorClass));
-        
+
         AActor* SpawnedActor = targetWorld->SpawnActor(classAActor, FName(actorData.ActorID));
 
         // if (actorData.ActorClass == AActor::StaticClass()->GetName())
@@ -273,11 +275,11 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
         if (SpawnedActor == nullptr)
         {
             UE_LOG(ELogLevel::Error, TEXT("LoadSceneFromData: Could not find Actor Class '%s'. Skipping Actor '%s'."),
-                   *actorData.ActorClass, *actorData.ActorID);
+                *actorData.ActorClass, *actorData.ActorID);
             continue;
         }
 
-        
+
         // 액터 클래스가 AActor의 자식인지 확인
 
         // 1.2. 액터 스폰 (기본 위치/회전 사용, 나중에 루트 컴포넌트가 설정)
@@ -289,7 +291,7 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
         if (SpawnedActor == nullptr)
         {
             UE_LOG(ELogLevel::Error, TEXT("LoadSceneFromData: Failed to spawn Actor '%s' of class '%s'."),
-                   *actorData.ActorID, *actorData.ActorClass);
+                *actorData.ActorID, *actorData.ActorClass);
             continue;
         }
 
@@ -302,7 +304,7 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
         // 1.3. 컴포넌트 생성 및 속성 설정 (아직 부착 안 함)
         for (const FComponentSaveData& componentData : actorData.Components)
         {
-            UClass* ComponentClass =  UClass::FindClass(FName(componentData.ComponentClass));
+            UClass* ComponentClass = UClass::FindClass(FName(componentData.ComponentClass));
 
 
             // 컴포넌트 생성 (액터를 Outer로 지정, 저장된 ID를 이름으로)
@@ -323,7 +325,7 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
             if (TargetComponent == nullptr)
             {
                 TargetComponent = SpawnedActor->AddComponent(ComponentClass, FName(componentData.ComponentID), false);
-                
+
                 // if (!actorData.RootComponentID.IsEmpty())
                 // {
                 //     if (componentData.ComponentID != actorData.RootComponentID)
@@ -336,7 +338,7 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
                 //         }
                 //     }
                 // }
-                
+
                 // if (componentData.ComponentClass == UStaticMesh::StaticClass()->GetName())
                 // {
                 //     TargetComponent = SpawnedActor->AddComponent<UStaticMeshComponent>();
@@ -349,21 +351,21 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
                 // {
                 //     TargetComponent = SpawnedActor->AddComponent<UActorComponent>();
                 // }
-                
+
                 // !!! 중요: 컴포넌트 등록 !!!
                 //NewComponent->RegisterComponent();
             }
-            
+
             if (TargetComponent == nullptr)
             {
-                 UE_LOG(ELogLevel::Error, TEXT("LoadSceneFromData: Failed to create Component '%s' of class '%s' for Actor '%s'."),
-                       *componentData.ComponentID, *componentData.ComponentClass, *actorData.ActorID);
+                UE_LOG(ELogLevel::Error, TEXT("LoadSceneFromData: Failed to create Component '%s' of class '%s' for Actor '%s'."),
+                    *componentData.ComponentID, *componentData.ComponentClass, *actorData.ActorID);
                 continue;
             }
 
             if (componentData.ComponentID == "USpotLightComponent_156")
             {
-                int a= 0;
+                int a = 0;
             }
 
             // --- 이제 TargetComponent는 유효한 기존 컴포넌트 또는 새로 생성된 컴포넌트 ---
@@ -371,7 +373,7 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
             {
                 // 1.4. 컴포넌트 속성 설정 (공통 로직)
                 //ApplyComponentProperties(TargetComponent, componentData.Properties);
-                TargetComponent->SetProperties( componentData.Properties); // 태그 설정 (ID로 사용)
+                TargetComponent->SetProperties(componentData.Properties); // 태그 설정 (ID로 사용)
 
                 // 1.5. *** 수정: 복합 키를 사용하여 컴포넌트 맵에 추가 ***
                 //FString CompositeKey = actorData.ActorID + TEXT("::") + componentData.ComponentID; // 예: "MyActor1::MeshComponent"
@@ -401,9 +403,9 @@ bool SceneManager::LoadWorldFromData(const FSceneData& sceneData, UWorld* target
             UActorComponent** FoundCompPtr = ActorComponentsMap.Find(componentData.ComponentID);
             if (componentData.ComponentID == "USpotLightComponent_156")
             {
-                int a= 0;
+                int a = 0;
             }
-            
+
             if (FoundCompPtr == nullptr || *FoundCompPtr == nullptr) continue; // 위에서 생성/찾기 실패한 경우
 
             USceneComponent* CurrentSceneComp = Cast<USceneComponent>(*FoundCompPtr);
