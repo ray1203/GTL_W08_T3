@@ -5,7 +5,7 @@ UProjectileMovementComponent::UProjectileMovementComponent()
 {
     InitialSpeed = 0;
     MaxSpeed = 0;
-    Acceleration = FVector(0.f, 0.f, -20.f);
+    Acceleration = FVector(0.f, 0.f, -50.f);
     Velocity = FVector(0.f, 0.f, 0.f);
     AccumulatedTime = 0;
 }

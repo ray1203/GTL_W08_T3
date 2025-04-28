@@ -8,6 +8,9 @@
 
 class AActor;
 struct FHitResult;
+struct FPhysicsBody;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnOverlapDelegate, const FPhysicsBody&)
 
 struct FPhysicsBody
 {
@@ -18,19 +21,28 @@ struct FPhysicsBody
     float Mass;
     bool bIsSimulatingPhysics;
     bool bBlock;
+    bool bGrounded;
+    bool bStickToGround;
+    float Restitution;
     FCollisionShape CollisionShape;
     FPhysicsBody(UShapeComponent* InComponent)
-        : Component(InComponent), Mass(1.0f), bIsSimulatingPhysics(true)
+        : Component(InComponent), Mass(1.0f)
     {
+        bIsSimulatingPhysics = InComponent->bIsSimulatingPhysics;
         Transform = InComponent->GetRelativeTransform();
         Velocity = FVector::ZeroVector;
         Acceleration = FVector::ZeroVector;
+        Restitution = 0.5f;
+        bStickToGround = true;
     }
 
     bool operator==(const FPhysicsBody& Other) const
     {
         return Component == Other.Component;
     }
+
+public:
+    FOnOverlapDelegate OnOverlap;
 };
 
 // 간단한 PhysicsSolver 예시
@@ -53,10 +65,11 @@ public:
     // 파티클(물리 객체) 추가/삭제
     void AddBody(UShapeComponent* Component);
     void RemoveBody(UShapeComponent* Component);
-    const FPhysicsBody* GetBody(UShapeComponent* Component);
+    FPhysicsBody* GetBody(const UShapeComponent* Component);
 
-    // 시뮬레이션 결과 transform을 가져옴 (예시)
+    // 시뮬레이션 결과를 가져옴
     bool GetSimulatedTransform(UShapeComponent* Component, FTransform& OutTransform) const;
+    bool GetOverlappingBodies(const FPhysicsBody& Body, TArray<FPhysicsBody*>& OverlappingBodies);
 
 private:
     // 시뮬레이션
@@ -66,7 +79,6 @@ private:
     void HandleCollisions(); // 충돌 감지 및 반응 계산(속도, 가속도 등)
     void UpdateTransforms(); // 변화된 위치를 업데이트
 
-    bool Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*>OverlappingBodies);
     static bool IsOverlapping(const FPhysicsBody& BodyA, const FPhysicsBody& BodyB);
 
 protected:
@@ -76,8 +88,7 @@ protected:
 
 private:
     const float RestitutionThreshold = 1e-2f;
-    float Restitution = 0.0;
-    float Friction = 0.95;
+    float Friction = 3;
 
     // contanct 계산용
     struct FContactInfo

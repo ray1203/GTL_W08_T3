@@ -27,6 +27,14 @@ struct FMath
 		return B < A ? A : B;
 	}
 
+    template<typename T>
+    [[nodiscard]] static FORCEINLINE constexpr void Swap(T& A, T& B)
+    {
+        T Temp = A;
+        A = B;
+        B = Temp;
+    }
+
 	/** X를 Min과 Max의 사이의 값으로 클램핑 합니다. */
 	template <typename T>
 	[[nodiscard]] static FORCEINLINE constexpr T Clamp(const T X, const T MinValue, const T MaxValue)

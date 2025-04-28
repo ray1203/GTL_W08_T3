@@ -5,6 +5,8 @@
 #include "Math/JungleMath.h"
 #include "Math/Color.h"
 
+struct FPhysicsBody;
+
 class UShapeComponent : public UPrimitiveComponent
 {
     DECLARE_CLASS(UShapeComponent, UPrimitiveComponent)
@@ -31,7 +33,14 @@ public:
     bool GetDrawOnlyIfSelected() const { return bDrawOnlyIfSelected; }
     void SetDrawOnlyIfSelected(bool InDrawOnlyIfSelected) { bDrawOnlyIfSelected = InDrawOnlyIfSelected; }
 
+    virtual void OnOverlap(const FPhysicsBody& result);
+
     FColor ShapeColor;
     bool bDrawOnlyIfSelected : 1 = false; // true : 선택된 경우에만 그려짐. false : 항상 그려짐
     bool bIsSimulatingPhysics : 1 = true;
+    bool bGrounded : 1 = false;
+    float Restitution = 1.0f;
+    float Mass = 1.f;
+
+    const TArray<FOverlapInfo> GetOverlappingComponents();
 };

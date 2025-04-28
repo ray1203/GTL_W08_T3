@@ -8,6 +8,7 @@
 #include "Classes/GameFramework/Actor.h"
 #include "Classes/Components/ProjectileMovementComponent.h"
 #include "Math/JungleCollision.h"
+#include "Delegates/DelegateCombination.h"
 
 // [참고: Unreal Engine Transform/Collision 처리 구조](https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/Runtime/Engine/Private/PhysicsEngine/BodyInstance.cpp)
 
@@ -49,14 +50,23 @@ void FPhysicsSolver::AdvanceAndDispatch(float DeltaTime)
 
 void FPhysicsSolver::ApplyForces()
 {
+    static int count = 0;
     for (FPhysicsBody& Body : SimulatedBodies)
     {
-        if (Body.Velocity.LengthSquared() != 0 && Body.Transform.Translation.Z < KINDA_SMALL_NUMBER)
+        if (Body.bGrounded)
         {
+            // 아래로 가는 중일 때만 z속도를 0으로 클램프 (점프는 유지)
+            if (Body.Velocity.Z < 0.f)
+                Body.Velocity.Z = 0.f;
+
+            // 바닥에 있을 때만 z방향 가속도를 0으로 (중력 등)
+            if (Body.Acceleration.Z < 0.f)
+                Body.Acceleration.Z = 0.f;
+
             Body.Acceleration.X -= Friction * Body.Velocity.X;
             Body.Acceleration.Y -= Friction * Body.Velocity.Y;
+            //UE_LOG(ELogLevel::Error, "FPhysicsScene::bGrounded[%d] : %s", count++, *Body.Component->StaticClass()->GetName());
         }
-        // UProjectileComponent의 중력가속도를 이용
     }
 }
 
@@ -91,19 +101,39 @@ void FPhysicsSolver::HandleOverlaps()
 {
     CachedOverlaps.Empty();
     int32 NumBodies = SimulatedBodies.Num();
+
+    // 1. bGrounded를 먼저 false로 초기화
+    for (FPhysicsBody& Body : SimulatedBodies)
+    {
+        Body.bGrounded = false;
+    }
+
+    // 2. 오버랩 판정 및 grounded 처리
     for (int32 i = 0; i < NumBodies; ++i)
     {
         FPhysicsBody& BodyA = SimulatedBodies[i];
         for (int32 j = i + 1; j < NumBodies; ++j)
         {
             FPhysicsBody& BodyB = SimulatedBodies[j];
-            // 오버랩 검사
             if (IsOverlapping(BodyA, BodyB))
             {
                 CachedOverlaps.Add(TPair<int32, int32>(i, j));
-                // (여기서 OnOverlapBegin 등 이벤트 호출도 가능)
+                // 두 바디가 겹칠 때 "윗면"에 있는 쪽만 grounded
+                if (BodyA.Transform.Translation.Z > BodyB.Transform.Translation.Z + KINDA_SMALL_NUMBER)
+                    BodyA.bGrounded = true;
+                if (BodyB.Transform.Translation.Z > BodyA.Transform.Translation.Z + KINDA_SMALL_NUMBER)
+                    BodyB.bGrounded = true;
+
+                BodyA.OnOverlap.Broadcast(BodyB);
+                BodyB.OnOverlap.Broadcast(BodyA);
             }
         }
+    }
+    // 바닥(z<=0) 체크도 같이 처리
+    for (FPhysicsBody& Body : SimulatedBodies)
+    {
+        if (Body.Transform.Translation.Z <= 0.f)
+            Body.bGrounded = true;
     }
 }
 
@@ -274,7 +304,6 @@ FPhysicsSolver::FContactInfo FPhysicsSolver::ComputeContactInfo(const FPhysicsBo
 
 void FPhysicsSolver::HandleCollisions()
 {
-    // 1. 바닥 충돌 예시
     for (FPhysicsBody& Body : SimulatedBodies)
     {
         if (!Body.bIsSimulatingPhysics) continue;
@@ -282,15 +311,25 @@ void FPhysicsSolver::HandleCollisions()
         if (Body.Transform.Translation.Z < 0.f)
         {
             Body.Transform.Translation.Z = 0.f;
-            Body.Velocity.Z *= -Restitution;
+            if (Body.bStickToGround && Body.bGrounded)
+            {
+                if (Body.Velocity.Z < 0.f)
+                {
+                    Body.Velocity.Z = 0.f;
+                }
+            }
+            else
+            {
+                Body.Velocity.Z *= -Body.Restitution;
+            }
             if (std::abs(Body.Velocity.LengthSquared()) < RestitutionThreshold * RestitutionThreshold)
             {
                 Body.Velocity = FVector::ZeroVector;
             }
+            // bGrounded는 여기서 처리하지 않음!
         }
     }
-
-    // 2. 오버랩 정보 기반 shape별 충돌 처리
+    // shape별 penetration/impulse 처리 (bGrounded 변경 X, 기존과 동일)
     for (const auto& OverlapPair : CachedOverlaps)
     {
         int32 i = OverlapPair.Key;
@@ -298,38 +337,29 @@ void FPhysicsSolver::HandleCollisions()
         FPhysicsBody& BodyA = SimulatedBodies[i];
         FPhysicsBody& BodyB = SimulatedBodies[j];
 
-        // 둘 다 물리 시뮬레이션 대상이 아니면 무시
         if (!BodyA.bIsSimulatingPhysics && !BodyB.bIsSimulatingPhysics)
             continue;
-
-        // 둘 중 하나라도 Block이 아니면 실제 충돌 반응은 하지 않고 Overlap 이벤트만 발생
-        // https://docs.unrealengine.com/5.0/en-US/collision-in-unreal-engine/
         if (!BodyA.bBlock || !BodyB.bBlock)
-        {
             continue;
-        }
 
-        // shape별 침투량/노멀 계산 (Transform/Scale/Rotation 모두 반영)
         FContactInfo Contact = ComputeContactInfo(BodyA, BodyB);
         if (!Contact.bValid) continue;
 
         const FVector& Normal = Contact.Normal;
         float Penetration = Contact.Penetration;
         float RelativeVelocity = Contact.RelativeVelocity;
+        float Restitution = FMath::Max(BodyA.Restitution, BodyB.Restitution);
 
-        // Block + SimulatingPhysics 처리 (Unreal Engine 물리 충돌 구조 참고)
-        // https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/Runtime/Engine/Private/PhysicsEngine/PhysicsCollisionHandler.cpp
+        bool bAWasGrounded = BodyA.bGrounded;
+        bool bBWasGrounded = BodyB.bGrounded;
+
         if (BodyA.bIsSimulatingPhysics && BodyB.bIsSimulatingPhysics)
         {
             if (RelativeVelocity < 0.f)
             {
                 float InvMassA = (BodyA.Mass > 0.f) ? (1.f / BodyA.Mass) : 0.f;
                 float InvMassB = (BodyB.Mass > 0.f) ? (1.f / BodyB.Mass) : 0.f;
-                float Impulse = 0;
-                if (Restitution > 0)
-                    Impulse = -(1.f + Restitution) * RelativeVelocity / (InvMassA + InvMassB);
-                else if (RelativeVelocity < 0)
-                    Impulse = -RelativeVelocity / (InvMassA + InvMassB);
+                float Impulse = -(1.f + Restitution) * RelativeVelocity / (InvMassA + InvMassB);
 
                 FVector ImpulseVec = Impulse * Normal;
 
@@ -362,9 +392,23 @@ void FPhysicsSolver::HandleCollisions()
             }
             BodyB.Transform.Translation += Normal * Penetration;
         }
-        // 둘 다 Simulating이 아니면, 아무 반응하지 않음
+
+        // StickToGround가 true && grounded였던 바디만 Normal 방향 velocity를 0으로!
+        if (bAWasGrounded && BodyA.bStickToGround)
+        {
+            //float vDotN = FVector::DotProduct(BodyA.Velocity, Normal);
+            float vDotN = FVector::DotProduct(BodyA.Velocity, FVector::UpVector);
+            BodyA.Velocity -= Normal * vDotN;
+        }
+        if (bBWasGrounded && BodyB.bStickToGround)
+        {
+            //float vDotN = FVector::DotProduct(BodyB.Velocity, Normal);
+            float vDotN = FVector::DotProduct(BodyB.Velocity, FVector::UpVector);
+            BodyB.Velocity -= Normal * vDotN;
+        }
     }
 }
+
 
 void FPhysicsSolver::UpdateTransforms()
 {
@@ -415,6 +459,7 @@ void FPhysicsSolver::AddBody(UShapeComponent* Component)
     Body.Transform = Component->GetWorldTransform();
     Body.bBlock = Component->bBlockComponent;
     Body.bIsSimulatingPhysics = Component->bIsSimulatingPhysics;
+    Body.Mass = Component->Mass;
     SimulatedBodies.Add(Body);
 }
 
@@ -433,9 +478,9 @@ void FPhysicsSolver::RemoveBody(UShapeComponent* Component)
     }
 }
 
-const FPhysicsBody* FPhysicsSolver::GetBody(UShapeComponent* Component)
+FPhysicsBody* FPhysicsSolver::GetBody(const UShapeComponent* Component)
 {
-    for (const FPhysicsBody& Body : SimulatedBodies)
+    for (FPhysicsBody& Body : SimulatedBodies)
     {
         if (Body.Component == Component)
         {
@@ -461,40 +506,28 @@ bool FPhysicsSolver::GetSimulatedTransform(UShapeComponent* Component, FTransfor
     return false;
 }
 
-bool FPhysicsSolver::Overlap(const FPhysicsBody& Body, TArray<FPhysicsBody*> OverlappingBodies)
+bool FPhysicsSolver::GetOverlappingBodies(const FPhysicsBody& Body, TArray<FPhysicsBody*>& OverlappingBodies)
 {
-    if (Body.CollisionShape.ShapeType == ECollisionShape::Sphere)
+    for (const auto& OverlapPair : CachedOverlaps)
     {
-        FSphere Source;
-        Source.Center = Body.Transform.Translation;
-        Source.Radius = Body.CollisionShape.Sphere.Radius;
-
-        for (FPhysicsBody& Other : SimulatedBodies)
+        int32 i = OverlapPair.Key;
+        int32 j = OverlapPair.Value;
+        FPhysicsBody& BodyA = SimulatedBodies[i];
+        FPhysicsBody& BodyB = SimulatedBodies[j];
+        if (BodyA == Body)
         {
-            if (Other == Body)
-            {
-                continue; // 자기 자신은 제외  
-            }
-            if (Other.CollisionShape.ShapeType == ECollisionShape::Sphere)
-            {
-                FSphere Target;
-                Target.Center = Other.Transform.Translation;
-                Target.Radius = Other.CollisionShape.Sphere.Radius;
-                if (JungleCollision::Intersects(Source, Target))
-                {
-                    OverlappingBodies.Add(&Other);
-                }
-            }
+            OverlappingBodies.Add(&BodyB);
+        }
+        else if (BodyB == Body)
+        {
+            OverlappingBodies.Add(&BodyA);
         }
     }
     if (OverlappingBodies.Num() > 0)
     {
         return true;
     }
-    else
-    {
-        return false;
-    }
+    return false;
 }
 
 bool FPhysicsSolver::IsOverlapping(const FPhysicsBody& BodyA, const FPhysicsBody& BodyB)

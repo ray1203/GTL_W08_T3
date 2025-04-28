@@ -45,10 +45,6 @@ public:
     bool bGenerateOverlapEvents : 1 = true; // 오버랩 이벤트를 생성할지 여부
     bool bBlockComponent : 1 = true; // 블로킹 이벤트를 생성할지 여부
 
-    const TArray<FOverlapInfo>& GetOverlappingComponents() const { return OverlappingComponents; }
-    void SetOverlappingComponents(const TArray<FOverlapInfo>& InOverlappingComponents) { OverlappingComponents = InOverlappingComponents; }
-private:
-    TArray<FOverlapInfo> OverlappingComponents; // 현재 겹쳐있는 컴포넌트들
 
 //public:
 //    bool GetGenerateOverlapEvents() const { return bGenerateOverlapEvents; }

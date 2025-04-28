@@ -21,6 +21,8 @@
 #include "Engine/EditorEngine.h"
 #include "Actors/Projectile.h" // Add this include to resolve "AProjectile" identifier
 #include "Engine/GameEngine.h"
+#include <Actors/GameManager.h>
+
 
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
@@ -99,7 +101,10 @@ void FLuaScriptSystem::BindTypes()
         "Normalize", [](const FVector& Vec) {return Vec.GetSafeNormal(); },
         sol::meta_function::addition, [](const FVector& a, const FVector& b) { return a + b; },
         sol::meta_function::subtraction, [](const FVector& a, const FVector& b) { return a - b; },
-        sol::meta_function::multiplication, [](const FVector& a, float f) { return a * f; }
+        sol::meta_function::multiplication, [](const FVector& a, float f) 
+		{ 
+			return a * f; 
+		}
     );
     Lua["Vector"] = [](float x, float y, float z) { return FVector(x, y, z); };
     /* Lua.set_function("CreateVector", [](float x, float y, float z) {
@@ -129,11 +134,12 @@ void FLuaScriptSystem::BindActor()
         "ForwardVector", sol::property(&AActor::GetActorForwardVector),
         "RightVector", sol::property(&AActor::GetActorRightVector),
 
+        "PlayerPosition", sol::property(&AActor::GetPlayerLocation),
         "UUID", sol::readonly_property(&AActor::GetUUID),
 
         "PrintLocation", [](AActor* Self) {
             auto loc = Self->GetActorLocation();
-            UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
+            //UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
         },
         "Move", [](AActor* Self, FVector Direction, float Scalar)
         {
@@ -155,14 +161,37 @@ void FLuaScriptSystem::BindActor()
                     NewActor->SetActorLocation(StartPos);
                 }
             }
-        }
+        },
+        "ShootProjectile", [](AActor* Self, const FVector& ShootPos, const FVector& TargetPos, float Speed)
+        {
+            UWorld* World = Self->GetWorld();
+            if (World)
+            {
+                AProjectile* NewActor = World->SpawnActor<AProjectile>();
+                if (NewActor)
+                {
+                    FVector Dir = (TargetPos - ShootPos).GetSafeNormal();
+                    NewActor->SetInitialSpeed(Dir * Speed);
+                    NewActor->SetActorLocation(ShootPos);
+                    NewActor->GetComponentByClass<USphereComponent>()->Mass = 1.f;
+                }
+            }
 
+        },
+        "Velocity", sol::property(&AActor::GetVelocity)
     );
 
     Lua.new_usertype<APlayer>("APlayer",
         sol::base_classes, sol::bases<AActor>(),
-        "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity)
+        "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity),
+        "bGrounded", sol::readonly_property(&APlayer::IsGrounded)
     );
+
+	Lua.new_usertype<AGameManager>("AGameManager",
+		sol::base_classes, sol::bases<AActor>(),
+		"InitGameWorld", &AGameManager::InitGameWorld,
+		"InitiateActor", &AGameManager::InitiateActor
+		);
 }
 
 void FLuaScriptSystem::BindInput()

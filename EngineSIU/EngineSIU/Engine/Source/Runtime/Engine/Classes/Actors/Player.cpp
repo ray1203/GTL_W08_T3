@@ -4,7 +4,7 @@
 #include "Camera/SpringArmComponent.h"
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/Shapes/SphereComponent.h"
-
+#include "World/World.h"
 
 #include "Components/Lua/LuaScriptComponent.h"
 
@@ -28,6 +28,7 @@ void APlayer::PostSpawn()
 
     Collider = AddComponent<USphereComponent>(TEXT("Collider"));
     Collider->SetupAttachment(MeshComponent);
+	Collider->Restitution = 0.3f;
     Movement = AddComponent<UProjectileMovementComponent>(TEXT("Movement"));
     Movement->SetVelocity(FVector(0, 0, 10.f));
     LuaComp->SetScriptPath(TEXT("TestLuaActor"));
@@ -53,9 +54,22 @@ UObject* APlayer::Duplicate(UObject* InOuter)
 void APlayer::BeginPlay()
 {
     Super::BeginPlay();
+
+    FPhysicsBody* body = GetWorld()->PhysicsScene.SceneSolver.GetBody(this->Collider);
+    if (body)
+    {
+        body->OnOverlap.AddDynamic(this, &APlayer::OnOverlap);
+    }
 }
 
 void APlayer::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 }
+
+void APlayer::OnOverlap(const FPhysicsBody& result)
+{
+    LuaComp->CallLuaFunction("OnOverlap", 0.f, result.Component->GetOwner());
+    //UE_LOG(ELogLevel::Warning, TEXT("APlayer : OnOverlapped"));
+}
+

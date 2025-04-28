@@ -26,11 +26,12 @@ void FPhysicsScene::SyncBodies()
                 Comp->GetOwner()->SetActorRotation(SimulatedTransform.Rotation.ToRotator());
                 // 강체인데 scale을 바꿀일이 있나...?
                 //Comp->GetOwner()->SetActorScale(SimulatedTransform.Scale3D);
+                const FPhysicsBody* Body = SceneSolver.GetBody(Comp);
                 if (UProjectileMovementComponent* ProjComp = Comp->GetOwner()->GetComponentByClass<UProjectileMovementComponent>())
                 {
-                    const FPhysicsBody* Body = SceneSolver.GetBody(Comp);
                     ProjComp->SetVelocity(Body->Velocity);
                 }
+                Comp->bGrounded = Body->bGrounded;
             }
 
             if (Comp->bGenerateOverlapEvents)
@@ -54,7 +55,7 @@ void FPhysicsScene::AddRigidBody(UShapeComponent* Component)
     static uint32 num = 0;
     if (Component && !RegisteredBodies.Contains(Component))
     {
-        UE_LOG(ELogLevel::Error, "FPhysicsScene::AddRigidBody[%d] : %s", num++,*Component->StaticClass()->GetName());
+        //UE_LOG(ELogLevel::Error, "FPhysicsScene::AddRigidBody[%d] : %s", num++,*Component->StaticClass()->GetName());
         RegisteredBodies.Add(Component);
         SceneSolver.AddBody(Component);
     }
@@ -69,26 +70,24 @@ void FPhysicsScene::RemoveRigidBody(UShapeComponent* Component)
     }
 }
 
-bool FPhysicsScene::LineTrace(const FVector& Start, const FVector& End, FHitResult& OutHit) const
+
+bool FPhysicsScene::GetOverlappings(UShapeComponent* Shape, TArray<FOverlapInfo>& OutOverlaps)
 {
-    //// 간단 예시: Solver의 Raycast 호출
-    //if (SceneSolver)
-    //{
-    //    return SceneSolver->Raycast(Start, End, OutHit);
-    //}
+    const FPhysicsBody* Body = SceneSolver.GetBody(Shape);
+    TArray<FPhysicsBody*> OverlappingBodies;
+    SceneSolver.GetOverlappingBodies(*Body, OverlappingBodies);
+
+    for (auto& Body : OverlappingBodies)
+    {
+        FOverlapInfo Info;
+        Info.bFromSweep = false;
+        Info.OverlapInfo.Component = Body->Component;
+        OutOverlaps.Add(Info);
+    }
+
+    if (OutOverlaps.Num() > 0)
+    {
+        return true;
+    }
     return false;
 }
-
-bool FPhysicsScene::Overlap(const UShapeComponent& Shape, const FTransform& Transform, TArray<FOverlapInfo>& OutOverlaps) const
-{
-    return false;
-}
-
-//bool FPhysicsScene::Overlap(const FShape& Shape, const FTransform& Transform, TArray<AActor*>& OutOverlaps) const
-//{
-//    if (SceneSolver)
-//    {
-//        return SceneSolver->Overlap(Shape, Transform, OutOverlaps);
-//    }
-//    return false;
-//}

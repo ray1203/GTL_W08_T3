@@ -294,6 +294,31 @@ void AActor::SetLuaComponent(ULuaScriptComponent* InComp)
     LuaComp = InComp;
 }
 
+FVector AActor::GetPlayerLocation()
+{
+    if(!GetWorld())
+        return FVector::ZeroVector;
+
+    for (AActor* Actor : GetWorld()->GetActiveLevel()->Actors)
+    {
+        if (Actor->IsA<APlayer>())
+        {
+            return Actor->GetActorLocation();
+        }
+    }
+
+    return FVector::ZeroVector;
+}
+
+FVector AActor::GetVelocity()
+{
+    if (UProjectileMovementComponent* Proj = GetComponentByClass<UProjectileMovementComponent>())
+    {
+        return Proj->GetVelocity();
+    }
+    return FVector::ZeroVector;
+}
+
 void AActor::SetActorTickInEditor(bool InbInTickInEditor)
 {
     bTickInEditor = InbInTickInEditor;
