@@ -32,7 +32,7 @@
 #include "Actors/AmbientLightActor.h"
 #include "Actors/UI/ButtonUIActor.h"
 #include "Actors/UI/TextUIActor.h"
-#include <Actors/APlayerStart.h>
+#include <Actors/PlayerStart.h>
 #include <Actors/Player.h>
 
 void ControlEditorPanel::Render()
