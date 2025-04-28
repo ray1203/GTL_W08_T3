@@ -63,8 +63,8 @@ void FPhysicsSolver::ApplyForces()
             if (Body.Acceleration.Z < 0.f)
                 Body.Acceleration.Z = 0.f;
 
-            //Body.Acceleration.X -= Friction * Body.Velocity.X;
-            //Body.Acceleration.Y -= Friction * Body.Velocity.Y;
+            Body.Acceleration.X -= Friction * Body.Velocity.X;
+            Body.Acceleration.Y -= Friction * Body.Velocity.Y;
             //UE_LOG(ELogLevel::Error, "FPhysicsScene::bGrounded[%d] : %s", count++, *Body.Component->StaticClass()->GetName());
         }
     }

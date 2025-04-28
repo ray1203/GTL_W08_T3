@@ -70,6 +70,6 @@ void APlayer::Tick(float DeltaTime)
 void APlayer::OnOverlap(const FPhysicsBody& result)
 {
     LuaComp->CallLuaFunction("OnOverlap", 0.f, result.Component->GetOwner());
-    UE_LOG(ELogLevel::Warning, TEXT("APlayer : OnOverlapped"));
+    //UE_LOG(ELogLevel::Warning, TEXT("APlayer : OnOverlapped"));
 }
 
