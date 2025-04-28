@@ -29,17 +29,17 @@ function OnOverlap(OtherActor)
         PlaySFX("Hit")
     end
 
-    if obj.Velocity.Z < -100 then
+    if obj.Velocity.z < -100 then
         --EndGame()
-        obj.bInputBlock = false
+        obj.bInputBlock = true
     end
 end
 
 function Tick(dt)
 
-    -- if obj.bInputBlock then
-    -- return
-    -- end
+    if obj.binputblock then
+    return
+    end
 
     -- 이동 입력 처리 (대각선 이동 가능하도록 수정)
     local moveInput = Vector(0, 0, 0)
