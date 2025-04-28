@@ -14,6 +14,10 @@
 #include "Components/UI/UUITextComponent.h"
 #include "Engine/Engine.h"
 #include "World/World.h"
+#include "Engine/StaticMeshActor.h" 
+#include "Components/StaticMeshComponent.h"
+#include "Engine/FLoaderOBJ.h" 
+#include "Components/Shapes/SphereComponent.h"
 
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
@@ -89,10 +93,15 @@ void FLuaScriptSystem::BindTypes()
         "x", &FVector::X,
         "y", &FVector::Y,
         "z", &FVector::Z,
+        "Normalize", [](const FVector& Vec) {return Vec.GetSafeNormal(); },
         sol::meta_function::addition, [](const FVector& a, const FVector& b) { return a + b; },
+        sol::meta_function::subtraction, [](const FVector& a, const FVector& b) { return a - b; },
         sol::meta_function::multiplication, [](const FVector& a, float f) { return a * f; }
     );
     Lua["Vector"] = [](float x, float y, float z) { return FVector(x, y, z); };
+   /* Lua.set_function("CreateVector", [](float x, float y, float z) {
+        return FVector(x, y, z);
+        });*/
 
     Lua.new_usertype<FRotator>("Rotator",
         sol::constructors<FRotator(), FRotator(float, float, float)>(),
@@ -129,7 +138,30 @@ void FLuaScriptSystem::BindActor()
             {
                 RootComp->Translate(Direction * Scalar);
             }
+        },
+        "Instantiate", [](AActor* Self, const std::string& TypeName, const FVector& StartPos)
+        {
+            // 여기에 추가
+            UWorld* World = Self->GetWorld();
+            if (World)
+            {
+                if (TypeName == "StaticMeshActor")
+                {
+                    AStaticMeshActor* NewActor = World->SpawnActor<AStaticMeshActor>();
+                    UStaticMeshComponent* StaticMeshComp = NewActor->GetStaticMeshComponent();
+                    StaticMeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
+                    NewActor->AddComponent<USphereComponent>(TEXT("Sphere"))->SetupAttachment(StaticMeshComp);
+
+                    UProjectileMovementComponent* comp = NewActor->AddComponent<UProjectileMovementComponent>(TEXT("Proj"));
+                    comp->SetVelocity(Self->GetActorForwardVector() * 10);
+                    //comp->BeginPlay();
+
+
+                    NewActor->SetActorLocation(StartPos);
+                }
+            }
         }
+
     );
 
     Lua.new_usertype<APlayer>("APlayer",

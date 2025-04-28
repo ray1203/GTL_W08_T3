@@ -20,6 +20,7 @@ enum OBJECTS : uint8
     OBJ_UI_TEXT,
     OBJ_UI_BUTTON,
     OBJ_PLAYERSTART,
+    OBJ_STATICMESHACTOR,
     OBJ_END
 };
 
