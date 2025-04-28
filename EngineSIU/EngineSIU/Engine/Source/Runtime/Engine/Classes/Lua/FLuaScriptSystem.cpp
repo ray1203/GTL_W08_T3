@@ -19,6 +19,7 @@
 #include "Engine/FLoaderOBJ.h" 
 #include "Components/Shapes/SphereComponent.h"
 #include "Actors/Projectile.h" // Add this include to resolve "AProjectile" identifier
+#include <Actors/GameManager.h>
 
 
 
@@ -162,6 +163,12 @@ void FLuaScriptSystem::BindActor()
         sol::base_classes, sol::bases<AActor>(),
         "Velocity", sol::property(&APlayer::GetVelocity, &APlayer::SetVelocity)
     );
+
+	Lua.new_usertype<AGameManager>("AGameManager",
+		sol::base_classes, sol::bases<AActor>(),
+		"InitGameWorld", &AGameManager::InitGameWorld,
+		"InitiateActor", &AGameManager::InitiateActor
+		);
 }
 
 void FLuaScriptSystem::BindInput()
