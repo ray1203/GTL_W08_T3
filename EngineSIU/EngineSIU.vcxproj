@@ -319,6 +319,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Sound\SoundManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\GameManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Projectile.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\UI\PanelUIActor.cpp" />
@@ -475,6 +476,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\RiceMonkey.cpp" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Sound\SoundManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\GameManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Projectile.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\UI\PanelUIActor.h" />

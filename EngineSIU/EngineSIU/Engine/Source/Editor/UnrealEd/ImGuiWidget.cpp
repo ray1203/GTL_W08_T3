@@ -1,4 +1,4 @@
-﻿#include "ImGuiWidget.h"
+#include "ImGuiWidget.h"
 
 #include "Math/Vector.h"
 #include "Math/Rotator.h"

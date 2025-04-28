@@ -23,6 +23,7 @@
 #include "Actors/RiceMonkey.h"
 #include "Engine/GameEngine.h"
 #include <Actors/GameManager.h>
+#include <Sound/SoundManager.h>
 
 #include "Components/UI/UUIPanelComponent.h"
 
@@ -41,6 +42,7 @@ void FLuaScriptSystem::Initialize()
     BindInput();
     BindUtilities();
     BindUI();
+
 }
 
 FString FLuaScriptSystem::GetScriptFullPath(const FString& ScriptName)
@@ -295,6 +297,10 @@ void FLuaScriptSystem::BindUtilities()
     Lua.set_function("ExitGame", []()
         {
             PostQuitMessage(0); // Windows 메시지 루프에서 종료 메시지 발생
+        });
+    Lua.set_function("PlaySFX", [](const std::string& sfxName)
+        {
+            FSoundManager::Instance().PlaySFX(FString(sfxName), 10);
         });
 
 }
