@@ -21,6 +21,12 @@ FPhysicsSolver::~FPhysicsSolver()
     SimulatedBodies.Empty();
 }
 
+void FPhysicsSolver::Clear()
+{
+    SimulatedBodies.Empty();
+    CachedOverlaps.Empty();
+}
+
 void FPhysicsSolver::UpdateBodyFromComponent()
 {
     for (FPhysicsBody& Body : SimulatedBodies)

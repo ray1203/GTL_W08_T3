@@ -4,6 +4,7 @@ RecentlyHit = false
 HitCool = 3.0
 CoolDT = 0
 MaxVelocity = 20
+HighestScore = 1.0
 
 --- @type GameObject
 obj = obj
@@ -106,7 +107,10 @@ function Tick(dt)
         local textComp = GetUITextComponent(scoreActor)
         if textComp then
             local z = math.floor(obj.Location.z * 100) / 100
-            textComp.Text = "Score:"..tostring(z)
+            if HighestScore < z then
+            HighestScore = z
+            end
+            textComp.Text = "Score:"..tostring(HighestScore)
         end
     end
 end

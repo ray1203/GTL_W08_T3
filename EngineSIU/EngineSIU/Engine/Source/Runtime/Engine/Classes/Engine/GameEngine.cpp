@@ -85,6 +85,7 @@ void UGameEngine::LoadScene()
     {
         ActiveWorld->GetActiveLevel()->Release();
     }
+    ActiveWorld->PhysicsScene.Clear();
     //ActiveWorld->Release();
     LoadWorld(SceneNames[LoadSceneIndex]);
 }
