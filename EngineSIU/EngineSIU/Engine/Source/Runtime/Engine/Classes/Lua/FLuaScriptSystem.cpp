@@ -168,6 +168,7 @@ void FLuaScriptSystem::BindActor()
                     FVector Dir = (TargetPos - ShootPos).GetSafeNormal();
                     NewActor->SetInitialSpeed(Dir * Speed);
                     NewActor->SetActorLocation(ShootPos);
+                    NewActor->GetComponentByClass<USphereComponent>()->Mass = 10.0f;
                 }
             }
 
