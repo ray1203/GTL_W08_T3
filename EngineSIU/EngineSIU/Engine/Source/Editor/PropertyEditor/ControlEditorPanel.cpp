@@ -37,6 +37,8 @@
 #include <Actors/Player.h>
 #include "Actors/LandBlock.h"
 
+#include "Actors/UI/PanelUIActor.h"
+
 void ControlEditorPanel::Render()
 {
     /* Pre Setup */
@@ -299,6 +301,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             { .label= "Player",    .obj= OBJ_PLAYER },
             { .label = "UIText",   .obj = OBJ_UI_TEXT },
             {.label = "UIButton", .obj = OBJ_UI_BUTTON },
+            {.label = "UIPanel", .obj = OBJ_UI_PANEL },
             { .label= "PlayerStart", .obj= OBJ_PLAYERSTART },
             {.label= "StaticMeshActor", .obj = OBJ_STATICMESHACTOR }
         };
@@ -437,6 +440,13 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                         UE_LOG(ELogLevel::Display, TEXT("UIButton Clicked from UI"));
                         });
                     SpawnedActor = ButtonActor;
+                    break;
+                }
+                case OBJ_UI_PANEL:
+                {
+                    APanelUIActor* PanelActor = World->SpawnActor<APanelUIActor>();
+                    PanelActor->SetActorLabel(TEXT("OBJ_UI_Panel"));
+                    SpawnedActor = PanelActor;
                     break;
                 }
                 case OBJ_STATICMESHACTOR:

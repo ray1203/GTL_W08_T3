@@ -2,6 +2,8 @@
 
 #include "GameFramework/Actor.h"
 #include "ImGUI/imgui.h"
+#include "ImGui/imgui_internal.h"
+
 void UUIComponent::InitializeComponent()
 {
     Super::InitializeComponent();
@@ -36,6 +38,12 @@ bool UUIComponent::BeginWidget()
     if (bNoBackground)    Flags |= ImGuiWindowFlags_NoBackground;
     if (bNoInputs)        Flags |= ImGuiWindowFlags_NoInputs;
     if (bAutoSize)        Flags |= ImGuiWindowFlags_AlwaysAutoResize;
+    if (bNoFocus)         Flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+    Flags |= ImGuiWindowFlags_NoScrollbar;
+    Flags |= ImGuiWindowFlags_NoScrollWithMouse;
+    //Flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+    //Flags |= ImGuiWindowFlags_NoFocusOnAppearing;
+
     ImVec2 ScreenSize = ImGui::GetIO().DisplaySize;
     FVector2D AnchorPos = GetAnchorPosition(Anchor, FVector2D(ScreenSize.x, ScreenSize.y));
     FVector2D FinalPos = AnchorPos + Offset;

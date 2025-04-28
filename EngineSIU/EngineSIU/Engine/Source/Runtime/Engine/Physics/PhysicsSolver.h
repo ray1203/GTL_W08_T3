@@ -88,7 +88,7 @@ protected:
 
 private:
     const float RestitutionThreshold = 1e-2f;
-    float Friction = 0.7;
+    float Friction = 3;
 
     // contanct 계산용
     struct FContactInfo

@@ -19,6 +19,7 @@ public:
         bNoInputs = false;
         bAutoSize = false;
         bVisible = true;
+        bNoFocus = false;
     }
     // 적용될 UI 속성
     bool bNoMove;
@@ -30,14 +31,14 @@ public:
     // 추가 속성
     bool bNoInputs;
     bool bAutoSize;
-
+    bool bNoFocus;
     bool bVisible;
-    int32 ZOrder = 0; // 미래 확장용
+    int32 ZOrder = 0;
 
 
     virtual void InitializeComponent() override;
     //FVector2D Position = FVector2D(100.0f, 100.0f);
-    EUIAnchor Anchor = EUIAnchor::TopLeft;
+    EUIAnchor Anchor = EUIAnchor::Center;
     FVector2D Offset = FVector2D(0, 0); // 실제 위치는 Anchor 기준 + Offset
     FVector2D Size = FVector2D(200.0f, 100.0f);
     virtual void TickComponent(float DeltaTime) override;

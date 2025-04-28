@@ -20,6 +20,7 @@
 #include "Components/Shapes/SphereComponent.h"
 #include "Engine/EditorEngine.h"
 #include "Actors/Projectile.h" // Add this include to resolve "AProjectile" identifier
+#include "Engine/GameEngine.h"
 #include <Actors/GameManager.h>
 
 
@@ -100,7 +101,10 @@ void FLuaScriptSystem::BindTypes()
         "Normalize", [](const FVector& Vec) {return Vec.GetSafeNormal(); },
         sol::meta_function::addition, [](const FVector& a, const FVector& b) { return a + b; },
         sol::meta_function::subtraction, [](const FVector& a, const FVector& b) { return a - b; },
-        sol::meta_function::multiplication, [](const FVector& a, float f) { return a * f; }
+        sol::meta_function::multiplication, [](const FVector& a, float f) 
+		{ 
+			return a * f; 
+		}
     );
     Lua["Vector"] = [](float x, float y, float z) { return FVector(x, y, z); };
     /* Lua.set_function("CreateVector", [](float x, float y, float z) {
@@ -136,7 +140,7 @@ void FLuaScriptSystem::BindActor()
 
         "PrintLocation", [](AActor* Self) {
             auto loc = Self->GetActorLocation();
-            UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
+            //UE_LOG(ELogLevel::Display, TEXT("[Lua] Location: %f %f %f"), loc.X, loc.Y, loc.Z);
         },
         "Move", [](AActor* Self, FVector Direction, float Scalar)
         {
@@ -262,6 +266,17 @@ void FLuaScriptSystem::BindUtilities()
     Lua.set_function("RestartGame", []()
         {
                 GEngine->bRestartGame = true;
+        });
+    Lua.set_function("LoadScene", [](int Index)
+        {
+            if (UGameEngine* GameEngine = Cast<UGameEngine>(GEngine))
+            {
+                GameEngine->LoadScene(Index);
+            }
+        });
+    Lua.set_function("ExitGame", []()
+        {
+            PostQuitMessage(0); // Windows 메시지 루프에서 종료 메시지 발생
         });
 
 }

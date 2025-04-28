@@ -32,6 +32,7 @@
 #include <Camera/SpringArmComponent.h>
 
 #include "Components/UI/UUIButtonComponent.h"
+#include "Components/UI/UUIPanelComponent.h"
 
 void PropertyEditorPanel::Render()
 {
@@ -595,61 +596,89 @@ void PropertyEditorPanel::Render()
             }
             ImGui::PopStyleColor();
         }
-    if (PickedActor) {
-        if (UUITextComponent* TextComp = PickedActor->GetComponentByClass<UUITextComponent>())
+    if (PickedActor)
+    {
+        TArray<UUIComponent*> UIComps = PickedActor->GetComponentsByClass<UUIComponent>();
+        for (UUIComponent* UIComp : UIComps)
         {
+            if (!UIComp) continue;
+
             ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-            if (ImGui::TreeNodeEx("UI Text Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+            if (ImGui::TreeNodeEx(GetData(UIComp->GetName()), ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
             {
-                std::string OriginalText = TextComp->GetText();
-                static char TextBuffer[256];
-                strcpy_s(TextBuffer, OriginalText.c_str());
+                DrawUIComponentProperties(UIComp); // Anchor, Offset, Size, Visible, Background
 
-                if (ImGui::InputText("Text", TextBuffer, IM_ARRAYSIZE(TextBuffer)))
+                // --- 특화 UI 표시 ---
+                if (UUITextComponent* TextComp = Cast<UUITextComponent>(UIComp))
                 {
-                    TextComp->SetText(TextBuffer);
+                    std::string OriginalText = TextComp->GetText();
+                    static char TextBuffer[256];
+                    strcpy_s(TextBuffer, OriginalText.c_str());
+
+                    if (ImGui::InputText("Text", TextBuffer, IM_ARRAYSIZE(TextBuffer)))
+                    {
+                        TextComp->SetText(TextBuffer);
+                    }
+
+                    float Color[4] = { TextComp->TextColor.R, TextComp->TextColor.G, TextComp->TextColor.B, TextComp->TextColor.A };
+                    if (ImGui::ColorEdit4("Text Color", Color))
+                    {
+                        TextComp->TextColor = FLinearColor(Color[0], Color[1], Color[2], Color[3]);
+                    }
+
+                    float Scale = TextComp->TextScale;
+                    if (ImGui::SliderFloat("Text Scale", &Scale, 0.1f, 3.0f))
+                    {
+                        TextComp->TextScale = Scale;
+                    }
+                }
+                else if (UUIButtonComponent* BtnComp = Cast<UUIButtonComponent>(UIComp))
+                {
+                    std::string Label = BtnComp->GetLabel();
+                    static char LabelBuf[256];
+                    strcpy_s(LabelBuf, Label.c_str());
+                    if (ImGui::InputText("Label", LabelBuf, IM_ARRAYSIZE(LabelBuf)))
+                    {
+                        BtnComp->SetLabel(LabelBuf);
+                    }
+
+                    float size[2] = { BtnComp->GetButtonSize().X, BtnComp->GetButtonSize().Y };
+                    if (ImGui::DragFloat2("Button Size", size, 1.0f, 0.0f, 1000.0f))
+                    {
+                        BtnComp->SetButtonSize(FVector2D(size[0], size[1]));
+                    }
+
+                    float scale = BtnComp->GetFontScale();
+                    if (ImGui::DragFloat("Font Scale", &scale, 0.01f, 0.1f, 5.0f))
+                    {
+                        BtnComp->SetFontScale(scale);
+                    }
                 }
 
-                float Color[4] = { TextComp->TextColor.R, TextComp->TextColor.G, TextComp->TextColor.B, TextComp->TextColor.A };
-                if (ImGui::ColorEdit4("Text Color", Color))
+                else if (UUIPanelComponent* PanelComp = Cast<UUIPanelComponent>(UIComp))
                 {
-                    TextComp->TextColor = FLinearColor(Color[0], Color[1], Color[2], Color[3]);
-                }
+                    std::string texPath = TCHAR_TO_UTF8(*PanelComp->GetTexturePath());
+                    static char TexBuf[256];
+                    strcpy_s(TexBuf, texPath.c_str());
 
-                float Scale = TextComp->TextScale;
-                if (ImGui::SliderFloat("Text Scale", &Scale, 0.1f, 3.0f))
-                {
-                    TextComp->TextScale = Scale;
+                    if (ImGui::InputText("Texture Path", TexBuf, IM_ARRAYSIZE(TexBuf)))
+                    {
+                        PanelComp->SetTexture( FString(TexBuf).ToWideString());
+                    }
+                    if (PanelComp->GetTexture())
+                    {
+                        ImGui::Text("Preview:");
+                        ImTextureID texID = (ImTextureID)(PanelComp->GetTexture()->TextureSRV);
+                        ImGui::Image(texID, ImVec2(128, 128));
+                    }
                 }
-
-                DrawUIComponentProperties(TextComp);
 
                 ImGui::TreePop();
             }
             ImGui::PopStyleColor();
         }
-        if (UUIButtonComponent* BtnComp = PickedActor->GetComponentByClass<UUIButtonComponent>())
-        {
-            ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-            if (ImGui::TreeNodeEx("UI Button Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                std::string Label = BtnComp->GetLabel();
-                static char LabelBuf[256];
-                strcpy_s(LabelBuf, Label.c_str());
-
-                if (ImGui::InputText("Label", LabelBuf, IM_ARRAYSIZE(LabelBuf)))
-                {
-                    BtnComp->SetLabel(LabelBuf);
-                }
-
-                DrawUIComponentProperties(BtnComp);
-
-                ImGui::TreePop();
-            }
-            ImGui::PopStyleColor();
-        }
-
     }
+
     if(PickedActor)
         if (USpringArmComponent* SpringArmComponent = Cast<USpringArmComponent>(PickedActor->GetComponentByClass<USpringArmComponent>()))
         {
@@ -777,6 +806,7 @@ void PropertyEditorPanel::DrawUIComponentProperties(UUIComponent* UIComp)
 
     ImGui::Checkbox("Auto Size", &UIComp->bAutoSize);
     ImGui::Checkbox("No Background", &UIComp->bNoBackground);
+    //if (ImGui::DragInt("ZOrder", &UIComp->ZOrder, 1.0f, -1000, 1000)) {}
 }
 
 void PropertyEditorPanel::RGBToHSV(float r, float g, float b, float& h, float& s, float& v) const

@@ -44,7 +44,7 @@ void UEngine::SaveWorld(const FString& FileName) const
     SceneManager::SaveSceneToJsonFile(*FileName, *ActiveWorld);
 }
 
-void UEngine::RestartGame() const
+void UEngine::RestartGame()
 {
     if (!GEngine->bRestartGame)return;
     GEngine->bRestartGame = false;

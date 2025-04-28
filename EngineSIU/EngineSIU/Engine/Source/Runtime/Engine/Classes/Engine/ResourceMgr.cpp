@@ -39,6 +39,7 @@ void FResourceMgr::Initialize(FRenderer* renderer, FGraphicsDevice* device)
     LoadTextureFromFile(device->Device, device->DeviceContext, L"Assets/Editor/Icon/ExponentialHeightFog_64.png");
     LoadTextureFromFile(device->Device, device->DeviceContext, L"Assets/Editor/Icon/AtmosphericFog_64.png");
     LoadTextureFromFile(device->Device, device->DeviceContext, L"Assets/Editor/Icon/AmbientLight_64x.png");
+    LoadTextureFromFile(device->Device, device->DeviceContext, L"Contents/Texture/ssal.png");
 
 }
 
