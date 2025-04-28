@@ -298,9 +298,8 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             { .label= "Player",    .obj= OBJ_PLAYER },
             { .label = "UIText",   .obj = OBJ_UI_TEXT },
             {.label = "UIButton", .obj = OBJ_UI_BUTTON },
-
-            { .label= "Fog",       .obj= OBJ_FOG },
-            { .label= "PlayerStart", .obj= OBJ_PLAYERSTART }
+            { .label= "PlayerStart", .obj= OBJ_PLAYERSTART },
+            {.label= "StaticMeshActor", .obj = OBJ_STATICMESHACTOR }
         };
 
         for (const auto& primitive : primitives)
@@ -445,7 +444,14 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     SpawnedActor = ButtonActor;
                     break;
                 }
-
+                case OBJ_STATICMESHACTOR:
+                {
+                    AStaticMeshActor* StaticMeshActor = World->SpawnActor<AStaticMeshActor>();
+                    StaticMeshActor->SetActorLabel(TEXT("OBJ_STATICMESHACTOR"));
+                    StaticMeshActor->GetStaticMeshComponent()->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Contents/Sphere.obj"));
+                    SpawnedActor = StaticMeshActor;
+                    break;
+                }
                 case OBJ_TRIANGLE:
                 case OBJ_CAMERA:
                 case OBJ_END:
