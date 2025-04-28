@@ -26,11 +26,12 @@ void FPhysicsScene::SyncBodies()
                 Comp->GetOwner()->SetActorRotation(SimulatedTransform.Rotation.ToRotator());
                 // 강체인데 scale을 바꿀일이 있나...?
                 //Comp->GetOwner()->SetActorScale(SimulatedTransform.Scale3D);
+                const FPhysicsBody* Body = SceneSolver.GetBody(Comp);
                 if (UProjectileMovementComponent* ProjComp = Comp->GetOwner()->GetComponentByClass<UProjectileMovementComponent>())
                 {
-                    const FPhysicsBody* Body = SceneSolver.GetBody(Comp);
                     ProjComp->SetVelocity(Body->Velocity);
                 }
+                Comp->bGrounded = Body->bGrounded;
             }
 
             if (Comp->bGenerateOverlapEvents)
@@ -54,7 +55,7 @@ void FPhysicsScene::AddRigidBody(UShapeComponent* Component)
     static uint32 num = 0;
     if (Component && !RegisteredBodies.Contains(Component))
     {
-        UE_LOG(ELogLevel::Error, "FPhysicsScene::AddRigidBody[%d] : %s", num++,*Component->StaticClass()->GetName());
+        //UE_LOG(ELogLevel::Error, "FPhysicsScene::AddRigidBody[%d] : %s", num++,*Component->StaticClass()->GetName());
         RegisteredBodies.Add(Component);
         SceneSolver.AddBody(Component);
     }
