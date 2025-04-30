@@ -43,12 +43,15 @@ protected:
     bool bDisabled;
     uint8 Priority;
 
-    // 이 Modifier의 강도. 0이면 적용하지 않고, 1일 때 최대의 효과
-    float Alpha;
+    float Duration;
+    float ElapsedTime = 0.f;
 
-    // Alpha가 0에서 1로 바뀌는 시간
-    float AlphaInTime;
+    //// 이 Modifier의 강도. 0이면 적용하지 않고, 1일 때 최대의 효과
+    //float Alpha;
 
-    // Alpha가 1에서 0으로 바뀌는 시간
-    float AlphaOutTime;
+    //// Alpha가 0에서 1로 바뀌는 시간
+    //float AlphaInTime;
+
+    //// Alpha가 1에서 0으로 바뀌는 시간
+    //float AlphaOutTime;
 };
