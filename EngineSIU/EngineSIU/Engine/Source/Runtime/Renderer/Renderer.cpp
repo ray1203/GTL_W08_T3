@@ -9,11 +9,10 @@
 #include "RendererHelpers.h"
 #include "WorldScene/StaticMeshRenderPass.h"
 #include "WorldScene/WorldBillboardRenderPass.h"
-//#include "EditorBillboardRenderPass.h"
 #include "Editor/GizmoRenderPass.h"
 #include "WorldScene/UpdateLightBufferPass.h"
-//#include "LineRenderPass.h"
 #include "PostProcess/FogRenderPass.h"
+#include "PostProcess/CameraPostProcess.h"
 #include "SlateRenderPass.h"
 #include "Editor/EditorRenderPass.h"
 #include <UObject/UObjectIterator.h>
@@ -46,10 +45,9 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
 
     StaticMeshRenderPass = new FStaticMeshRenderPass();
     WorldBillboardRenderPass = new FWorldBillboardRenderPass();
-    //EditorBillboardRenderPass = new FEditorBillboardRenderPass();
     UpdateLightBufferPass = new FUpdateLightBufferPass();
-    //LineRenderPass = new FLineRenderPass();
     FogRenderPass = new FFogRenderPass();
+    CameraPostProcess = new FCameraPostProcess();
     CompositingPass = new FCompositingPass();
     PostProcessCompositingPass = new FPostProcessCompositingPass();
     SlateRenderPass = new FSlateRenderPass();
@@ -66,6 +64,7 @@ void FRenderer::Initialize(FGraphicsDevice* InGraphics, FDXDBufferManager* InBuf
     WorldBillboardRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
     UpdateLightBufferPass->Initialize(BufferManager, Graphics, ShaderManager);
     FogRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
+    CameraPostProcess->Initialize(BufferManager, Graphics, ShaderManager);
 
 #if !GAME_BUILD
     GizmoRenderPass->Initialize(BufferManager, Graphics, ShaderManager);
@@ -97,10 +96,9 @@ void FRenderer::Release()
 
     delete StaticMeshRenderPass;
     delete WorldBillboardRenderPass;
-    //delete EditorBillboardRenderPass;
     delete UpdateLightBufferPass;
-    //delete LineRenderPass;
     delete FogRenderPass;
+    delete CameraPostProcess;
     delete CompositingPass;
     delete PostProcessCompositingPass;
     delete SlateRenderPass;
@@ -131,6 +129,7 @@ void FRenderer::RenderShadowMap()
 //------------------------------------------------------------------------------
 void FRenderer::CreateConstantBuffers()
 {
+    // TODO: 상수 버퍼는 각각의 패스에서 사용하는 것이 좋을 것 같음. 패스 밖에서 사용할 필요가 있는지 확인 필요
     UINT ObjectBufferSize = sizeof(FObjectConstantBuffer);
     BufferManager->CreateBufferGeneric<FObjectConstantBuffer>("FObjectConstantBuffer", nullptr, ObjectBufferSize, D3D11_BIND_CONSTANT_BUFFER, D3D11_USAGE_DYNAMIC, D3D11_CPU_ACCESS_WRITE);
 
@@ -450,6 +449,9 @@ void FRenderer::RenderPostProcess(const std::shared_ptr<FEditorViewportClient>& 
      * TODO: 반드시 씬에 먼저 반영되어야 하는 포스트 프로세싱 효과는 먼저 씬에 반영하고,
      *       그 외에는 렌더한 포스트 프로세싱 효과들을 이 시점에서 하나로 합친 후에, 다음에 올 컴포짓 과정에서 합성.
      */ 
+
+    // 인게임 마지막에서 적용되는 패스
+    CameraPostProcess->Render(Viewport);
 
     PostProcessCompositingPass->Render(Viewport);
     

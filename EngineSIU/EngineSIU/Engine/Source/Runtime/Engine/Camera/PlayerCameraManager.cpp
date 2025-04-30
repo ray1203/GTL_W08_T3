@@ -10,7 +10,7 @@ APlayerCameraManager::APlayerCameraManager()
 {
 }
 
-void APlayerCameraManager::DoUpdateCamera(float DeltaTime)
+void APlayerCameraManager::UpdateCamera(float DeltaTime)
 {
     for (UCameraModifier* Modifier : ModifierList)
     {
@@ -124,7 +124,7 @@ void APlayerCameraManager::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     UpdateFade(DeltaTime);
-    DoUpdateCamera(DeltaTime);
+    UpdateCamera(DeltaTime);
 }
 
 void APlayerCameraManager::EndPlay(const EEndPlayReason::Type EndPlayReason)

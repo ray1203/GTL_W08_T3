@@ -1330,6 +1330,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\StaticMeshRenderPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\UpdateLightBufferPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\WorldBillboardRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\CameraPostProcess.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1372,6 +1373,7 @@
       <Filter>EngineSIU\Shaders</Filter>
     </FxCompile>
     <FxCompile Include="EngineSIU\Shaders\VSMGenerationPS.hlsl" />
+    <FxCompile Include="EngineSIU\Shaders\CameraPostProcess.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EngineSIU\Engine\Source\ThirdParty\DirectXTK\Include\DirectXTK\SimpleMath.inl" />
@@ -1437,6 +1439,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\StaticMeshRenderPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\UpdateLightBufferPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\WorldBillboardRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\CameraPostProcess.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultPropertySheet.props" />
