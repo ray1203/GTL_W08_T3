@@ -11,6 +11,7 @@ class FObjectFactory;
 class AActor;
 class UObject;
 class USceneComponent;
+class APlayer;
 
 class UWorld : public UObject
 {
@@ -65,6 +66,9 @@ public:
     // 현재는 외부에서 생성하고 있음.
     // 물리 처리를 진행하는 Scene
     FPhysicsScene PhysicsScene;
+
+    // 플레이어 반환
+    APlayer* GetPlayer() const;
     
 private:
     FString WorldName = "DefaultWorld";

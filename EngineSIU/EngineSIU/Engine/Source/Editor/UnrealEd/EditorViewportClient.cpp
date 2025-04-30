@@ -66,6 +66,11 @@ void FEditorViewportClient::Release() const
 
 void FEditorViewportClient::UpdateEditorCameraMovement(float DeltaTime)
 {
+    if (OverridingCamera)
+    {
+        return;
+    }
+
     if (PressedKeys.Contains(EKeys::A))
     {
         CameraMoveRight(-100.f * DeltaTime);
