@@ -13,6 +13,17 @@ function BeginPlay()
     print("[BeginPlay] " .. obj.UUID)
     obj:PrintLocation()
     obj.bInputBlock = true
+
+    local camMgr = obj:GetPlayerCameraManager()
+    if camMgr then
+        local endPos = Vector(0,0,0)
+        local endRot = Rotator(0,0,0)
+
+        camMgr:StartCameraTransition(endPos, endRot, 100, 5)
+    else
+        print("no cam manager")
+    end
+
 end
 
 function EndPlay()
@@ -112,6 +123,8 @@ function Tick(dt)
     
     if Input:GetKeyDown(EKeys.G) then
         obj:Instantiate("Projectile", obj.Location + obj.ForwardVector * 3);
+        local camMgr = obj:GetPlayerCameraManager()
+
     end
     -- 위치 출력 (디버깅용)
     -- obj:PrintLocation()

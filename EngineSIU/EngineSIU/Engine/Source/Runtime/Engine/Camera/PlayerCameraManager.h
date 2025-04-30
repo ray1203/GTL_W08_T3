@@ -43,11 +43,17 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     virtual UObject* Duplicate(UObject* InOuter) override;
 
+    // sol bind functions
+public:
+    // !TODO : shake camera curve이름 파라미터로 넘겨서 실행
+    // void ShakeCamera
+    void Lua_StartCameraTransition(const FVector& EndPos, const FRotator& EndRot, float TargetFOV, float Duration);
+
 protected:
     virtual void ApplyCameraParams(const FCameraParams& InParams);
     void UpdateFade(float DeltaTime);
     FEditorViewportClient* CurrentViewport;
-    UCameraComponent* CurrentCameraComponent;
+    UCameraComponent* CurrentCameraComponent = nullptr;
 
 private:
     bool bIsFading;
