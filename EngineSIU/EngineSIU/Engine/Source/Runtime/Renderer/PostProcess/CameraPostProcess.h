@@ -11,8 +11,8 @@ private:
     struct alignas(16) FLetterBoxParams
     {
         FLinearColor BoxColor = FLinearColor(0,0,0,1); // 박스 색상
-        float TargetAspectRatio = 0.0f; // 타겟 비율
-        float LetterBoxRatio = 1.0f; // 비율
+        float LetterBoxAspectRatio = 0.0f; // 타겟 비율
+        float WindowRatio = 1.0f; // 비율
     } LetterBoxParams;
 
     struct alignas(16) FFadeParams
@@ -34,9 +34,10 @@ public:
 
     virtual void ClearRenderArr() override;
 
+    float GetWindowRatio() { return LetterBoxParams.WindowRatio; }
     void SetLetterBox(float Ratio, const FLinearColor& Color)
     {
-        LetterBoxParams.TargetAspectRatio = Ratio;
+        LetterBoxParams.LetterBoxAspectRatio = Ratio;
         LetterBoxParams.BoxColor = Color;
     }
 

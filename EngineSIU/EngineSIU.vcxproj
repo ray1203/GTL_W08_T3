@@ -318,6 +318,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier_LetterBox.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier_CameraShake.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Editor\Widgets\ImBezierCurveWidget.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Editor\Widgets\ImCurveWidget.cpp" />
@@ -486,6 +487,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\RiceMonkey.cpp" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier_LetterBox.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier_CameraShake.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\Widgets\ImBezierCurveWidget.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Editor\Widgets\ImCurveWidget.h" />

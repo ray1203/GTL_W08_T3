@@ -20,6 +20,7 @@ function BeginPlay()
         local endRot = Rotator(0,0,0)
 
         camMgr:StartCameraTransition(endPos, endRot, 100, 5)
+        camMgr:StartCameraLetterBox(LinearColor(0,0,0,1), 1/2, 5, false, true, 1)
     else
         print("no cam manager")
     end

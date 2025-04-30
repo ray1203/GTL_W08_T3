@@ -37,8 +37,8 @@ void FCameraPostProcess::PrepareRender()
             FadeParams.FadeAmount = PlayerCameraManager->FadeAmount;
             FadeParams.FadeColor = PlayerCameraManager->FadeColor;
 
-            LetterBoxParams.BoxColor = FLinearColor(0, 0, 0, 1);
-            LetterBoxParams.LetterBoxRatio = PlayerCameraManager->LetterBoxRatio;
+            LetterBoxParams.BoxColor = PlayerCameraManager->LetterBoxColor;
+            LetterBoxParams.LetterBoxAspectRatio = PlayerCameraManager->LetterBoxRatio;
         }
     }
     
@@ -130,13 +130,13 @@ void FCameraPostProcess::PrepareRenderStateFade()
 void FCameraPostProcess::DrawLetterBox(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
     // 미지정
-    if (LetterBoxParams.LetterBoxRatio <= 0.0f)
+    if (LetterBoxParams.LetterBoxAspectRatio <= 0.0f)
     {
         return;
     }
 
     // 현재 스크린 비율 가져옴
-    LetterBoxParams.TargetAspectRatio = Viewport->GetViewport()->GetD3DViewport().Width / Viewport->GetViewport()->GetD3DViewport().Height;
+    LetterBoxParams.WindowRatio = Viewport->GetViewport()->GetD3DViewport().Width / Viewport->GetViewport()->GetD3DViewport().Height;
 
     BufferManager->BindConstantBuffer(ConstantBufferKeyLetterBox, 0, EShaderStage::Pixel);
     BufferManager->UpdateConstantBuffer(ConstantBufferKeyLetterBox, LetterBoxParams);

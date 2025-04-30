@@ -21,6 +21,7 @@ public:
     float FadeTime = 0.f; // 현재 실행되는 fade 효과의 시간
     float FadeTimeRemaining = 0.f; // 남은 fade 효과의 시간
     float LetterBoxRatio = 0.f;
+    FLinearColor LetterBoxColor = FLinearColor(0, 0, 0, 1);
 
     FName CameraStyle; // ?
     //struct FViewTarget ViewTarget; -> 뷰포트 직접 참조로 대체
@@ -49,6 +50,8 @@ public:
     void Lua_StartCameraTransition(const FVector& EndPos, const FRotator& EndRot, float TargetFOV, float Duration);
     void StartCameraShake(const FString& CurveName, uint32 TargetPropertiesMask, float Duration, float Amplitude);
     void StartCameraFade(float FromAlpha, float ToAlpha, float Duration, const FLinearColor& Color, bool Override);
+    // InType : TransitionIn(0), TransitionOut(1), TransitionNone(2)
+    void StartCameraLetterBox(FLinearColor InBoxColor, float InRatio, float InDuration, bool InTransitionByAlpha, bool InTransitionByMove, uint8 InType);
 
 protected:
     virtual void ApplyCameraParams(const FCameraParams& InParams);

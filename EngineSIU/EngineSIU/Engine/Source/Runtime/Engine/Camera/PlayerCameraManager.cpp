@@ -7,6 +7,7 @@
 #include "CameraModifier/CameraModifier.h"
 #include <CameraModifier/CameraModifier_CameraTransition.h>
 #include "CameraModifier/CameraModifier_CameraShake.h"
+#include "CameraModifier/CameraModifier_LetterBox.h"
 
 APlayerCameraManager::APlayerCameraManager()
 {
@@ -135,6 +136,25 @@ void APlayerCameraManager::StartCameraFade(float FromAlpha, float ToAlpha, float
     FadeTimeRemaining = FadeTime;
     FadeColor = Color;
     FadeAlpha = FVector2D(FromAlpha, ToAlpha);
+}
+
+void APlayerCameraManager::StartCameraLetterBox(FLinearColor InBoxColor, float InRatio, float InDuration, bool InTransitionByAlpha, bool InTransitionByMove, uint8 InType)
+{
+    UCameraModifier_LetterBox* LetterBoxModifier = FObjectFactory::ConstructObject<UCameraModifier_LetterBox>(GetWorld());
+    if (LetterBoxModifier)
+    {
+        LetterBoxModifier->SetOwner(this);
+        LetterBoxModifier->SetLetterBox(InBoxColor, InRatio, InDuration, InTransitionByAlpha, InTransitionByMove, static_cast<UCameraModifier_LetterBox::TransitionType>(InType));
+        LetterBoxModifier->EnableModifier();
+        LetterBoxModifier->OnLetterBoxEnd.AddLambda([&]() {
+            RemoveCameraModifier(LetterBoxModifier);
+            });
+        AddCameraModifier(LetterBoxModifier);
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::StartCameraLetterBox : Failed to create LetterBox Modifier!"));
+    }
 }
 
 UCameraComponent* APlayerCameraManager::GetCameraComponent()

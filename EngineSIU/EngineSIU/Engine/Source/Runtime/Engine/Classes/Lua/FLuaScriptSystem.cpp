@@ -258,7 +258,8 @@ void FLuaScriptSystem::BindActor()
 
 		"StartCameraTransition", & APlayerCameraManager::Lua_StartCameraTransition,
 		"StartCameraShake", &APlayerCameraManager::StartCameraShake,
-		"StartCameraFade", &APlayerCameraManager::StartCameraFade);
+		"StartCameraFade", &APlayerCameraManager::StartCameraFade,
+        "StartCameraLetterBox", & APlayerCameraManager::StartCameraLetterBox);
 }
 
 void FLuaScriptSystem::BindInput()

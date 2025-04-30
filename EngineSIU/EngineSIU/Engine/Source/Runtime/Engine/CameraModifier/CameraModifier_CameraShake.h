@@ -1,7 +1,7 @@
 #pragma once
 #include "CameraModifier.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnTransitionEndDelegate)
+DECLARE_MULTICAST_DELEGATE(FOnShakeEndDelegate)
 
 class UCameraModifier_CameraShake : public UCameraModifier
 {
@@ -45,7 +45,7 @@ protected:
     float Amplitude = 0.f;
 
 public:
-    FOnTransitionEndDelegate OnTransitionEnd;
+    FOnShakeEndDelegate OnTransitionEnd;
 
 private:
     struct FShakeProperty
