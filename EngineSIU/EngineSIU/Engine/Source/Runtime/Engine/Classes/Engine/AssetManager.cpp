@@ -70,8 +70,9 @@ void UAssetManager::LoadObjFiles()
 }
 void UAssetManager::LoadCurveCSVs()
 {
+    const std::string CurvePath = "Contents/Curve/";
 
-    for (const auto& Entry : std::filesystem::recursive_directory_iterator(FCurveManager::Get().CurvePath))
+    for (const auto& Entry : std::filesystem::recursive_directory_iterator(CurvePath))
     {
         if (Entry.is_regular_file() && Entry.path().extension() == ".csv")
         {
