@@ -1386,6 +1386,7 @@
     <ClCompile Include="EngineSIU\Engine\Source\Editor\Widgets\SCurveEditorPanel.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Math\StringUtils.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Misc\FileHelper.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Curve\CurveManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1489,6 +1490,7 @@
     <ClInclude Include="EngineSIU\Engine\Source\Editor\Widgets\SCurveEditorPanel.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\StringUtils.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Misc\FileHelper.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Curve\CurveManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultPropertySheet.props" />

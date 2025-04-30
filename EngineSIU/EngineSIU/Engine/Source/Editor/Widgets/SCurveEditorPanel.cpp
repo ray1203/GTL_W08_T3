@@ -3,6 +3,7 @@
 
 #include "ImCurveWidget.h"
 #include "tinyfiledialogs.h"
+#include "Curve/CurveManager.h"
 #include "Math/MathUtility.h"
 #include "Math/StringUtils.h"
 #include "Math/Vector.h"
@@ -107,92 +108,45 @@ void SCurveEditorPanel::OnResize(HWND hWnd)
     Height = clientRect.bottom - clientRect.top;
 }
 
+
 void SCurveEditorPanel::LoadFromCSV(const FString& FilePath)
 {
     FString FileContent;
     if (!FFileHelper::LoadFileToString(FileContent, *FilePath))
         return;
 
-    // 모든 곡선 초기화
-    for (int i = 0; i < MaxCurveCount; ++i)
+    TMap<FString, FCurveData> LoadedCurves;
+    if (!CurveIO::ParseCurvesFromCSV(FileContent, LoadedCurves))
+        return;
+
+    int i = 0;
+    for (const auto& Pair : LoadedCurves)
     {
-        Curves[i].ControlPoints.SetNum(MaxPoints);
-        for (int j = 0; j < MaxPoints; ++j)
-        {
-            Curves[i].ControlPoints[j] = FVector2D(0.f, 0.f);
-        }
-        Curves[i].ControlPoints[0] = FVector2D(0.0f, 0.0f);
-        Curves[i].ControlPoints[1] = FVector2D(1.0f, 0.0f);
-        Curves[i].ControlPoints[2].X = ImGui::CurveTerminator;
-        Curves[i].SelectedIndex = -1;
-    }
-
-    TArray<FString> Lines;
-    StringUtils::ParseIntoArrayLines(FileContent, Lines);
-
-    int CurveIdx = -1;
-    int PointIdx = 0;
-
-    for (const FString& Line : Lines)
-    {
-        if (Line.IsEmpty())
-            continue;
-
-        if (!Line.Contains(TEXT(","))) // 새 곡선의 라벨 (Curve name)
-        {
-            ++CurveIdx;
-            if (CurveIdx >= MaxCurveCount)
-                break;
-
-            CurveLabels[CurveIdx] = Line;
-            PointIdx = 0;
-            continue;
-        }
-
-        if (CurveIdx < 0 || CurveIdx >= MaxCurveCount || PointIdx >= MaxPoints)
-            continue;
-
-        TArray<FString> Tokens;
-        StringUtils::ParseIntoArray(Line, Tokens, TEXT(","), true);
-        if (Tokens.Num() != 2)
-            continue;
-
-        float X = FCString::Atof(*Tokens[0]);
-        float Y = FCString::Atof(*Tokens[1]);
-
-        if (FMath::IsNearlyEqual(X, ImGui::CurveTerminator))
+        if (i >= MaxCurveCount)
             break;
 
-        Curves[CurveIdx].ControlPoints[PointIdx++] = FVector2D(X, Y);
+        CurveLabels[i] = Pair.Key;
+        Curves[i] = Pair.Value;
+        ++i;
+    }
 
-        if (PointIdx < MaxPoints)
-        {
-            Curves[CurveIdx].ControlPoints[PointIdx].X = ImGui::CurveTerminator;
-        }
+    // 나머지 Curve는 초기화
+    for (; i < MaxCurveCount; ++i)
+    {
+        CurveLabels[i] = FString::Printf(TEXT("Curve%d"), i);
+        Curves[i] = FCurveData(); // 기본 초기화
     }
 }
 
-
-
 void SCurveEditorPanel::SaveToCSV(const FString& FilePath) const
 {
-    FString Output;
-
-    for (int CurveIdx = 0; CurveIdx < MaxCurveCount; ++CurveIdx)
+    TMap<FString, FCurveData> CurveMap;
+    for (int i = 0; i < MaxCurveCount; ++i)
     {
-        Output += CurveLabels[CurveIdx] + TEXT("\n");
-
-        for (int i = 0; i < MaxPoints; ++i)
-        {
-            const FVector2D& Pt = Curves[CurveIdx].ControlPoints[i];
-            if (FMath::IsNearlyEqual(Pt.X, ImGui::CurveTerminator))
-                break;
-            Output += FString::Printf(TEXT("%.6f,%.6f\n"), Pt.X, Pt.Y);
-        }
-
-        Output += TEXT("\n"); // Curve 간 공백
+        CurveMap.Add(CurveLabels[i], Curves[i]);
     }
 
+    FString Output = CurveIO::SerializeCurvesToCSV(CurveMap);
     FFileHelper::SaveStringToFile(Output, *FilePath);
 }
 bool SCurveEditorPanel::ImportSingleCurveFromCSV(const FString& FilePath, const FString& TargetLabel)
@@ -201,61 +155,15 @@ bool SCurveEditorPanel::ImportSingleCurveFromCSV(const FString& FilePath, const 
     if (!FFileHelper::LoadFileToString(FileContent, *FilePath))
         return false;
 
-    TArray<FString> Lines;
-    StringUtils::ParseIntoArrayLines(FileContent, Lines);
+    TMap<FString, FCurveData> ImportedCurves;
+    if (!CurveIO::ParseCurvesFromCSV(FileContent, ImportedCurves))
+        return false;
 
-    int CurveIdx = -1;
-    int PointIdx = 0;
-    bool bFound = false;
+    const FCurveData* FoundCurve = ImportedCurves.Find(TargetLabel);
+    if (!FoundCurve)
+        return false;
 
-    for (int LineIdx = 0; LineIdx < Lines.Num(); ++LineIdx)
-    {
-        FString Line = Lines[LineIdx];
-        if (Line.IsEmpty())
-            continue;
-
-        if (!Line.Contains(TEXT(","))) // 곡선 이름
-        {
-            if (Line == TargetLabel)
-            {
-                bFound = true;
-                ++CurveIdx;
-                PointIdx = 0;
-                CurveLabels[CurrentTabIndex] = TargetLabel;
-                continue;
-            }
-            else
-            {
-                bFound = false;
-            }
-        }
-        else if (bFound)
-        {
-            if (PointIdx >= MaxPoints)
-                break;
-
-            TArray<FString> Tokens;
-            StringUtils::ParseIntoArray(Line, Tokens, TEXT(","), true);
-            if (Tokens.Num() != 2)
-                continue;
-
-            float X = FCString::Atof(*Tokens[0]);
-            float Y = FCString::Atof(*Tokens[1]);
-
-            if (FMath::IsNearlyEqual(X, ImGui::CurveTerminator))
-                break;
-
-            Curves[CurrentTabIndex].ControlPoints[PointIdx++] = FVector2D(X, Y);
-        }
-
-        // 다음 Curve 시작 전 Terminator 설정
-        if (bFound && (LineIdx + 1 >= Lines.Num() || Lines[LineIdx + 1].IsEmpty()))
-        {
-            if (PointIdx < MaxPoints)
-                Curves[CurrentTabIndex].ControlPoints[PointIdx].X = ImGui::CurveTerminator;
-            break;
-        }
-    }
-
-    return bFound;
+    Curves[CurrentTabIndex] = *FoundCurve;
+    CurveLabels[CurrentTabIndex] = TargetLabel;
+    return true;
 }

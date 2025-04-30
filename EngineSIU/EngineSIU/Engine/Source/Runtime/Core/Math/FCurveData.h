@@ -1,8 +1,7 @@
 #pragma once
+#include "Vector.h"
 #include "Container/Array.h"
 
-
-struct FVector2D;
 
 // 단일 커브 데이터를 표현하는 클래스
 class FCurveData

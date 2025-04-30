@@ -4,7 +4,7 @@
 #include "Vector.h"
 #include "ImGUI/imgui.h"
 #include "Widgets/ImCurveWidget.h"
-
+#include "Container/Array.h"
 FCurveData::FCurveData()
 {
     MaxPoints = 10;
