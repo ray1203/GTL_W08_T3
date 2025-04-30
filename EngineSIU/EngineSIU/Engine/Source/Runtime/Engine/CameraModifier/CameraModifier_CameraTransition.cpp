@@ -8,13 +8,12 @@ UCameraModifier_CameraTransition::UCameraModifier_CameraTransition()
     , CurrentPosition(FVector::ZeroVector)
     , CurrentRotation(FRotator())
     , CurrentFOV(90.f)
-    , TransitionTime(5.f)
     , bTransitioning(false)
-    , TransitionElapsed(0.f)
     , StartPosition(FVector::ZeroVector)
     , StartRotation(FRotator())
     , StartFOV(90.f)
 {
+    Duration = 5.f; // 기본 트랜지션 시간
     Priority = 255; // 가장 높은 우선순위
 }
 
@@ -69,9 +68,9 @@ bool UCameraModifier_CameraTransition::ModifyCamera(float DeltaTime, FCameraPara
     if (!bTransitioning)
         return false;
 
-    TransitionElapsed += DeltaTime;
+    ElapsedTime += DeltaTime;
 
-    float T = FMath::Clamp(TransitionElapsed / TransitionTime, 0.f, 1.f);
+    float T = FMath::Clamp(ElapsedTime / Duration, 0.f, 1.f);
 
     CurrentPosition = FMath::Lerp(StartPosition, TargetPosition, T);
     CurrentRotation = FMath::Lerp(StartRotation, TargetRotation, T);
@@ -85,7 +84,7 @@ bool UCameraModifier_CameraTransition::ModifyCamera(float DeltaTime, FCameraPara
     if (T >= 1)
     {
         bTransitioning = false;
-        TransitionElapsed = 0.f;
+        ElapsedTime = 0.f;
         OnTransitionEnd.Broadcast();
     }
 
@@ -94,5 +93,5 @@ bool UCameraModifier_CameraTransition::ModifyCamera(float DeltaTime, FCameraPara
 
 void UCameraModifier_CameraTransition::SetTransitionTime(float InTransitionTime)
 {
-    TransitionTime = InTransitionTime;
+    Duration = InTransitionTime;
 }

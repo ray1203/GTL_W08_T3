@@ -1,7 +1,7 @@
 Velocity = Vector(0, 0, 0)
 JumpVelocity = 25
 RecentlyHit = false
-HitCool = 3.0
+HitCool = 1.0
 CoolDT = 0
 MaxVelocity = 20
 HighestScore = 1.0
@@ -38,7 +38,13 @@ function OnOverlap(OtherActor)
         obj.Velocity = obj.Velocity + OtherVelocity
         RecentlyHit = true
         PlaySFX("Hit")
+        CameraFade(0.5, 0.0, 1.0, LinearColor(1,0,0,1))
+        CameraShake("test", 1023, 0.3, OtherVelocity:Length()/100);
     end
+end
+
+function ShootSsal()
+    obj:Instantiate("Projectile", obj.Location + obj.ForwardVector * 3);
 end
 
 function Tick(dt)
@@ -49,6 +55,16 @@ function Tick(dt)
 
     if obj.Location.z < 5 and obj.Velocity.z < -120 then
         GameOver(obj)
+        local camMgr = obj:GetPlayerCameraManager()
+        if camMgr then
+            local endPos = Vector(0,0,100)
+            local endRot = Rotator(-90,0,0)
+
+            camMgr:StartCameraTransition(endPos, endRot, 100, 5)
+            camMgr:StartCameraFade(0.0, 1.0, 5, LinearColor(0,0,0,1), true)
+        else
+            print("no cam manager")
+        end
     end
 
     -- 이동 입력 처리 (대각선 이동 가능하도록 수정)
@@ -121,10 +137,8 @@ function Tick(dt)
     
     obj.Velocity = Vector(vx, vy, vz)
     
-    if Input:GetKeyDown(EKeys.G) then
+    if Input:GetKeyUp(EKeys.G) then
         obj:Instantiate("Projectile", obj.Location + obj.ForwardVector * 3);
-        local camMgr = obj:GetPlayerCameraManager()
-
     end
     -- 위치 출력 (디버깅용)
     -- obj:PrintLocation()

@@ -38,8 +38,6 @@ protected:
     FRotator CurrentRotation;
     float CurrentFOV;
 
-    float TransitionTime;
-    float TransitionElapsed = 0;
     bool bTransitioning;
 
 public:
