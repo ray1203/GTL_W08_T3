@@ -2,6 +2,8 @@
 #include "Engine.h"
 
 #include <filesystem>
+
+#include "Curve/CurveManager.h"
 #include "Engine/FLoaderOBJ.h"
 
 bool UAssetManager::IsInitialized()
@@ -33,6 +35,7 @@ void UAssetManager::InitAssetManager()
     AssetRegistry = std::make_unique<FAssetRegistry>();
 
     LoadObjFiles();
+    LoadCurveCSVs();
 }
 
 const TMap<FName, FAssetInfo>& UAssetManager::GetAssetRegistry()
@@ -64,4 +67,23 @@ void UAssetManager::LoadObjFiles()
             // FObjManager::LoadObjStaticMeshAsset(UGTLStringLibrary::StringToWString(Entry.path().string()));
         }
     }
+}
+void UAssetManager::LoadCurveCSVs()
+{
+    const std::string CurvePath = "Contents/Curve/";
+
+    for (const auto& Entry : std::filesystem::recursive_directory_iterator(CurvePath))
+    {
+        if (Entry.is_regular_file() && Entry.path().extension() == ".csv")
+        {
+            FString FilePath = FString(Entry.path().string());
+
+            // CurveManager가 모든 처리를 담당
+            if (!FCurveManager::Get().LoadFromFile(FilePath))
+            {
+                UE_LOG(ELogLevel::Warning, TEXT("곡선 파일 로드 실패: %s"), *FilePath);
+            }
+        }
+    }
+
 }
