@@ -13,7 +13,7 @@ public:
 
     void SetTransitionTarget(const FVector& InTargetPosition, const FRotator& InTargetRotation, float InTargetFOV);
 
-    void StartTransition(float InInterpSpeed = 5.f);
+    void StartTransition();
 
     virtual void EnableModifier() override;
     virtual void DisableModifier() override;
@@ -21,6 +21,9 @@ public:
     virtual void OnAdded() override;
     virtual void OnRemoved() override;
     virtual bool ModifyCamera(float DeltaTime, FCameraParams& OutParams) override;
+
+    void SetTransitionTime(float InTransitionTime);
+
 
 protected:
     FVector TargetPosition;
