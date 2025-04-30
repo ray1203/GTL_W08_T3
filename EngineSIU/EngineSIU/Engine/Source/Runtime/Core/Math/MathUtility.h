@@ -193,4 +193,8 @@ struct FMath
 		}
 		return A;
 	}
+    static inline bool IsNearlyEqual(float A, float B, float Tolerance = 1.e-4f)
+    {
+        return FMath::Abs(A - B) < Tolerance;
+    }
 };

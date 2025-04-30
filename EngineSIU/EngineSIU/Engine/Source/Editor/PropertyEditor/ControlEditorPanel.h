@@ -20,6 +20,8 @@ private:
     void CreatePIEButton(ImVec2 ButtonSize, ImFont* IconFont) const;
     void CreateSRTButton(ImVec2 ButtonSize) const;
     void CreateLightSpawnButton(ImVec2 ButtonSize, ImFont* IconFont);
+    void CreateCurveEditorButton(ImVec2 ButtonSize, ImFont* IconFont);
+
     uint64 ConvertSelectionToFlags(const bool selected[]) const;
     
 private:

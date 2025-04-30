@@ -34,7 +34,6 @@
 
 #include "Components/UI/UUIButtonComponent.h"
 #include "Components/UI/UUIPanelComponent.h"
-#include "Widgets/ImGraphWidget.h"
 
 void PropertyEditorPanel::Render()
 {

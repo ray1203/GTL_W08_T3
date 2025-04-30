@@ -12,7 +12,7 @@
 //    float y = ImGui::BezierValue( 0.5f, v ); // x delta in [0..1] range
 // }
 #pragma once
-
+//현재 사용하지 않음
 namespace ImGui
 {
     template<int steps>

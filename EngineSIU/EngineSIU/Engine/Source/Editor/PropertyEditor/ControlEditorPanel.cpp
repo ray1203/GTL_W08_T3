@@ -41,6 +41,7 @@
 #include <Actors/RiceMonkey.h>
 
 #include "ImGUI/imgui.h"
+#include "Widgets/SCurveEditorPanel.h"
 
 void ControlEditorPanel::Render()
 {

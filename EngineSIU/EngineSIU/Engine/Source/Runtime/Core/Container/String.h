@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+
 #include "CString.h"
 #include "ContainerAllocator.h"
 #include "Core/HAL/PlatformType.h"
@@ -211,6 +212,10 @@ public:
      *         Count가 문자열 길이보다 크거나 같으면 빈 문자열을 반환합니다.
      */
     FString RightChop(int32 Count) const;
+    FString LeftChop(int32 Count) const;
+    FString Mid(int32 Start) const;
+    FString Mid(int32 Start, int32 Count) const;
+    FString Left(int32 Count) const;
 
 public:
     FORCEINLINE int32 Len() const;
@@ -290,7 +295,6 @@ public:
      * @return 포맷팅된 새로운 FString 객체.
      */
     static FString Printf(const ElementType* Format, ...);
-
 };
 
 template <typename Number>

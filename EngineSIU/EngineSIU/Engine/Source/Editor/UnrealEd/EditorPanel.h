@@ -5,6 +5,7 @@
 #define __ICON_FONT_INDEX__
 #define DEFAULT_FONT		0
 #define	FEATHER_FONT		1
+#include "GameFramework/Actor.h"
 
 #endif // !__ICON_FONT_INDEX__
 

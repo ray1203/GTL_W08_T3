@@ -1,6 +1,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "ImGraphWidget.h"
+
+#include "ImCurveWidget.h"
 
 #include "ImGUI/imgui.h"
 #include "ImGui/imgui_internal.h"
@@ -113,8 +114,10 @@ namespace ImGui
 
         if (points[0].x <= CurveTerminator)
         {
-            points[0] = rangeMin;
-            points[1] = rangeMax;
+            /*points[0] = rangeMin;
+            points[1] = rangeMax;*/
+            points[0] = ImVec2(rangeMin.x, 0.0f);
+            points[1] = ImVec2(rangeMax.x, 1.0f);
             points[2].x = CurveTerminator;
         }
 
@@ -264,13 +267,13 @@ namespace ImGui
             // snap X first/last to min/max
             if (points[0].x < points[pointCount - 1].x)
             {
-                points[0].x = rangeMin.y;
+                points[0].x = rangeMin.x;
                 points[pointCount - 1].x = rangeMax.x;
             }
             else
             {
                 points[0].x = rangeMax.x;
-                points[pointCount - 1].x = rangeMin.y;
+                points[pointCount - 1].x = rangeMin.x;
             }
         }
 
