@@ -10,7 +10,7 @@ APlayerCameraManager::APlayerCameraManager()
 {
 }
 
-void APlayerCameraManager::UpdateCamera(float DeltaTime)
+void APlayerCameraManager::DoUpdateCamera(float DeltaTime)
 {
     for (UCameraModifier* Modifier : ModifierList)
     {
@@ -26,6 +26,23 @@ void APlayerCameraManager::UpdateCamera(float DeltaTime)
                 // 카메라 파라미터를 적용하는 로직
                 ApplyCameraParams(Params);
             }
+        }
+    }
+
+    if (bIsFading)
+    {
+        // Fade 처리 로직
+        FadeTimeRemaining -= DeltaTime;
+        if (FadeTimeRemaining <= 0.0f)
+        {
+            bIsFading = false;
+            OnFadeEnded.Broadcast();
+        }
+
+        FadeTimeRemaining = FMath::Max(FadeTimeRemaining - DeltaTime, 0.0f);
+        if (FadeTime > 0.0f)
+        {
+            FadeAmount = FadeAlpha.X + ((1.f - FadeTimeRemaining / FadeTime) * (FadeAlpha.Y - FadeAlpha.X));
         }
     }
 }
@@ -107,7 +124,7 @@ void APlayerCameraManager::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
     UpdateFade(DeltaTime);
-    UpdateCamera(DeltaTime);
+    DoUpdateCamera(DeltaTime);
 }
 
 void APlayerCameraManager::EndPlay(const EEndPlayReason::Type EndPlayReason)

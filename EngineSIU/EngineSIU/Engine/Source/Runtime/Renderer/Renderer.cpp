@@ -7,20 +7,20 @@
 #include "UnrealEd/EditorViewportClient.h"
 #include "D3D11RHI/DXDShaderManager.h"
 #include "RendererHelpers.h"
-#include "StaticMeshRenderPass.h"
-#include "WorldBillboardRenderPass.h"
+#include "WorldScene/StaticMeshRenderPass.h"
+#include "WorldScene/WorldBillboardRenderPass.h"
 //#include "EditorBillboardRenderPass.h"
-#include "GizmoRenderPass.h"
-#include "UpdateLightBufferPass.h"
+#include "Editor/GizmoRenderPass.h"
+#include "WorldScene/UpdateLightBufferPass.h"
 //#include "LineRenderPass.h"
-#include "FogRenderPass.h"
+#include "PostProcess/FogRenderPass.h"
 #include "SlateRenderPass.h"
-#include "EditorRenderPass.h"
+#include "Editor/EditorRenderPass.h"
 #include <UObject/UObjectIterator.h>
 #include <UObject/Casts.h>
 
 #include "CompositingPass.h"
-#include "PostProcessCompositingPass.h"
+#include "PostProcess/PostProcessCompositingPass.h"
 #include "UnrealClient.h"
 #include "GameFrameWork/Actor.h"
 

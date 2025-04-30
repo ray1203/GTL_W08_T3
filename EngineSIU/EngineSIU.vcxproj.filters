@@ -1065,55 +1065,19 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Launch\LightDefine.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Launch</Filter>
     </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\BillboardRenderPass.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\BillboardRenderPass.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\CompositingPass.cpp">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
     </ClCompile>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\CompositingPass.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
     </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorBillboardRenderPass.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorBillboardRenderPass.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorRenderPass.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorRenderPass.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\FogRenderPass.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\FogRenderPass.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\GizmoRenderPass.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\GizmoRenderPass.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\IRenderPass.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
     </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\LineRenderPass.cpp">
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\PostProcessCompositingPass.cpp">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
     </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\LineRenderPass.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcessCompositingPass.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcessCompositingPass.h">
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\PostProcessCompositingPass.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
     </ClInclude>
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Renderer.cpp">
@@ -1125,34 +1089,10 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\RendererHelpers.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\RenderResources.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\ShaderConstants.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\SlateRenderPass.cpp">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
     </ClCompile>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\SlateRenderPass.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\StaticMeshRenderPass.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\StaticMeshRenderPass.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\UpdateLightBufferPass.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\UpdateLightBufferPass.h">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClInclude>
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldBillboardRenderPass.cpp">
-      <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
-    </ClCompile>
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldBillboardRenderPass.h">
       <Filter>EngineSIU\Engine\Source\Runtime\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Serialization\Serializer.h">
@@ -1382,6 +1322,14 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\RiceMonkey.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\PlayerCameraManager.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\BillboardRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\EditorBillboardRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\EditorRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\FogRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\GizmoRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\StaticMeshRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\UpdateLightBufferPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\WorldBillboardRenderPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1481,6 +1429,14 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\PlayerCameraManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\BillboardRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\EditorBillboardRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\EditorRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\FogRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\GizmoRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\StaticMeshRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\UpdateLightBufferPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\WorldBillboardRenderPass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultPropertySheet.props" />
