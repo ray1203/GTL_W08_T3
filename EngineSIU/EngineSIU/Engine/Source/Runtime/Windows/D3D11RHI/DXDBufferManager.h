@@ -355,8 +355,11 @@ inline HRESULT FDXDBufferManager::CreateConstantBuffer(const FString& KeyName, U
         return S_OK;
     }
 
+    UINT byteWidth = Align16(sizeof(T) * NumElements);
+
+
     D3D11_BUFFER_DESC desc = {};
-    desc.ByteWidth = sizeof(T) * NumElements;
+    desc.ByteWidth = byteWidth;
     desc.Usage = D3D11_USAGE_DYNAMIC;
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;

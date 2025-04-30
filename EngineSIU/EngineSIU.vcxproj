@@ -298,7 +298,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)GAME_BUILD=1</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -306,7 +306,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -318,6 +318,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\CameraPostProcess.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Sound\SoundManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier.cpp" />
@@ -439,22 +440,21 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Launch\EngineLoop.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Launch\ImGuiManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Launch\Launch.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\BillboardRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\BillboardRenderPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\CompositingPass.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorBillboardRenderPass.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorRenderPass.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\FogRenderPass.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\GizmoRenderPass.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\LineRenderPass.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcessCompositingPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\EditorBillboardRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\EditorRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\FogRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\GizmoRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\PostProcessCompositingPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Renderer.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\DirectionalShadowMap.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\PointLightShadowMap.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\SpotLightShadowMap.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\SlateRenderPass.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\StaticMeshRenderPass.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\UpdateLightBufferPass.cpp" />
-    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldBillboardRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\StaticMeshRenderPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\UpdateLightBufferPass.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\WorldBillboardRenderPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\SlateCore\Input\Events.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\SlateCore\Widgets\SWindow.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Slate\Widgets\Layout\SSplitter.cpp" />
@@ -478,10 +478,23 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\RiceMonkey.cpp" />
+    <FxCompile Include="EngineSIU\Shaders\CameraPostProcess.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Game|x64'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Editor|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\CameraPostProcess.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Sound\SoundManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier_CameraTransition.h" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier_CameraTransition.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Game|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Editor|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\PlayerCameraManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\GameManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Projectile.h" />
@@ -635,26 +648,23 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Launch\ImGuiManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Launch\LightDefine.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Launch\ShadowDefine.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\BillboardRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\BillboardRenderPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\CompositingPass.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorBillboardRenderPass.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\EditorRenderPass.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\FogRenderPass.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\GizmoRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\EditorBillboardRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\EditorRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\FogRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Editor\GizmoRenderPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\IRenderPass.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\LineRenderPass.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcessCompositingPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\PostProcessCompositingPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Renderer.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\RendererHelpers.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\RenderResources.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\ShaderConstants.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\DirectionalShadowMap.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\PointLightShadowMap.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\Shadow\SpotLightShadowMap.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\SlateRenderPass.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\StaticMeshRenderPass.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\UpdateLightBufferPass.h" />
-    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldBillboardRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\StaticMeshRenderPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\UpdateLightBufferPass.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\WorldBillboardRenderPass.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Serialization\Serializer.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\SlateCore\Input\Events.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\SlateCore\Widgets\SWindow.h" />
