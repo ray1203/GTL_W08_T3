@@ -1,9 +1,10 @@
-﻿#include "UnrealEd.h"
+#include "UnrealEd.h"
 #include "EditorPanel.h"
 
 #include "PropertyEditor/ControlEditorPanel.h"
 #include "PropertyEditor/OutlinerEditorPanel.h"
 #include "PropertyEditor/PropertyEditorPanel.h"
+#include "Widgets/SCurveEditorPanel.h"
 
 void UnrealEd::Initialize()
 {
@@ -15,6 +16,9 @@ void UnrealEd::Initialize()
     
     auto PropertyPanel = std::make_shared<PropertyEditorPanel>();
     Panels["PropertyPanel"] = PropertyPanel;
+
+    auto SCurvePanel = std::make_shared<::SCurveEditorPanel>();
+    Panels["SCurvePanel"] = SCurvePanel;
 }
 
 void UnrealEd::Render() const

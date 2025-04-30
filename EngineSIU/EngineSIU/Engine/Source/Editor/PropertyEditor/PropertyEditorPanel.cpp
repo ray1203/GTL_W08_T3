@@ -1,5 +1,6 @@
 #include "PropertyEditorPanel.h"
 
+#include "Widgets/ImBezierCurveWidget.h"
 #include "World/World.h"
 #include "Actors/EditorPlayer.h"
 #include "Components/Light/LightComponent.h"

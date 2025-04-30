@@ -3,6 +3,7 @@
 #include <cctype>
 #include <vector>
 
+#include "Array.h"
 #include "CoreMiscDefines.h"
 #include "Math/MathUtility.h"
 
@@ -62,6 +63,41 @@ FString FString::RightChop(int32 Count) const
     // 추출된 부분 문자열로 새로운 FString 객체를 생성하여 반환
     // std::move를 사용하면 불필요한 복사를 피할 수 있습니다 (C++11 이상).
     return FString(std::move(Substring));
+}
+FString FString::LeftChop(int32 Count) const
+{
+    int32 NewLen = Len() - Count;
+    if (NewLen <= 0)
+        return FString();
+    return FString(PrivateString.substr(0, NewLen));
+}
+FString FString::Mid(int32 Start) const
+{
+    const int32 MyLen = Len();
+    if (Start >= MyLen)
+        return FString();
+    return FString(PrivateString.substr(Start));
+}
+
+FString FString::Mid(int32 Start, int32 Count) const
+{
+    const int32 MyLen = Len();
+    if (Start >= MyLen || Count <= 0)
+        return FString();
+
+    // Clamp Count to available range
+    const int32 SafeCount = FMath::Min(Count, MyLen - Start);
+    return FString(PrivateString.substr(Start, SafeCount));
+}
+FString FString::Left(int32 Count) const
+{
+    if (Count <= 0)
+        return FString();
+
+    if (Count >= Len())
+        return *this;
+
+    return FString(PrivateString.substr(0, static_cast<size_t>(Count)));
 }
 
 void FString::Empty()

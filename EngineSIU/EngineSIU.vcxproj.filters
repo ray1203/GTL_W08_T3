@@ -1320,6 +1320,13 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\RiceMonkey.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Editor\Widgets\ImBezierCurveWidget.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Editor\Widgets\ImCurveWidget.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Math\FCurveData.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Editor\Widgets\SCurveEditorPanel.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Math\StringUtils.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Misc\FileHelper.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Curve\CurveManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\PlayerCameraManager.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\BillboardRenderPass.cpp" />
@@ -1430,6 +1437,13 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\UI\UUIPanelComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Editor\Widgets\ImBezierCurveWidget.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Editor\Widgets\ImCurveWidget.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\FCurveData.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Editor\Widgets\SCurveEditorPanel.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\StringUtils.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Misc\FileHelper.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Curve\CurveManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\PlayerCameraManager.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\BillboardRenderPass.h" />

@@ -11,6 +11,7 @@
 #include "SlateCore/Widgets/SWindow.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "World/World.h"
+#include "ImGUI/imgui.h"
 
 extern FEngineLoop GEngineLoop;
 

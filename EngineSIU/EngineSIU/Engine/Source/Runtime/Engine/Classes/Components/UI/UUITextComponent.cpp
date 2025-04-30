@@ -2,6 +2,7 @@
 
 #include "UObject/Casts.h"
 
+#include "ImGUI/imgui.h"
 void UUITextComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);

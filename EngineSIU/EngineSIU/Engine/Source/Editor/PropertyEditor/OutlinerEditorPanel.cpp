@@ -5,6 +5,8 @@
 #include <functional>
 
 #include "Components/UI/UUIComponent.h"
+#include "ImGUI/imgui.h"
+
 
 void OutlinerEditorPanel::Render()
 {

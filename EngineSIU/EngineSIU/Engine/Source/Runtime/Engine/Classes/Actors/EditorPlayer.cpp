@@ -15,6 +15,7 @@
 #include "UObject/UObjectIterator.h"
 #include "Engine/EditorEngine.h"
 
+#include "ImGUI/imgui.h"
 
 void AEditorPlayer::Tick(float DeltaTime)
 {

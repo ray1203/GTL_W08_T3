@@ -193,6 +193,10 @@ struct FMath
 		}
 		return A;
 	}
+    static inline bool IsNearlyEqual(float A, float B, float Tolerance = 1.e-4f)
+    {
+        return FMath::Abs(A - B) < Tolerance;
+    }
 
     [[nodiscard]] static FORCEINLINE float FInterpTo(float Current, float Target, float DeltaTime, float InterpSpeed)
     {
