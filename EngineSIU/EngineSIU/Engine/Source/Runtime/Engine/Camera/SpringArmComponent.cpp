@@ -177,6 +177,16 @@ void USpringArmComponent::UpdateCameraTransform(float DeltaTime)
 
     TargetLocation = FMath::Lerp(DesiredLocation, TargetLocation, DeltaTime);
 
+    FHitResult Hit;
+	// fixme
+  //  if (GetWorld()->LineTraceSingle(Hit, BaseLocation, TargetLocation))
+  //  {
+		//if (Hit.Component->GetOwner() == Owner)
+		//	return;
+  //      //UE_LOG(ELogLevel::Warning, TEXT("SpringArm Hit Length : %d"), Hit.Distance);
+  //      TargetLocation = Hit.ImpactPoint;
+  //  }
+
     FVector LookDirection = Owner->GetActorLocation() - TargetLocation;
     LookDirection.Normalize();
     FRotator TargetLookRotation = LookDirection.Rotation();

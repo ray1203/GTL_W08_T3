@@ -72,6 +72,9 @@ public:
     APlayer* GetPlayer() const;
     APlayerCameraManager* GetPlayerCameraManager() const;
 
+    // linetrace
+    bool LineTraceSingle(FHitResult& OutHit, const FVector& Start, const FVector& End);
+
 private:
     FString WorldName = "DefaultWorld";
 

@@ -217,3 +217,8 @@ APlayerCameraManager* UWorld::GetPlayerCameraManager() const
     }
     return nullptr;
 }
+
+bool UWorld::LineTraceSingle(FHitResult& OutHit, const FVector& Start, const FVector& End)
+{
+    return PhysicsScene.RayTraceSingle(OutHit, Start, End);
+}
