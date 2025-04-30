@@ -1,4 +1,4 @@
-#include "UCameraModifier_CameraTransition.h"
+#include "CameraModifier_CameraTransition.h"
 #include "Camera/CameraComponent.h"
 
 UCameraModifier_CameraTransition::UCameraModifier_CameraTransition()
@@ -25,9 +25,8 @@ void UCameraModifier_CameraTransition::SetTransitionTarget(const FVector& InTarg
     TargetFOV = InTargetFOV;
 }
 
-void UCameraModifier_CameraTransition::StartTransition(float InTransitionTime)
+void UCameraModifier_CameraTransition::StartTransition()
 {
-    TransitionTime = InTransitionTime;
     bTransitioning = true;
 }
 
@@ -116,3 +115,7 @@ bool UCameraModifier_CameraTransition::ModifyCamera(float DeltaTime, FCameraPara
     return true;
 }
 
+void UCameraModifier_CameraTransition::SetTransitionTime(float InTransitionTime)
+{
+    TransitionTime = InTransitionTime;
+}

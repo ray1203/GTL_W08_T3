@@ -5,7 +5,7 @@
 #include "World/World.h"
 #include "Camera/CameraComponent.h"
 #include "CameraModifier/CameraModifier.h"
-#include <CameraModifier/UCameraModifier_CameraTransition.h>
+#include <CameraModifier/CameraModifier_CameraTransition.h>
 
 APlayerCameraManager::APlayerCameraManager()
 {
@@ -126,6 +126,18 @@ void APlayerCameraManager::StartCameraFade(float FromAlpha, float ToAlpha, float
 
 UCameraComponent* APlayerCameraManager::GetCameraComponent()
 {
+    if (!CurrentCameraComponent)
+    {
+        APlayer* Player = GetWorld()->GetPlayer();
+        if (Player)
+        {
+            CurrentCameraComponent = Player->GetComponentByClass<UCameraComponent>();
+        }
+        else
+        {
+            UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::GetCameraComponent : No Player Found!"));
+        }
+    }
     return CurrentCameraComponent;
 }
 
@@ -153,24 +165,6 @@ void APlayerCameraManager::BeginPlay()
             CurrentCameraComponent = Player->GetComponentByClass<UCameraComponent>();
         }
     }
-
-    // test
-
-    UCameraModifier_CameraTransition* TransitionModifier = FObjectFactory::ConstructObject<UCameraModifier_CameraTransition>(GetWorld());
-    if (TransitionModifier)
-    {
-        TransitionModifier->SetOwner(this);
-        TransitionModifier->SetTransitionTarget(FVector::ZeroVector, FRotator(), 100);
-        TransitionModifier->EnableModifier();
-        TransitionModifier->OnTransitionEnd.AddLambda([&]() {
-            RemoveCameraModifier(TransitionModifier);
-            });
-        AddCameraModifier(TransitionModifier);
-    }
-    else
-    {
-        UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::BeginPlay : Failed to create CameraTransition Modifier!"));
-    }
 }
 
 void APlayerCameraManager::Tick(float DeltaTime)
@@ -193,6 +187,26 @@ UObject* APlayerCameraManager::Duplicate(UObject* InOuter)
     NewCameraManager->FadeColor = FadeColor;
     NewCameraManager->FadeTime = FadeTime;
     return NewCameraManager;
+}
+
+void APlayerCameraManager::Lua_StartCameraTransition(const FVector& EndPos, const FRotator& EndRot, float TargetFOV, float Duration)
+{
+    UCameraModifier_CameraTransition* TransitionModifier = FObjectFactory::ConstructObject<UCameraModifier_CameraTransition>(GetWorld());
+    if (TransitionModifier)
+    {
+        TransitionModifier->SetOwner(this);
+        TransitionModifier->SetTransitionTarget(EndPos, EndRot, TargetFOV);
+        TransitionModifier->SetTransitionTime(Duration);
+        TransitionModifier->EnableModifier();
+        TransitionModifier->OnTransitionEnd.AddLambda([&]() {
+            RemoveCameraModifier(TransitionModifier);
+            });
+        AddCameraModifier(TransitionModifier);
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::StartCameraTransition : Failed to create CameraTransition Modifier!"));
+    }
 }
 
 void APlayerCameraManager::ApplyCameraParams(const FCameraParams& InParams)

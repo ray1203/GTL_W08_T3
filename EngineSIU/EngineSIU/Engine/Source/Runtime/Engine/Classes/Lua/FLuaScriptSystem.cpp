@@ -27,6 +27,7 @@
 
 #include "Components/UI/UUIPanelComponent.h"
 #include <WindowsCursor.h>
+#include <Camera/PlayerCameraManager.h>
 
 
 FLuaScriptSystem& FLuaScriptSystem::Get()
@@ -123,6 +124,8 @@ void FLuaScriptSystem::BindTypes()
         "Roll", &FRotator::Roll
     );
 
+    Lua["Rotator"] = [](float Pitch, float Yaw, float Roll) {return FRotator(Pitch, Yaw, Roll); };
+
     Lua.new_usertype<FString>("FString",
         "ToString", [](const FString& Str) { return std::string(TCHAR_TO_UTF8(*Str)); }
     );
@@ -185,7 +188,28 @@ void FLuaScriptSystem::BindActor()
 
         },
         "Velocity", sol::property(&AActor::GetVelocity),
-        "Destroy", &AActor::Destroy
+        "Destroy", &AActor::Destroy,
+        "GetPlayerCameraManager" , [](AActor* Self) -> APlayerCameraManager*
+        {
+            UWorld* World = Self->GetWorld();
+            if(World)
+            {
+                ULevel* Level = World->GetActiveLevel();
+                if (Level)
+                {
+                    for (AActor* Actor : Level->Actors)
+                    {
+                        if (Actor->IsA<APlayerCameraManager>())
+                        {
+                            APlayerCameraManager* PlayerCameraManager = Cast<APlayerCameraManager>(Actor);
+                            return PlayerCameraManager;
+                        }
+                    }
+                }
+            }
+
+            return nullptr;
+        }
     );
 
     Lua.new_usertype<APlayer>("APlayer",
@@ -212,6 +236,11 @@ void FLuaScriptSystem::BindActor()
         "HP", &ARiceMonkey::HP,
         "Color", &ARiceMonkey::Color
     );
+
+    Lua.new_usertype<APlayerCameraManager>("APlayerCameraManager",
+        sol::base_classes, sol::bases<AActor>(),
+
+        "StartCameraTransition", &APlayerCameraManager::Lua_StartCameraTransition);
 }
 
 void FLuaScriptSystem::BindInput()
