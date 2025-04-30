@@ -35,6 +35,8 @@
 #include "Components/UI/UUIButtonComponent.h"
 #include "Components/UI/UUIPanelComponent.h"
 
+#include "Camera/PlayerCameraManager.h"
+
 void PropertyEditorPanel::Render()
 {
     /* Pre Setup */
@@ -118,6 +120,7 @@ void PropertyEditorPanel::Render()
         }
         ImGui::PopStyleColor();
     }
+
     if (PickedActor)
     {
         if (ULuaScriptComponent* LuaComp = PickedActor->GetComponentByClass<ULuaScriptComponent>())
@@ -164,8 +167,6 @@ void PropertyEditorPanel::Render()
             ImGui::PopStyleColor();
         }
     }
-
-
 
     if (PickedActor)
     {
@@ -776,6 +777,11 @@ void PropertyEditorPanel::Render()
             ImGui::PopStyleColor();
         }
 
+    if (PickedActor && PickedActor->IsA<APlayerCameraManager>())
+    {
+        // !TODO : 여기다가 뭔가 보여줄 것들을 추가
+
+    }
     ImGui::End();
 }
 void PropertyEditorPanel::DrawUIComponentProperties(UUIComponent* UIComp)

@@ -6,6 +6,32 @@
             "ActorLabel": "APlayer96",
             "Components": [
                 {
+                    "AttachParentID": "MeshComponent",
+                    "ComponentClass": "USpringArmComponent",
+                    "ComponentID": "CameraBoom",
+                    "Properties": {
+                        "ComponentClass": "USpringArmComponent",
+                        "ComponentName": "CameraBoom",
+                        "ComponentOwner": "APlayer_96",
+                        "ComponentOwnerClass": "APlayer",
+                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
+                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
+                        "SocketOffset": "X=0.000 Y=0.000 Z=0.000",
+                        "TargetArmLength": "10.000000",
+                        "bAutoActive": "true",
+                        "bIsActive": "true"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "TestLuaActor"
+                    }
+                },
+                {
                     "AttachParentID": "nullptr",
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "MeshComponent",
@@ -26,27 +52,22 @@
                     }
                 },
                 {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
+                    "AttachParentID": "CameraBoom",
+                    "ComponentClass": "UCameraComponent",
+                    "ComponentID": "Camera",
                     "Properties": {
-                        "LuaScriptPath": "TestLuaActor"
-                    }
-                },
-                {
-                    "AttachParentID": "MeshComponent",
-                    "ComponentClass": "USpringArmComponent",
-                    "ComponentID": "CameraBoom",
-                    "Properties": {
-                        "ComponentClass": "USpringArmComponent",
-                        "ComponentName": "CameraBoom",
+                        "AspectRatio": "1.777000",
+                        "ComponentClass": "UCameraComponent",
+                        "ComponentName": "Camera",
                         "ComponentOwner": "APlayer_96",
                         "ComponentOwnerClass": "APlayer",
-                        "RelativeLocation": "X=0.000 Y=0.000 Z=0.000",
-                        "RelativeRotation": "Pitch=0.000 Yaw=0.000 Roll=0.000",
+                        "FOV": "90.000000",
+                        "FarClip": "1000.000000",
+                        "NearClip": "0.100000",
+                        "RelativeLocation": "X=34.000 Y=7.300 Z=18.800",
+                        "RelativeRotation": "Pitch=-8.300 Yaw=180.000 Roll=-4.100",
                         "RelativeScale3D": "X=1.000 Y=1.000 Z=1.000",
-                        "SocketOffset": "X=0.000 Y=0.000 Z=0.000",
-                        "TargetArmLength": "10.000000",
+                        "ShouldAttachedToViewport": "true",
                         "bAutoActive": "true",
                         "bIsActive": "true"
                     }
@@ -141,14 +162,6 @@
             "ActorLabel": "OBJ_BOX_105",
             "Components": [
                 {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "template"
-                    }
-                },
-                {
                     "AttachParentID": "nullptr",
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "StaticMeshComponent",
@@ -166,6 +179,14 @@
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": ""
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
                     }
                 },
                 {
@@ -236,6 +257,14 @@
             "ActorLabel": "OBJ_STATICMESHACTOR_1716",
             "Components": [
                 {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                },
+                {
                     "AttachParentID": "UStaticMeshComponent_1721",
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "StaticMeshComponent_0",
@@ -253,14 +282,6 @@
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": ""
-                    }
-                },
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "template"
                     }
                 },
                 {
@@ -300,14 +321,6 @@
             "ActorLabel": "OBJ_STATICMESHACTOR_1716",
             "Components": [
                 {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "template"
-                    }
-                },
-                {
                     "AttachParentID": "UStaticMeshComponent_1725",
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "StaticMeshComponent_0",
@@ -331,6 +344,14 @@
                     "AttachParentID": "",
                     "ComponentClass": "ULuaScriptComponent",
                     "ComponentID": "ULuaScriptComponent_1726",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
                     "Properties": {
                         "LuaScriptPath": "template"
                     }
@@ -392,14 +413,6 @@
                     }
                 },
                 {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "ULuaScriptComponent_1730",
-                    "Properties": {
-                        "LuaScriptPath": "template"
-                    }
-                },
-                {
                     "AttachParentID": "nullptr",
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "UStaticMeshComponent_1729",
@@ -417,6 +430,14 @@
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": ""
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "ULuaScriptComponent_1730",
+                    "Properties": {
+                        "LuaScriptPath": "template"
                     }
                 }
             ],
@@ -500,14 +521,6 @@
                     }
                 },
                 {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "ULuaScriptComponent_2244",
-                    "Properties": {
-                        "LuaScriptPath": "template"
-                    }
-                },
-                {
                     "AttachParentID": "nullptr",
                     "ComponentClass": "UBoxComponent",
                     "ComponentID": "UBoxComponent_2243",
@@ -528,6 +541,14 @@
                         "bIsActive": "true",
                         "bIsSimulatingPhysics": "false",
                         "m_Type": ""
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "ULuaScriptComponent_2244",
+                    "Properties": {
+                        "LuaScriptPath": "template"
                     }
                 }
             ],
@@ -567,6 +588,14 @@
                     }
                 },
                 {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "ULuaScriptComponent_2249",
+                    "Properties": {
+                        "LuaScriptPath": "template"
+                    }
+                },
+                {
                     "AttachParentID": "nullptr",
                     "ComponentClass": "UStaticMeshComponent",
                     "ComponentID": "UStaticMeshComponent_2248",
@@ -584,14 +613,6 @@
                         "bAutoActive": "true",
                         "bIsActive": "true",
                         "m_Type": ""
-                    }
-                },
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "ULuaScriptComponent_2249",
-                    "Properties": {
-                        "LuaScriptPath": "template"
                     }
                 }
             ],
@@ -774,6 +795,14 @@
             "Components": [
                 {
                     "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "IngameExitButton"
+                    }
+                },
+                {
+                    "AttachParentID": "",
                     "ComponentClass": "UUIButtonComponent",
                     "ComponentID": "UIButtonComponent",
                     "Properties": {
@@ -798,14 +827,6 @@
                         "bNoSavedSettings": "true",
                         "bNoTitleBar": "true",
                         "bVisible": "false"
-                    }
-                },
-                {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "IngameExitButton"
                     }
                 }
             ],
@@ -865,7 +886,7 @@
                     "ComponentClass": "ULuaScriptComponent",
                     "ComponentID": "LuaScriptComponent",
                     "Properties": {
-                        "LuaScriptPath": "template"
+                        "LuaScriptPath": "LandGenerate"
                     }
                 },
                 {
@@ -889,14 +910,6 @@
                     }
                 },
                 {
-                    "AttachParentID": "",
-                    "ComponentClass": "ULuaScriptComponent",
-                    "ComponentID": "LuaScriptComponent",
-                    "Properties": {
-                        "LuaScriptPath": "LandGenerate"
-                    }
-                },
-                {
                     "AttachParentID": "MeshComponent",
                     "ComponentClass": "UBoxComponent",
                     "ComponentID": "Box",
@@ -917,6 +930,14 @@
                         "bIsActive": "true",
                         "bIsSimulatingPhysics": "false",
                         "m_Type": ""
+                    }
+                },
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "LandGenerate"
                     }
                 }
             ],
@@ -993,6 +1014,22 @@
                 }
             ],
             "RootComponentID": "MeshComponent"
+        },
+        {
+            "ActorClass": "APlayerCameraManager",
+            "ActorID": "APlayerCameraManager_189",
+            "ActorLabel": "OBJ_PLAYERCAMERAMANAGER_189",
+            "Components": [
+                {
+                    "AttachParentID": "",
+                    "ComponentClass": "ULuaScriptComponent",
+                    "ComponentID": "LuaScriptComponent",
+                    "Properties": {
+                        "LuaScriptPath": "PlayerCameraManager"
+                    }
+                }
+            ],
+            "RootComponentID": ""
         }
     ],
     "NextUUID": 0,

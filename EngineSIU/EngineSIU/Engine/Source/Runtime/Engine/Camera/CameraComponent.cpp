@@ -5,6 +5,7 @@
 #include "UObject/Casts.h"
 #include "UObject/ObjectFactory.h"
 #include "World/World.h"
+#include <Engine/Engine.h>
 
 
 UCameraComponent::UCameraComponent()
@@ -56,7 +57,8 @@ void UCameraComponent::SetProperties(const TMap<FString, FString>& InProperties)
 void UCameraComponent::BeginPlay()
 {
     Super::BeginPlay();
-    if (bShouldAttachedToViewport && GetWorld() && (GetWorld()->WorldType == EWorldType::PIE || GetWorld()->WorldType == EWorldType::Game))
+    UWorld* World = GEngine->ActiveWorld;
+    if (bShouldAttachedToViewport && World && (World->WorldType == EWorldType::PIE || GetWorld()->WorldType == EWorldType::Game))
     {
         AttachToViewport();
     }

@@ -36,6 +36,7 @@
 #include <Actors/PlayerStart.h>
 #include <Actors/Player.h>
 #include "Actors/Platform.h"
+#include "Camera/PlayerCameraManager.h"
 
 #include "Actors/UI/PanelUIActor.h"
 #include <Actors/RiceMonkey.h>
@@ -309,7 +310,7 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             { .label= "PlayerStart", .obj= OBJ_PLAYERSTART },
             {.label= "StaticMeshActor", .obj = OBJ_STATICMESHACTOR },
             {.label = "Monkey",    .obj = OBJ_MONKEY },
-            {.label = "End",       .obj = OBJ_END }
+            {.label = "PlayerCameraManager", .obj = OBJ_PLAYERCAMERAMANAGER}
         };
 
         for (const auto& primitive : primitives)
@@ -468,6 +469,13 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     ARiceMonkey* MonkeyActor = World->SpawnActor<ARiceMonkey>();
                     MonkeyActor->SetActorLabel(TEXT("OBJ_MONKEY"));
                     SpawnedActor = MonkeyActor;
+                    break;
+                }
+                case OBJ_PLAYERCAMERAMANAGER:
+                {
+                    APlayerCameraManager* CameraManager = World->SpawnActor<APlayerCameraManager>();
+                    CameraManager->SetActorLabel(TEXT("OBJ_PLAYERCAMERAMANAGER"));
+                    SpawnedActor = CameraManager;
                     break;
                 }
                 case OBJ_TRIANGLE:

@@ -22,6 +22,7 @@ enum class EResourceType : uint8
     ERT_PP_Fog,
     ERT_Editor,
     ERT_Overlay,
+    ERT_PP_Camera,
     ERT_PostProcessCompositing,
     ERT_MAX,
 };

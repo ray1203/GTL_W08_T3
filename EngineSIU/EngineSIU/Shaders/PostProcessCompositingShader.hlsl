@@ -1,4 +1,5 @@
 Texture2D FogTexture : register(t103);
+Texture2D LetterBoxTexture : register(t104);
 // PostProcessing 추가 시 Texture 추가 (EShaderSRVSlot)
 
 SamplerState CompositingSampler : register(s0);
@@ -40,5 +41,11 @@ float4 mainPS(PS_Input input) : SV_Target
 
     // PostProcessing Texture 추가
     float4 FinalColor = FogColor;
+
+    float4 LetterBox = LetterBoxTexture.Sample(CompositingSampler, UV);
+    if (LetterBox.a > 0.0)
+    {
+        FinalColor = LetterBox;
+    }
     return FinalColor;
 }

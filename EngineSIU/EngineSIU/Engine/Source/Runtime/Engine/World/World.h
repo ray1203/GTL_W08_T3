@@ -6,11 +6,13 @@
 #include "WorldType.h"
 #include "Level.h"
 #include "Physics/PhysicsScene.h"
+#include "Camera/PlayerCameraManager.h"
 
 class FObjectFactory;
 class AActor;
 class UObject;
 class USceneComponent;
+class APlayer;
 
 class UWorld : public UObject
 {
@@ -65,11 +67,15 @@ public:
     // 현재는 외부에서 생성하고 있음.
     // 물리 처리를 진행하는 Scene
     FPhysicsScene PhysicsScene;
-    
+
+    // 플레이어 반환
+    APlayer* GetPlayer() const;
+    APlayerCameraManager* GetPlayerCameraManager() const;
+
 private:
     FString WorldName = "DefaultWorld";
 
-    ULevel* ActiveLevel;
+    ULevel* ActiveLevel = nullptr;
 
     /** Actor가 Spawn되었고, 아직 BeginPlay가 호출되지 않은 Actor들 */
     TArray<AActor*> PendingBeginPlayActors;

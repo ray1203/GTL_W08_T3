@@ -15,6 +15,7 @@
 #include "Engine/GameEngine.h"
 #include "UnrealEd/SceneManager.h"
 #include "Engine/Physics/PhysicsScene.h"
+#include "Actors/Player.h"
 
 class UEditorEngine;
 
@@ -181,4 +182,38 @@ void UWorld::RenderUIComponents()
             }
         }
     }
+}
+
+APlayer* UWorld::GetPlayer() const
+{
+    ULevel* Level = GetActiveLevel();
+
+    if (Level)
+    {
+        for (AActor* Actor : Level->Actors)
+        {
+            if (APlayer* Player = Cast<APlayer>(Actor))
+            {
+                return Player;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+APlayerCameraManager* UWorld::GetPlayerCameraManager() const
+{
+    ULevel* Level = GetActiveLevel();
+    if (Level)
+    {
+        for (AActor* Actor : Level->Actors)
+        {
+            if (APlayerCameraManager* CameraManager = Cast<APlayerCameraManager>(Actor))
+            {
+                return CameraManager;
+            }
+        }
+    }
+    return nullptr;
 }

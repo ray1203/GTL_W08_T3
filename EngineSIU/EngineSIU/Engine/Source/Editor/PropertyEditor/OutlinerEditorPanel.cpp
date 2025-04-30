@@ -81,9 +81,24 @@ void OutlinerEditorPanel::Render()
 
     for (AActor* Actor : Level->Actors)
     {
-        if (Actor && Actor->GetRootComponent())
+        if (!Actor) continue;
+
+        USceneComponent* Root = Actor->GetRootComponent();
+        if (Root)
         {
-            CreateNode(Actor->GetRootComponent());
+            CreateNode(Root);
+        }
+        else
+        {
+            FString Name = Actor->GetActorLabel();
+            ImGuiTreeNodeFlags Flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+            bool bOpen = ImGui::TreeNodeEx(*Name, Flags);
+
+            if (ImGui::IsItemClicked())
+            {
+                Engine->SelectActor(Actor);
+                Engine->SelectComponent(nullptr);
+            }
         }
     }
 

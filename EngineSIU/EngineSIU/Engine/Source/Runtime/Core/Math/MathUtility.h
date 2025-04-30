@@ -197,4 +197,24 @@ struct FMath
     {
         return FMath::Abs(A - B) < Tolerance;
     }
+
+    [[nodiscard]] static FORCEINLINE float FInterpTo(float Current, float Target, float DeltaTime, float InterpSpeed)
+    {
+        if (InterpSpeed <= 0.f || Current == Target)
+        {
+            return Target;
+        }
+
+        const float Delta = Target - Current;
+
+        // 한 프레임에 이동할 최대 Step 계산
+        const float Step = DeltaTime * InterpSpeed;
+
+        if (FMath::Abs(Delta) <= Step)
+        {
+            return Target;
+        }
+
+        return Current + FMath::Clamp(Delta, -Step, Step);
+    }
 };

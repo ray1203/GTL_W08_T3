@@ -60,6 +60,7 @@ void FPostProcessCompositingPass::Render(const std::shared_ptr<FEditorViewportCl
     Graphics->DeviceContext->ClearRenderTargetView(RenderTargetRHI->RTV, ViewportResource->GetClearColor(ResourceType).data());
     
     Graphics->DeviceContext->PSSetShaderResources(static_cast<UINT>(EShaderSRVSlot::SRV_Fog), 1, &ViewportResource->GetRenderTarget(EResourceType::ERT_PP_Fog)->SRV);
+    Graphics->DeviceContext->PSSetShaderResources(static_cast<UINT>(EShaderSRVSlot::SRV_LetterBox), 1, &ViewportResource->GetRenderTarget(EResourceType::ERT_PP_Camera)->SRV);
 
     Graphics->DeviceContext->OMSetRenderTargets(1, &RenderTargetRHI->RTV, nullptr);
 
@@ -83,6 +84,8 @@ void FPostProcessCompositingPass::Render(const std::shared_ptr<FEditorViewportCl
     // Clear
     ID3D11ShaderResourceView* NullSRV[1] = { nullptr };
     Graphics->DeviceContext->PSSetShaderResources(static_cast<UINT>(EShaderSRVSlot::SRV_Fog), 1, NullSRV);
+    Graphics->DeviceContext->PSSetShaderResources(static_cast<UINT>(EShaderSRVSlot::SRV_LetterBox), 1, NullSRV);
+    Graphics->DeviceContext->PSSetShaderResources(static_cast<UINT>(EShaderSRVSlot::SRV_Fade), 1, NullSRV);
 }
 
 void FPostProcessCompositingPass::ClearRenderArr()

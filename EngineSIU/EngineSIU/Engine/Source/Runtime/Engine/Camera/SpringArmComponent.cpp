@@ -53,12 +53,10 @@ void USpringArmComponent::BeginPlay()
         return;
     }
     Camera = Owner->GetComponentByClass<UCameraComponent>();
-    if (Camera == nullptr)
+    if (Camera != nullptr)
     {
-        Camera = Owner->AddComponent<UCameraComponent>(TEXT("Camera"));
-        Camera->SetupAttachment(this);
         Camera->bShouldAttachedToViewport = true;
-        Camera->BeginPlay();
+        bIsCameraAttached = true;
     }
 
     // 에디터에서는 인풋바인딩 하지 않는다
@@ -105,6 +103,31 @@ FVector USpringArmComponent::GetSocketOffset() const
 	return SocketOffset;
 }
 
+void USpringArmComponent::AttachCamera(UCameraComponent* InCamera)
+{
+    if (InCamera == nullptr)
+        return;
+
+    if (Camera != InCamera)
+    {
+        //원래 카메라와 다른 카메라가 들어오면 기존 카메라 날리고 새로운 카메라로 세팅
+        GetOwner()->RemoveOwnedComponent(Camera);
+        // !TODO : 기존재하는 컴포넌트를 액터에 붙이는 API 필요함
+        //GetOwner()->AddComponent(InCamera);
+        //Camera = InCamera;
+
+        //Camera->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
+    }
+
+    bIsCameraAttached = true;
+}
+
+void USpringArmComponent::DetachCamera()
+{
+    // 플래그만 false처리해주고, 원래 카메라 참조는 유지
+    bIsCameraAttached = false;
+}
+
 void USpringArmComponent::OnRawMouseInput(const FPointerEvent& InEvent)
 {
     FVector2D MouseDelta = InEvent.GetCursorDelta();
@@ -139,6 +162,9 @@ void USpringArmComponent::UpdateCameraTransform(float DeltaTime)
         return;
 
     if (!Camera->IsAttachedToViewport())
+        return;
+
+    if (!bIsCameraAttached)
         return;
 
     FVector BaseLocation = Owner->GetActorLocation();

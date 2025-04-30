@@ -2,6 +2,7 @@
 #include "Components/StaticMeshComponent.h"
 #include <Engine/FLoaderOBJ.h>
 #include "Camera/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/Shapes/SphereComponent.h"
 #include "Components/Shapes/CapsuleComponent.h"
@@ -10,6 +11,7 @@
 #include "Actors/Projectile.h"
 #include "Platform.h"
 #include "Components/Lua/LuaScriptComponent.h"
+#include "Camera/PlayerCameraManager.h"
 
 APlayer::APlayer()
 {
@@ -28,6 +30,10 @@ void APlayer::PostSpawn()
     CameraBoom->SetupAttachment(MeshComponent);
     CameraBoom->SetTargetArmLength(10.0f);
     CameraBoom->SetSocketOffset(FVector(0.f, 0.0f, 0.0f));
+
+    CameraComp = AddComponent<UCameraComponent>(TEXT("Camera"));
+    CameraComp->SetupAttachment(CameraBoom);
+    CameraComp->bShouldAttachedToViewport = true;
 
     Collider = AddComponent<USphereComponent>(TEXT("Collider"));
     Collider->SetupAttachment(MeshComponent);
@@ -77,6 +83,23 @@ void APlayer::OnOverlap(const FPhysicsBody& result)
         LuaComp->CallLuaFunction("OnOverlap", result.Component->GetOwner());
         UE_LOG(ELogLevel::Warning, TEXT("APlayer : OnOverlapped"));
 
+        if (APlayerCameraManager* cameraManager = GetWorld()->GetPlayerCameraManager())
+        {
+            cameraManager->StartCameraFade(0.5f, 0.0f, 1.0f, FLinearColor::Red);
+        }
     }
+
+
+
+
+    //else if (result.Component->GetOwner()->IsA<APlatform>())
+    //{
+    //    APlatform* platform = Cast<APlatform>(result.Component->GetOwner());
+    //    if (platform)
+    //    {
+    //        platform->OnOverlap(result);
+    //    }
+    //}
+
 }
 
