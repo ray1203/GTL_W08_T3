@@ -28,10 +28,13 @@ public:
     void DisableModifier();
     bool IsDisabled() const { return bDisabled != 0; }
 
-protected:
-    void UpdateAlpha(float DeltaTime);
     virtual void OnAdded() {};
     virtual void OnRemoved() {};
+
+    uint8 GetPriority() const { return Priority; }
+
+protected:
+    void UpdateAlpha(float DeltaTime);
 
     APlayerCameraManager* CameraOwner;
     uint32 bDisabled;
