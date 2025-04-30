@@ -15,12 +15,12 @@ class APlayerCameraManager : public AActor
 public:
     APlayerCameraManager();
 
-    FLinearColor FadeColor; // fade가 되는 색상
-    float FadeAmount; // 현재 fade 얼마나되있는지
-    FVector2D FadeAlpha; // 현재 실행되는 fade 효과의 시작 끝 정도
-    float FadeTime; // 현재 실행되는 fade 효과의 시간
-    float FadeTimeRemaining; // 남은 fade 효과의 시간
-    float LetterBoxRatio;
+    FLinearColor FadeColor = FLinearColor(1,1,1,1); // fade가 되는 색상
+    float FadeAmount = 0.f; // 현재 fade 얼마나되있는지
+    FVector2D FadeAlpha = FVector2D(0,1); // 현재 실행되는 fade 효과의 시작 끝 정도
+    float FadeTime = 0.f; // 현재 실행되는 fade 효과의 시간
+    float FadeTimeRemaining = 0.f; // 남은 fade 효과의 시간
+    float LetterBoxRatio = 0.f;
 
     FName CameraStyle; // ?
     //struct FViewTarget ViewTarget; -> 뷰포트 직접 참조로 대체
