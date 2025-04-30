@@ -1380,6 +1380,9 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\RiceMonkey.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Editor\Widgets\ImBezierCurveWidget.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Editor\Widgets\ImGraphWidget.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Editor\PropertyEditor\GraphEditorPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1477,6 +1480,9 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\UI\UUIPanelComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Editor\Widgets\ImBezierCurveWidget.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Editor\Widgets\ImGraphWidget.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Editor\PropertyEditor\GraphEditorPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultPropertySheet.props" />

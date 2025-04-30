@@ -1,5 +1,6 @@
 #include "PropertyEditor/ShowFlags.h"
 
+#include "ImGUI/imgui.h"
 ShowFlags::ShowFlags()
     : currentFlags(31)
 {

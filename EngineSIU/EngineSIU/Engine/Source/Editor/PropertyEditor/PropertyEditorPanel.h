@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Components/ActorComponent.h"
+#include "ImGUI/imgui.h"
 #include "UnrealEd/EditorPanel.h"
 #include "Math/Rotator.h"
 

@@ -2,11 +2,10 @@
 #include "Container/Array.h"
 #include "D3D11RHI/GraphicDevice.h"
 #include "HAL/PlatformType.h"
-#include "ImGUI/imgui.h"
 #include "PropertyEditor/IWindowToggleable.h"
 
 #define UE_LOG FConsole::GetInstance().AddLog
-
+struct ImGuiTextFilter;
 
 enum class ELogLevel : uint8
 {
@@ -76,7 +75,7 @@ public:
     char InputBuf[256] = "";
     bool bScrollToBottom = false;
 
-    ImGuiTextFilter Filter; // 필터링을 위한 ImGuiTextFilter
+    ImGuiTextFilter* Filter; // 필터링을 위한 ImGuiTextFilter
 
     // 추가된 멤버 변수들
     bool bShowLogTemp = true; // LogTemp 체크박스

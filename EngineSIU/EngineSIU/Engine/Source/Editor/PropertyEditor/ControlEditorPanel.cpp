@@ -40,6 +40,8 @@
 #include "Actors/UI/PanelUIActor.h"
 #include <Actors/RiceMonkey.h>
 
+#include "ImGUI/imgui.h"
+
 void ControlEditorPanel::Render()
 {
     /* Pre Setup */

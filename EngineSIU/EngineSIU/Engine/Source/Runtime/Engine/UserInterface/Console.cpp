@@ -6,6 +6,7 @@
 #include "Actors/PointLightActor.h"
 #include "Actors/SpotLightActor.h"
 #include "D3D11RHI/DXDShaderManager.h"
+#include "ImGUI/imgui.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectHash.h"
 
@@ -106,6 +107,7 @@ void FStatOverlay::Render(ID3D11DeviceContext* Context, UINT InWidth, UINT InHei
 FConsole& FConsole::GetInstance()
 {
     static FConsole Instance;
+    if (Instance.Filter == nullptr)Instance.Filter = new ImGuiTextFilter();
     return Instance;
 }
 
@@ -183,7 +185,7 @@ void FConsole::Draw()
     ImGui::Text("Filter:");
     ImGui::SameLine();
 
-    Filter.Draw("##Filter", 100);
+    Filter->Draw("##Filter", 100);
 
     ImGui::SameLine();
 
@@ -200,7 +202,7 @@ void FConsole::Draw()
     TArray CopyItems = Items;
     for (const FLogEntry& Item : CopyItems)
     {
-        if (!Filter.PassFilter(*Item.Message)) continue;
+        if (!Filter->PassFilter(*Item.Message)) continue;
 
         // 로그 수준에 맞는 필터링
         if ((Item.Level == ELogLevel::Display && !bShowLogTemp) ||
