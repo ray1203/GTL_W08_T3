@@ -201,3 +201,19 @@ APlayer* UWorld::GetPlayer() const
 
     return nullptr;
 }
+
+APlayerCameraManager* UWorld::GetPlayerCameraManager() const
+{
+    ULevel* Level = GetActiveLevel();
+    if (Level)
+    {
+        for (AActor* Actor : Level->Actors)
+        {
+            if (APlayerCameraManager* CameraManager = Cast<APlayerCameraManager>(Actor))
+            {
+                return CameraManager;
+            }
+        }
+    }
+    return nullptr;
+}

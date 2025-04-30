@@ -1,4 +1,4 @@
-#include "StaticMeshRenderPass.h"
+#include "WorldScene/StaticMeshRenderPass.h"
 
 #include <array>
 

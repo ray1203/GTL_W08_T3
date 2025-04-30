@@ -27,18 +27,6 @@ class FEditorViewportClient;
 
 class FViewportResource;
 
-class FStaticMeshRenderPass;
-class FWorldBillboardRenderPass;
-class FEditorBillboardRenderPass;
-class FGizmoRenderPass;
-class FUpdateLightBufferPass;
-class FDepthBufferDebugPass;
-class FWorldNormalDebugPass;
-class FLineRenderPass;
-class FFogRenderPass;
-class FCompositingPass;
-class FSlateRenderPass;
-class FEditorRenderPass;
 class FDirectionalShadowMap;
 
 
@@ -103,19 +91,18 @@ public:
     FDXDBufferManager* BufferManager;
     FDXDShaderManager* ShaderManager = nullptr;
 
-    FStaticMeshRenderPass* StaticMeshRenderPass = nullptr;
-    FWorldBillboardRenderPass* WorldBillboardRenderPass = nullptr;
-    //FEditorBillboardRenderPass* EditorBillboardRenderPass = nullptr;
-    FGizmoRenderPass* GizmoRenderPass = nullptr;
-    FUpdateLightBufferPass* UpdateLightBufferPass = nullptr;
-    //FLineRenderPass* LineRenderPass = nullptr;
-    FFogRenderPass* FogRenderPass = nullptr;
-    FEditorRenderPass* EditorRenderPass = nullptr;
+    class FStaticMeshRenderPass* StaticMeshRenderPass = nullptr;
+    class FWorldBillboardRenderPass* WorldBillboardRenderPass = nullptr;
+    class FGizmoRenderPass* GizmoRenderPass = nullptr;
+    class FUpdateLightBufferPass* UpdateLightBufferPass = nullptr;
+    class FFogRenderPass* FogRenderPass = nullptr;
+    class FCameraPostProcess* CameraPostProcess = nullptr;
+    class FEditorRenderPass* EditorRenderPass = nullptr;
     
-    FCompositingPass* CompositingPass = nullptr;
-    FPostProcessCompositingPass* PostProcessCompositingPass = nullptr;
+    class FCompositingPass* CompositingPass = nullptr;
+    class FPostProcessCompositingPass* PostProcessCompositingPass = nullptr;
     
-    FSlateRenderPass* SlateRenderPass = nullptr;
+    class FSlateRenderPass* SlateRenderPass = nullptr;
 
     FSpotLightShadowMap* SpotLightShadowMapPass = nullptr;
     FPointLightShadowMap* PointLightShadowMapPass = nullptr;

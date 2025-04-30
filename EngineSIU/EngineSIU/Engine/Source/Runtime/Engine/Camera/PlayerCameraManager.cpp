@@ -36,6 +36,7 @@ void APlayerCameraManager::UpdateCamera(float DeltaTime)
             }
         }
     }
+
 }
 
 UCameraModifier* APlayerCameraManager::AddCameraModifier(UCameraModifier* InModifier)
@@ -106,11 +107,11 @@ void APlayerCameraManager::DisableModifier(UCameraModifier* InModifier)
 
 void APlayerCameraManager::StartCameraFade(float FromAlpha, float ToAlpha, float Duration, const FLinearColor& Color)
 {
-    if (bIsFading)
-    {
-        UE_LOG(ELogLevel::Warning, TEXT("PlayerCameraManager::StartCameraFade : Already Fading!"));
-        return;
-    }
+    //if (bIsFading)
+    //{
+    //    UE_LOG(ELogLevel::Warning, TEXT("PlayerCameraManager::StartCameraFade : Already Fading!"));
+    //    return;
+    //}
 
     if (CurrentViewport == nullptr)
     {
@@ -119,7 +120,8 @@ void APlayerCameraManager::StartCameraFade(float FromAlpha, float ToAlpha, float
     }
 
     bIsFading = true;
-    FadeTimeRemaining = Duration;
+    FadeTime = Duration;
+    FadeTimeRemaining = FadeTime;
     FadeColor = Color;
     FadeAlpha = FVector2D(FromAlpha, ToAlpha);
 }
@@ -228,13 +230,19 @@ void APlayerCameraManager::UpdateFade(float DeltaTime)
     if (!bIsFading)
         return;
 
-    FadeTimeRemaining -= DeltaTime;
-    // !TODO : 참조중인 Viewport에 대해 관련 Fade 함수 실행 
+    FadeTimeRemaining = FMath::Max(FadeTimeRemaining - DeltaTime, 0.0f);
 
     if (FadeTimeRemaining <= 0.0f)
     {
         FadeTimeRemaining = 0.0f;
+        FadeAmount = 0;
         bIsFading = false;
         OnFadeEnded.Broadcast();
+        return;
     }
+    else
+    {
+        FadeAmount = FadeAlpha.X + ((1.f - FadeTimeRemaining / FadeTime) * (FadeAlpha.Y - FadeAlpha.X));
+    }
+
 }

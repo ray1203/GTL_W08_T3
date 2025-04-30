@@ -6,6 +6,7 @@
 #include "WorldType.h"
 #include "Level.h"
 #include "Physics/PhysicsScene.h"
+#include "Camera/PlayerCameraManager.h"
 
 class FObjectFactory;
 class AActor;
@@ -69,11 +70,12 @@ public:
 
     // 플레이어 반환
     APlayer* GetPlayer() const;
-    
+    APlayerCameraManager* GetPlayerCameraManager() const;
+
 private:
     FString WorldName = "DefaultWorld";
 
-    ULevel* ActiveLevel;
+    ULevel* ActiveLevel = nullptr;
 
     /** Actor가 Spawn되었고, 아직 BeginPlay가 호출되지 않은 Actor들 */
     TArray<AActor*> PendingBeginPlayActors;

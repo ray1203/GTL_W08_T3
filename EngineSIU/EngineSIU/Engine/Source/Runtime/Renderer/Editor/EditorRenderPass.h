@@ -3,16 +3,45 @@
 #include <d3d11.h>
 #include "Math/Matrix.h"
 #include "Container/Set.h"
-#include "RenderResources.h"
+#include "Container/Map.h"
+#include "Math/Color.h"
+#include "Engine/Classes/Engine/Texture.h"
 
 class FDXDBufferManager;
 class FGraphicsDevice;
 class UWorld;
 class FEditorViewportClient;
 class FDXDShaderManager;
-
 class FEditorRenderPass
 {
+// 클래스 내부에서만 사용하는 것들
+private:
+    enum class IconType
+    {
+        None,
+        DirectionalLight,
+        PointLight,
+        SpotLight,
+        AmbientLight,
+        ExponentialFog,
+        AtmosphericFog,
+    };
+
+    struct FRenderResourcesDebug
+    {
+        struct FWorldComponentContainer
+        {
+            TArray<class UStaticMeshComponent*> StaticMesh;
+            TArray<class UDirectionalLightComponent*> DirLight;
+            TArray<class USpotLightComponent*> SpotLight;
+            TArray<class UPointLightComponent*> PointLight;
+            TArray<class UAmbientLightComponent*> AmbientLight;
+            TArray<class UHeightFogComponent*> Fog;
+        } Components;
+
+        TMap<IconType, std::shared_ptr<FTexture>> IconTextures;
+    };
+
 public:
     void Initialize(FDXDBufferManager* InBufferManager, FGraphicsDevice* InGraphics, FDXDShaderManager* InShaderManager);
     void Render(const std::shared_ptr<FEditorViewportClient>& Viewport);
@@ -103,6 +132,7 @@ private:
     void RenderGrid(const std::shared_ptr<FEditorViewportClient>& Viewport);
 
     //// Icon
+    // 나중에 다시 component에 붙이는걸로 복구해야함
     struct alignas(16) FConstantBufferDebugIcon
     {
         alignas(16) FVector Position;
