@@ -28,6 +28,8 @@
 
 #include "Renderer/Shadow/SpotLightShadowMap.h"
 #include "Renderer/Shadow/PointLightShadowMap.h"
+#include "Editor/LevelEditor/SLevelEditor.h"]
+#include "Engine/Engine.h"
 
 
 FStaticMeshRenderPass::FStaticMeshRenderPass()
@@ -279,6 +281,12 @@ void FStaticMeshRenderPass::UpdateLitUnlitConstant(int32 isLit) const
 {
     FLitUnlitConstants Data;
     Data.bIsLit = isLit;
+    FEditorViewportClient* Viewport = GEngineLoop.GetLevelEditor()->GetActiveViewportClient().get();
+    if (Viewport == nullptr)
+        Data.bIsGammaCorrection = false;
+    else
+        Data.bIsGammaCorrection = Viewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Gamma);
+
     BufferManager->UpdateConstantBuffer(TEXT("FLitUnlitConstants"), Data);
 }
 

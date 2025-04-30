@@ -397,7 +397,8 @@ struct FSubUVConstant
 struct FLitUnlitConstants
 {
     int bIsLit; // 1 = Lit, 0 = Unlit 
-    FVector pad;
+    int bIsGammaCorrection;
+    int pad[2];
 };
 
 struct FViewModeConstants
