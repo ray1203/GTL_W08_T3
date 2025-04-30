@@ -2,6 +2,7 @@
 #include "Components/StaticMeshComponent.h"
 #include <Engine/FLoaderOBJ.h>
 #include "Camera/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/Shapes/SphereComponent.h"
 #include "Components/Shapes/CapsuleComponent.h"
@@ -29,6 +30,10 @@ void APlayer::PostSpawn()
     CameraBoom->SetupAttachment(MeshComponent);
     CameraBoom->SetTargetArmLength(10.0f);
     CameraBoom->SetSocketOffset(FVector(0.f, 0.0f, 0.0f));
+
+    CameraComp = AddComponent<UCameraComponent>(TEXT("Camera"));
+    CameraComp->SetupAttachment(CameraBoom);
+    CameraComp->bShouldAttachedToViewport = true;
 
     Collider = AddComponent<USphereComponent>(TEXT("Collider"));
     Collider->SetupAttachment(MeshComponent);
