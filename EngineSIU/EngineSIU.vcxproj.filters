@@ -1380,6 +1380,8 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\RiceMonkey.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\PlayerCameraManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
@@ -1477,6 +1479,8 @@
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Components\UI\UUIPanelComponent.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Procedural\MapGenerator.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Classes\Actors\Platform.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\Camera\PlayerCameraManager.h" />
+    <ClInclude Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\CameraModifier.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="DefaultPropertySheet.props" />
