@@ -318,6 +318,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\UCameraModifier_CameraTransition.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Game|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Editor|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\CameraPostProcess.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Core\Sound\SoundManager.cpp" />
@@ -484,6 +490,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Editor|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\UCameraModifier_CameraTransition.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Game|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Editor|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\CameraPostProcess.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Math\JungleCollision.h" />
     <ClInclude Include="EngineSIU\Engine\Source\Runtime\Core\Sound\SoundManager.h" />

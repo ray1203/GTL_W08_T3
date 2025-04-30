@@ -320,6 +320,7 @@ void FRenderer::PrepareRenderPass()
     WorldBillboardRenderPass->PrepareRender();
     UpdateLightBufferPass->PrepareRender();
     FogRenderPass->PrepareRender();
+    CameraPostProcess->PrepareRender();
 #if !GAME_BUILD
     GizmoRenderPass->PrepareRender();
     EditorRenderPass->PrepareRender();

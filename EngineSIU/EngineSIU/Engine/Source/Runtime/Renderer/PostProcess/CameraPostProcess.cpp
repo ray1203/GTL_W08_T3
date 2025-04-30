@@ -6,6 +6,8 @@
 #include "RendererHelpers.h"
 #include "Editor/UnrealEd/EditorViewportClient.h"
 #include "Engine/Camera/PlayerCameraManager.h"
+#include "Engine/Engine.h"
+#include "World/World.h"
 
 FCameraPostProcess::FCameraPostProcess()
 {
@@ -28,15 +30,18 @@ void FCameraPostProcess::Initialize(FDXDBufferManager* InBufferManager, FGraphic
 
 void FCameraPostProcess::PrepareRender()
 {
-    for (const auto& PlayerCameraManager : TObjectRange<APlayerCameraManager>())
+    if (UWorld* World = GEngine->ActiveWorld)
     {
-        FadeParams.FadeAmount = PlayerCameraManager->FadeAmount;
-        FadeParams.FadeColor = PlayerCameraManager->FadeColor;
+        if (const APlayerCameraManager* PlayerCameraManager = World->GetPlayerCameraManager())
+        {
+            FadeParams.FadeAmount = PlayerCameraManager->FadeAmount;
+            FadeParams.FadeColor = PlayerCameraManager->FadeColor;
 
-        LetterBoxParams.BoxColor = FLinearColor(0, 0, 0, 1);
-        LetterBoxParams.LetterBoxRatio = PlayerCameraManager->LetterBoxRatio;
-        break;
+            LetterBoxParams.BoxColor = FLinearColor(0, 0, 0, 1);
+            LetterBoxParams.LetterBoxRatio = PlayerCameraManager->LetterBoxRatio;
+        }
     }
+    
 }
 
 void FCameraPostProcess::Render(const std::shared_ptr<FEditorViewportClient>& Viewport)
@@ -124,7 +129,6 @@ void FCameraPostProcess::PrepareRenderStateFade()
 
 void FCameraPostProcess::DrawLetterBox(const std::shared_ptr<FEditorViewportClient>& Viewport)
 {
-    LetterBoxParams.LetterBoxRatio = 21.f/9.f; // test
     // 미지정
     if (LetterBoxParams.LetterBoxRatio <= 0.0f)
     {
@@ -147,7 +151,6 @@ void FCameraPostProcess::DrawLetterBox(const std::shared_ptr<FEditorViewportClie
 
 void FCameraPostProcess::DrawFade()
 {
-    FadeParams.FadeAmount = 0.5f; // test
     // Fade가 필요하지 않으면 리턴
     if (FadeParams.FadeAmount <= 0.0f)
     {

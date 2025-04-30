@@ -1331,6 +1331,8 @@
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\UpdateLightBufferPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\WorldScene\WorldBillboardRenderPass.cpp" />
     <ClCompile Include="EngineSIU\Engine\Source\Runtime\Renderer\PostProcess\CameraPostProcess.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\UCameraModifier_CameraTransition.cpp" />
+    <ClCompile Include="EngineSIU\Engine\Source\Runtime\Engine\CameraModifier\UCameraModifier_CameraTransition.h" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="EngineSIU\EngineSIU.natvis" />
