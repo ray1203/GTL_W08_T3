@@ -5,6 +5,7 @@
 #include "World/World.h"
 #include "Camera/CameraComponent.h"
 #include "CameraModifier/CameraModifier.h"
+#include <CameraModifier/UCameraModifier_CameraTransition.h>
 
 APlayerCameraManager::APlayerCameraManager()
 {
@@ -12,6 +13,13 @@ APlayerCameraManager::APlayerCameraManager()
 
 void APlayerCameraManager::UpdateCamera(float DeltaTime)
 {
+    // 우선순위를 기준으로 먼저 정렬
+    auto ComparePriority = [](const UCameraModifier* A, const UCameraModifier* B) {
+        return A->GetPriority() > B->GetPriority();
+        };
+
+    ModifierList.Sort(ComparePriority);
+
     for (UCameraModifier* Modifier : ModifierList)
     {
         if (Modifier && Modifier->IsDisabled() == false)
@@ -49,24 +57,68 @@ void APlayerCameraManager::UpdateCamera(float DeltaTime)
 
 UCameraModifier* APlayerCameraManager::AddCameraModifier(UCameraModifier* InModifier)
 {
+    if (InModifier)
+    {
+        ModifierList.Add(InModifier);
+        InModifier->OnAdded();
+        return InModifier;
+    }
+
+    UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::AddCameraModifier : Invalid Modifier!"));
     return nullptr;
 }
 
 void APlayerCameraManager::RemoveCameraModifier(UCameraModifier* InModifier)
 {
+    if (InModifier)
+    {
+        if (ModifierList.Contains(InModifier))
+        {
+            ModifierList.Remove(InModifier);
+            InModifier->OnRemoved();
+            GUObjectArray.MarkRemoveObject(InModifier);
+        }
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::RemoveCameraModifier : Invalid Modifier!"));
+    }
 }
 
 void APlayerCameraManager::ClearCameraModifiers()
 {
-
+    for (UCameraModifier* Modifier : ModifierList)
+    {
+        if (Modifier)
+        {
+            Modifier->OnRemoved();
+        }
+    }
+    ModifierList.Empty();
 }
 
 void APlayerCameraManager::EnableModifier(UCameraModifier* InModifier)
 {
+    if (InModifier)
+    {
+        InModifier->EnableModifier();
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::EnableModifier : Invalid Modifier!"));
+    }
 }
 
 void APlayerCameraManager::DisableModifier(UCameraModifier* InModifier)
 {
+    if (InModifier)
+    {
+        InModifier->DisableModifier();
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::DisableModifier : Invalid Modifier!"));
+    }
 }
 
 void APlayerCameraManager::StartCameraFade(float FromAlpha, float ToAlpha, float Duration, const FLinearColor& Color)
@@ -118,6 +170,24 @@ void APlayerCameraManager::BeginPlay()
             CurrentCameraComponent = Player->GetComponentByClass<UCameraComponent>();
         }
     }
+
+    // test
+
+    UCameraModifier_CameraTransition* TransitionModifier = FObjectFactory::ConstructObject<UCameraModifier_CameraTransition>(GetWorld());
+    if (TransitionModifier)
+    {
+        TransitionModifier->SetOwner(this);
+        TransitionModifier->SetTransitionTarget(FVector::ZeroVector, FRotator(), 100);
+        TransitionModifier->EnableModifier();
+        TransitionModifier->OnTransitionEnd.AddLambda([&]() {
+            RemoveCameraModifier(TransitionModifier);
+            });
+        AddCameraModifier(TransitionModifier);
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::BeginPlay : Failed to create CameraTransition Modifier!"));
+    }
 }
 
 void APlayerCameraManager::Tick(float DeltaTime)
@@ -162,12 +232,12 @@ void APlayerCameraManager::UpdateFade(float DeltaTime)
         return;
 
     FadeTimeRemaining -= DeltaTime;
+    // !TODO : 참조중인 Viewport에 대해 관련 Fade 함수 실행 
+
     if (FadeTimeRemaining <= 0.0f)
     {
         FadeTimeRemaining = 0.0f;
         bIsFading = false;
         OnFadeEnded.Broadcast();
     }
-
-    // !TODO : 참조중인 Viewport에 대해 관련 Fade 함수 실행 
 }

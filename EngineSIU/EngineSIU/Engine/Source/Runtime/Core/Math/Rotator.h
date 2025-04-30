@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Container/String.h"
 
 struct FVector;
@@ -66,4 +66,5 @@ struct FRotator
     
     FString ToString() const;
     bool InitFromString(const FString& InSourceString);
+
 };
