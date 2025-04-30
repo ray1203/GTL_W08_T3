@@ -85,7 +85,7 @@ namespace ImGui
         // control points: 2 lines and 2 circles
         {
             char buf[128];
-            sprintf(buf, "0##%s", label);
+            sprintf_s(buf, "0##%s", label);
 
             // handle grabbers
             for (int i = 0; i < 2; ++i)

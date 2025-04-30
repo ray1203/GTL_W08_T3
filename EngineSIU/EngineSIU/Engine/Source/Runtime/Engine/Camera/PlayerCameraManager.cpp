@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "CameraModifier/CameraModifier.h"
 #include <CameraModifier/CameraModifier_CameraTransition.h>
+#include "CameraModifier/CameraModifier_CameraShake.h"
 
 APlayerCameraManager::APlayerCameraManager()
 {
@@ -109,7 +110,7 @@ void APlayerCameraManager::DisableModifier(UCameraModifier* InModifier)
     }
 }
 
-void APlayerCameraManager::StartCameraFade(float FromAlpha, float ToAlpha, float Duration, const FLinearColor& Color)
+void APlayerCameraManager::StartCameraFade(float FromAlpha, float ToAlpha, float Duration, const FLinearColor& Color, bool Override)
 {
     //if (bIsFading)
     //{
@@ -123,7 +124,13 @@ void APlayerCameraManager::StartCameraFade(float FromAlpha, float ToAlpha, float
         return;
     }
 
+    if (bOverrideFade)
+    {
+        return;
+    }
+
     bIsFading = true;
+    bOverrideFade = Override;
     FadeTime = Duration;
     FadeTimeRemaining = FadeTime;
     FadeColor = Color;
@@ -215,6 +222,25 @@ void APlayerCameraManager::Lua_StartCameraTransition(const FVector& EndPos, cons
     }
 }
 
+void APlayerCameraManager::StartCameraShake(const FString& CurveName, uint32 TargetPropertiesMask, float Duration, float Amplitude)
+{
+    UCameraModifier_CameraShake* ShakeModifier = FObjectFactory::ConstructObject<UCameraModifier_CameraShake>(GetWorld());
+    if (ShakeModifier)
+    {
+        ShakeModifier->SetOwner(this);
+        ShakeModifier->SetShakeCurve(CurveName, TargetPropertiesMask, Duration, Amplitude);
+        ShakeModifier->EnableModifier();
+        ShakeModifier->OnTransitionEnd.AddLambda([&]() {
+            RemoveCameraModifier(ShakeModifier);
+            });
+        AddCameraModifier(ShakeModifier);
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::StartCameraShake : Failed to create CameraShake Modifier!"));
+    }
+}
+
 void APlayerCameraManager::ApplyCameraParams(const FCameraParams& InParams)
 {
     if (CurrentCameraComponent)
@@ -241,6 +267,7 @@ void APlayerCameraManager::UpdateFade(float DeltaTime)
         FadeTimeRemaining = 0.0f;
         FadeAmount = 0;
         bIsFading = false;
+        bOverrideFade = false;
         OnFadeEnded.Broadcast();
         return;
     }

@@ -33,7 +33,6 @@ public:
     void EnableModifier(UCameraModifier* InModifier);
     void DisableModifier(UCameraModifier* InModifier);
 
-    void StartCameraFade(float FromAlpha, float ToAlpha, float Duration, const FLinearColor& Color);
     UCameraComponent* GetCameraComponent();
     void SetCameraComponent(UCameraComponent* InCameraComponent);
 
@@ -48,6 +47,8 @@ public:
     // !TODO : shake camera curve이름 파라미터로 넘겨서 실행
     // void ShakeCamera
     void Lua_StartCameraTransition(const FVector& EndPos, const FRotator& EndRot, float TargetFOV, float Duration);
+    void StartCameraShake(const FString& CurveName, uint32 TargetPropertiesMask, float Duration, float Amplitude);
+    void StartCameraFade(float FromAlpha, float ToAlpha, float Duration, const FLinearColor& Color, bool Override);
 
 protected:
     virtual void ApplyCameraParams(const FCameraParams& InParams);
@@ -56,7 +57,8 @@ protected:
     UCameraComponent* CurrentCameraComponent = nullptr;
 
 private:
-    bool bIsFading;
+    bool bIsFading = false;
+    bool bOverrideFade = false;
     TArray<UCameraModifier*> ModifierList;
 
 

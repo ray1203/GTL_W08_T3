@@ -82,24 +82,6 @@ void APlayer::OnOverlap(const FPhysicsBody& result)
     {
         LuaComp->CallLuaFunction("OnOverlap", result.Component->GetOwner());
         UE_LOG(ELogLevel::Warning, TEXT("APlayer : OnOverlapped"));
-
-        if (APlayerCameraManager* cameraManager = GetWorld()->GetPlayerCameraManager())
-        {
-            cameraManager->StartCameraFade(0.5f, 0.0f, 1.0f, FLinearColor::Red);
-        }
     }
-
-
-
-
-    //else if (result.Component->GetOwner()->IsA<APlatform>())
-    //{
-    //    APlatform* platform = Cast<APlatform>(result.Component->GetOwner());
-    //    if (platform)
-    //    {
-    //        platform->OnOverlap(result);
-    //    }
-    //}
-
 }
 

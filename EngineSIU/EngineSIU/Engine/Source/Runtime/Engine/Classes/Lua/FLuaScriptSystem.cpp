@@ -105,6 +105,7 @@ void FLuaScriptSystem::BindTypes()
         "y", &FVector::Y,
         "z", &FVector::Z,
         "Normalize", [](const FVector& Vec) {return Vec.GetSafeNormal(); },
+        "Length", [](const FVector& Vec) -> float { return Vec.Length(); },
         sol::meta_function::addition, [](const FVector& a, const FVector& b) { return a + b; },
         sol::meta_function::subtraction, [](const FVector& a, const FVector& b) { return a - b; },
         sol::meta_function::multiplication, [](const FVector& a, float f) 
@@ -129,6 +130,21 @@ void FLuaScriptSystem::BindTypes()
     Lua.new_usertype<FString>("FString",
         "ToString", [](const FString& Str) { return std::string(TCHAR_TO_UTF8(*Str)); }
     );
+
+    Lua.new_usertype<FLinearColor>("LinearColor",
+        sol::constructors<FLinearColor(), FLinearColor(float, float, float, float)>(),
+        "r", &FLinearColor::R,
+        "g", &FLinearColor::G,
+        "b", &FLinearColor::B,
+        "a", &FLinearColor::A,
+        sol::meta_function::addition, [](const FLinearColor& a, const FLinearColor& b) { return a + b; },
+        sol::meta_function::subtraction, [](const FLinearColor& a, const FLinearColor& b) { return a - b; },
+        sol::meta_function::multiplication, [](const FLinearColor& a, float f)
+        {
+            return a * f;
+        }
+    );
+    Lua.set_function("LinearColor", [](float r, float g, float b, float a) { return FLinearColor(r, g, b, a); });
 }
 
 void FLuaScriptSystem::BindActor()
@@ -237,10 +253,12 @@ void FLuaScriptSystem::BindActor()
         "Color", &ARiceMonkey::Color
     );
 
-    Lua.new_usertype<APlayerCameraManager>("APlayerCameraManager",
-        sol::base_classes, sol::bases<AActor>(),
+	Lua.new_usertype<APlayerCameraManager>("APlayerCameraManager",
+		sol::base_classes, sol::bases<AActor>(),
 
-        "StartCameraTransition", &APlayerCameraManager::Lua_StartCameraTransition);
+		"StartCameraTransition", & APlayerCameraManager::Lua_StartCameraTransition,
+		"StartCameraShake", &APlayerCameraManager::StartCameraShake,
+		"StartCameraFade", &APlayerCameraManager::StartCameraFade);
 }
 
 void FLuaScriptSystem::BindInput()
@@ -346,6 +364,23 @@ void FLuaScriptSystem::BindUtilities()
             }
             FWindowsCursor::SetShowMouseCursor(true);
             Player->bInputBlock = true;
+        });
+    Lua.set_function("CameraFade", [](float FromAlpha, float ToAlpha, float Duration, const FLinearColor& Color, bool Override)
+        {
+            if (APlayerCameraManager* cameraManager = GEngine->ActiveWorld->GetPlayerCameraManager())
+            {
+                cameraManager->StartCameraFade(FromAlpha, ToAlpha, Duration, Color, Override);
+
+                //cameraManager->StartCameraShake(TEXT("test"), static_cast<uint32>(-1), 0.3f, result.Velocity.Length() / 100);
+
+            }
+        });
+    Lua.set_function("CameraShake", [](const std::string& CurveName, uint32 TargetPropertiesMask, float Duration, float Amplitude)
+        {
+            if (APlayerCameraManager* cameraManager = GEngine->ActiveWorld->GetPlayerCameraManager())
+            {
+                cameraManager->StartCameraShake(CurveName, TargetPropertiesMask, Duration, Amplitude);
+            }
         });
 }
 void FLuaScriptSystem::BindUI()
