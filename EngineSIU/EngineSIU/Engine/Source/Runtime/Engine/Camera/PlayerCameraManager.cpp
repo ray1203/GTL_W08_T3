@@ -5,6 +5,7 @@
 #include "World/World.h"
 #include "Camera/CameraComponent.h"
 #include "CameraModifier/CameraModifier.h"
+#include <CameraModifier/UCameraModifier_CameraTransition.h>
 
 APlayerCameraManager::APlayerCameraManager()
 {
@@ -12,6 +13,7 @@ APlayerCameraManager::APlayerCameraManager()
 
 void APlayerCameraManager::UpdateCamera(float DeltaTime)
 {
+    // 우선순위를 기준으로 먼저 정렬
     auto ComparePriority = [](const UCameraModifier* A, const UCameraModifier* B) {
         return A->GetPriority() > B->GetPriority();
         };
@@ -57,6 +59,7 @@ void APlayerCameraManager::RemoveCameraModifier(UCameraModifier* InModifier)
         {
             ModifierList.Remove(InModifier);
             InModifier->OnRemoved();
+            GUObjectArray.MarkRemoveObject(InModifier);
         }
     }
     else
@@ -149,6 +152,24 @@ void APlayerCameraManager::BeginPlay()
         {
             CurrentCameraComponent = Player->GetComponentByClass<UCameraComponent>();
         }
+    }
+
+    // test
+
+    UCameraModifier_CameraTransition* TransitionModifier = FObjectFactory::ConstructObject<UCameraModifier_CameraTransition>(GetWorld());
+    if (TransitionModifier)
+    {
+        TransitionModifier->SetOwner(this);
+        TransitionModifier->SetTransitionTarget(FVector::ZeroVector, FRotator(), 100);
+        TransitionModifier->EnableModifier();
+        TransitionModifier->OnTransitionEnd.AddLambda([&]() {
+            RemoveCameraModifier(TransitionModifier);
+            });
+        AddCameraModifier(TransitionModifier);
+    }
+    else
+    {
+        UE_LOG(ELogLevel::Error, TEXT("PlayerCameraManager::BeginPlay : Failed to create CameraTransition Modifier!"));
     }
 }
 

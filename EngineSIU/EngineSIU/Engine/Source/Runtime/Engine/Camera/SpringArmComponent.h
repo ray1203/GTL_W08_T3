@@ -23,6 +23,11 @@ public:
 	void SetSocketOffset(const FVector& InOffset);
 	FVector GetSocketOffset() const;
 
+    void AttachCamera(UCameraComponent* InCamera);
+    void DetachCamera();
+
+    bool IsCameraAttached() const { return bIsCameraAttached; }
+
 protected:
     void OnRawMouseInput(const FPointerEvent& InEvent);
     void HandleRotation(const FVector2D& Vector);
@@ -36,6 +41,10 @@ protected:
     float CurrentPitchAngle = 0.0f;
 
 	UCameraComponent* Camera = nullptr;
+
+    bool bIsCameraAttached = false; // 카메라가 Springarm에 붙어있는지 여부
+    FVector CachedCameraLocation; // 카메라의 위치
+    FRotator CachedCameraRotation; // 카메라의 회전
 
 	// Collision은 안함
 private:

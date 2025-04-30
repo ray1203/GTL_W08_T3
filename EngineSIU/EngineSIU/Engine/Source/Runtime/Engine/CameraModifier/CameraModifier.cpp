@@ -1,15 +1,13 @@
 #include "CameraModifier.h"
+#include "Camera/PlayerCameraManager.h"
 
 UCameraModifier::UCameraModifier()
 {
 }
 
-void UCameraModifier::EnableModifier()
+void UCameraModifier::SetOwner(APlayerCameraManager* InCameraOwner)
 {
-}
-
-void UCameraModifier::DisableModifier()
-{
+    CameraOwner = InCameraOwner;
 }
 
 void UCameraModifier::UpdateAlpha(float DeltaTime)

@@ -2,6 +2,7 @@
 #include "Define.h"
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
+#include "Camera/PlayerCameraManager.h"
 
 class APlayerCameraManager;
 
@@ -24,20 +25,22 @@ public:
     virtual bool ModifyCamera(float DeltaTime, FCameraParams& OutParams) { return false; }
     virtual void PostProcess(float DeltaTime) {};
 
-    void EnableModifier();
-    void DisableModifier();
+    virtual void EnableModifier() { bDisabled = false; };
+    virtual void DisableModifier() { bDisabled = true; };
     bool IsDisabled() const { return bDisabled != 0; }
 
     virtual void OnAdded() {};
     virtual void OnRemoved() {};
+
+    void SetOwner(APlayerCameraManager* InCameraOwner);
 
     uint8 GetPriority() const { return Priority; }
 
 protected:
     void UpdateAlpha(float DeltaTime);
 
-    APlayerCameraManager* CameraOwner;
-    uint32 bDisabled;
+    APlayerCameraManager* CameraOwner = nullptr;
+    bool bDisabled;
     uint8 Priority;
 
     // 이 Modifier의 강도. 0이면 적용하지 않고, 1일 때 최대의 효과
