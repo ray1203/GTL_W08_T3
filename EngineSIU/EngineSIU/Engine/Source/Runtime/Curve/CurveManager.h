@@ -10,6 +10,7 @@ namespace CurveIO
 class FCurveManager
 {
 public:
+    const std::string CurvePath = "Contents/Curve/";
     static FCurveManager& Get();
 
     // 저장 및 로딩

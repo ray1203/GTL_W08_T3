@@ -148,6 +148,7 @@ void SCurveEditorPanel::SaveToCSV(const FString& FilePath) const
 
     FString Output = CurveIO::SerializeCurvesToCSV(CurveMap);
     FFileHelper::SaveStringToFile(Output, *FilePath);
+    FCurveManager::Get().LoadFromFile(FilePath);
 }
 bool SCurveEditorPanel::ImportSingleCurveFromCSV(const FString& FilePath, const FString& TargetLabel)
 {
