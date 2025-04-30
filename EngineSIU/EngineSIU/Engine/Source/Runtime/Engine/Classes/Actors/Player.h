@@ -7,6 +7,7 @@ class UStaticMeshComponent;
 class USpringArmComponent;
 class UShapeComponent;
 class UProjectileMovementComponent;
+class UCameraComponent;
 
 class APlayer : public AActor
 {
@@ -39,6 +40,7 @@ class APlayer : public AActor
 protected:
     UStaticMeshComponent* MeshComponent = nullptr;
     USpringArmComponent* CameraBoom = nullptr;
+    UCameraComponent* CameraComp = nullptr;
     UShapeComponent* Collider = nullptr;
     UProjectileMovementComponent* Movement = nullptr;
 

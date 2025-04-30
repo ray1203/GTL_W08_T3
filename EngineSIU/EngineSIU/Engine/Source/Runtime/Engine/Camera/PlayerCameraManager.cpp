@@ -20,6 +20,10 @@ void APlayerCameraManager::UpdateCamera(float DeltaTime)
 
     ModifierList.Sort(ComparePriority);
 
+    if (CurrentCameraComponent == nullptr)
+    {
+        CurrentCameraComponent = GetWorld()->GetPlayer()->GetComponentByClass<UCameraComponent>();
+    }
     for (UCameraModifier* Modifier : ModifierList)
     {
         if (Modifier && Modifier->IsDisabled() == false)

@@ -53,12 +53,9 @@ void USpringArmComponent::BeginPlay()
         return;
     }
     Camera = Owner->GetComponentByClass<UCameraComponent>();
-    if (Camera == nullptr)
+    if (Camera != nullptr)
     {
-        Camera = Owner->AddComponent<UCameraComponent>(TEXT("Camera"));
-        Camera->SetupAttachment(this);
         Camera->bShouldAttachedToViewport = true;
-        Camera->BeginPlay();
         bIsCameraAttached = true;
     }
 
