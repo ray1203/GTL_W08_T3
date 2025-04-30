@@ -34,6 +34,7 @@ public:
 
     void SetOwner(APlayerCameraManager* InCameraOwner);
 
+    void SetPriority(uint8 InPriority) { Priority = InPriority; }
     uint8 GetPriority() const { return Priority; }
 
 protected:

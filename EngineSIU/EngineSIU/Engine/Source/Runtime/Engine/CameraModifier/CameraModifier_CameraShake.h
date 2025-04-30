@@ -16,10 +16,7 @@ public:
         Pitch = 1 << 3,
         Yaw = 1 << 4,
         Roll = 1 << 5,
-        ScaleX = 1 << 6,
-        ScaleY = 1 << 7,
-        ScaleZ = 1 << 8,
-        FOV = 1 << 9,
+        FOV = 1 << 6,
     };
 
     UCameraModifier_CameraShake();
@@ -28,6 +25,8 @@ public:
     {
         CurveName = InCurveName;
     }
+
+    void SetShakeCurve(const FString& InCurveName, uint32 InTargetProperty, float InDuration, float InAmplitude);
 
     void StartShake();
 
@@ -38,13 +37,36 @@ public:
     virtual void OnRemoved() override;
     virtual bool ModifyCamera(float DeltaTime, FCameraParams& OutParams) override;
 
-    void SetTransitionTime(float InTransitionTime);
-
-
 protected:
     bool bShaking = false;
     FString CurveName;
+    uint32 TargetPropertiesMask;
+    float Duration = 0.f;
+    float Amplitude = 0.f;
 
 public:
     FOnTransitionEndDelegate OnTransitionEnd;
+
+private:
+    struct FShakeProperty
+    {
+        uint32 Bit;
+        const TCHAR* Name;
+    };
+
+    static const FShakeProperty ShakePropertyNames[7];
+
+    static TArray<FString> GetShakePropertyNames(uint32 Bitmask)
+    {
+        TArray<FString> Result;
+        for (const auto& Pair : ShakePropertyNames)
+        {
+            if ((Bitmask & Pair.Bit) != 0)
+            {
+                Result.Add(Pair.Name);
+            }
+        }
+        return Result;
+    }
+
 };
