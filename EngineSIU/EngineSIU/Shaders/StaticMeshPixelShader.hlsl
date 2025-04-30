@@ -17,7 +17,8 @@ cbuffer MaterialConstants : register(b1)
 cbuffer FlagConstants : register(b2)
 {
     int IsLit;
-    float3 flagPad0;
+    int bIsGammaCorrection;
+    float2 flagPad0;
 }
 
 cbuffer SubMeshConstants : register(b3)
@@ -76,5 +77,10 @@ float4 mainPS(PS_INPUT_StaticMesh Input) : SV_Target
         FinalColor += float4(0.01, 0.01, 0.0, 1);
     }
     
+    if(bIsGammaCorrection)
+    {
+        float gamma = 2.2;
+        FinalColor = pow(FinalColor, 1.0 / gamma);
+    }
     return FinalColor;
 }

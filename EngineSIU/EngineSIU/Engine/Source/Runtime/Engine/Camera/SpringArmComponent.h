@@ -3,6 +3,7 @@
 #include <optional>
 
 class UCameraComponent;
+class USphereComponent;
 struct FPointerEvent;
 
 class USpringArmComponent : public USceneComponent

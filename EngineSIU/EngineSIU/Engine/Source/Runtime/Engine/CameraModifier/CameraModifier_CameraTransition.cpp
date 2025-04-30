@@ -67,7 +67,6 @@ bool UCameraModifier_CameraTransition::ModifyCamera(float DeltaTime, FCameraPara
 
     if (!bTransitioning)
         return false;
-    // FInterpTo를 사용하여 각 값들을 부드럽게 목표로 이동
 
     ElapsedTime += DeltaTime;
 
@@ -75,34 +74,12 @@ bool UCameraModifier_CameraTransition::ModifyCamera(float DeltaTime, FCameraPara
 
     CurrentPosition = FMath::Lerp(StartPosition, TargetPosition, T);
     CurrentRotation = FMath::Lerp(StartRotation, TargetRotation, T);
-    //CurrentPosition.X = FMath::FInterpTo(CurrentPosition.X, TargetPosition.X, DeltaTime, InterpSpeed);
-    //CurrentPosition.Y = FMath::FInterpTo(CurrentPosition.Y, TargetPosition.Y, DeltaTime, InterpSpeed);
-    //CurrentPosition.Z = FMath::FInterpTo(CurrentPosition.Z, TargetPosition.Z, DeltaTime, InterpSpeed);
 
-    //CurrentRotation.Pitch = FMath::FInterpTo(CurrentRotation.Pitch, TargetRotation.Pitch, DeltaTime, InterpSpeed * 5);
-    //CurrentRotation.Yaw = FMath::FInterpTo(CurrentRotation.Yaw, TargetRotation.Yaw, DeltaTime, InterpSpeed * 5);
-    //CurrentRotation.Roll = FMath::FInterpTo(CurrentRotation.Roll, TargetRotation.Roll, DeltaTime, InterpSpeed * 5);
-
-    //CurrentFOV = FMath::FInterpTo(CurrentFOV, TargetFOV, DeltaTime, InterpSpeed);
     CurrentFOV = FMath::Lerp(StartFOV, TargetFOV, T);
 
     OutParams.Position = CurrentPosition;
     OutParams.Rotation = CurrentRotation;
     OutParams.FOV = CurrentFOV;
-
-    // 목표에 충분히 가까워지면 트랜지션 종료
-    //const float PosTolerance = 0.01f;
-    //const float RotTolerance = 0.1f;
-    //const float FOVTolerance = 0.01f;
-    //if (FVector::Distance(CurrentPosition, TargetPosition) < PosTolerance &&
-    //    FMath::Abs(CurrentRotation.Pitch - TargetRotation.Pitch) < RotTolerance &&
-    //    FMath::Abs(CurrentRotation.Yaw - TargetRotation.Yaw) < RotTolerance &&
-    //    FMath::Abs(CurrentRotation.Roll - TargetRotation.Roll) < RotTolerance &&
-    //    FMath::Abs(CurrentFOV - TargetFOV) < FOVTolerance)
-    //{
-    //    bTransitioning = false;
-    //    OnTransitionEnd.Broadcast();
-    //}
 
     if (T >= 1)
     {

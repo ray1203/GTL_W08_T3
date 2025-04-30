@@ -97,3 +97,59 @@ bool FPhysicsScene::GetOverlappings(UShapeComponent* Shape, TArray<FOverlapInfo>
     }
     return false;
 }
+
+bool FPhysicsScene::RayTraceSingle(FHitResult& OutHit, const FVector& Start, const FVector& End)
+{
+    bool bHitSomething = false;
+    float ClosestHitDistance = FLT_MAX;
+    UShapeComponent* ClosestComponent = nullptr;
+    FVector ClosestHitPoint, ClosestHitNormal;
+
+    FVector RayOrigin = Start;
+    FVector RayDir = (End - Start);
+    float RayLength = RayDir.Length();
+    if (RayLength <= KINDA_SMALL_NUMBER)
+        return false;
+    RayDir /= RayLength; // 정규화
+
+    // PhysicsScene->RegisteredBodies 순회
+    for (UShapeComponent* ShapeComp : RegisteredBodies)
+    {
+        float HitDistance = 0.f;
+        FVector LocalHitPoint, LocalNormal;
+
+        // 실제로는 CheckRayIntersection가 히트시 HitDistance, HitPoint, Normal을 채워줄 수 있게 설계 필요
+        int HitType = ShapeComp->CheckRayIntersection(RayOrigin, RayDir, HitDistance);
+        // HitType: 0=NoHit, 1=Blocking, 2=Overlap 등으로 가정
+
+        if (HitType == 1) // Blocking만 처리
+        {
+            if (HitDistance >= 0.f && HitDistance <= RayLength && HitDistance < ClosestHitDistance)
+            {
+                ClosestHitDistance = HitDistance;
+                ClosestComponent = ShapeComp;
+                ClosestHitPoint = RayOrigin + RayDir * HitDistance;
+
+                // Normal 계산 (캡슐/스피어는 중심방향, 박스는 표면 법선 등)
+                bHitSomething = true;
+            }
+        }
+    }
+
+    if (bHitSomething && ClosestComponent)
+    {
+        OutHit.Time = ClosestHitDistance / RayLength;
+        OutHit.Distance = ClosestHitDistance;
+        OutHit.Location = ClosestComponent->GetWorldLocation();
+        OutHit.ImpactPoint = ClosestHitPoint;
+        OutHit.Normal = ClosestHitNormal;
+        OutHit.TraceStart = Start;
+        OutHit.TraceEnd = End;
+        OutHit.bBlockingHit = true;
+        OutHit.Component = ClosestComponent;
+        // OutHit.Owner = ClosestComponent->GetOwner(); // 필요시
+
+        return true;
+    }
+    return false;
+}

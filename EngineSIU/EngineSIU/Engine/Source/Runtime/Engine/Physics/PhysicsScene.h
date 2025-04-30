@@ -29,4 +29,7 @@ public:
 
 private:
     TSet<UShapeComponent*> RegisteredBodies;
+
+public:
+    bool RayTraceSingle(FHitResult& OutHit, const FVector& Start, const FVector& End);
 };
