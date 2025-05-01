@@ -537,6 +537,60 @@ bool FPhysicsSolver::GetOverlappingBodies(const FPhysicsBody& Body, TArray<FPhys
     }
     return false;
 }
+bool FPhysicsSolver::Raycast(const FVector& Start, const FVector& End, float& Distance, UShapeComponent*& OutComponent) const
+{
+    FVector RayDir = End - Start;
+    float RayLen = RayDir.Length();
+    if (RayLen < KINDA_SMALL_NUMBER)
+    {
+        Distance = 0.f;
+        OutComponent = nullptr;
+        return false;
+    }
+
+    FRay Ray = { Start, RayDir };
+    Distance = std::numeric_limits<float>::max();
+    OutComponent = nullptr;
+
+    for (const FPhysicsBody& Body : SimulatedBodies)
+    {
+        const FCollisionShape& Shape = Body.CollisionShape;
+        const FTransform& Transform = Body.Transform;
+
+        float HitT = 0.f;
+        bool bHit = false;
+
+        if (Shape.IsSphere())
+        {
+            FSphere Sphere = GetWorldSphere(Shape, Transform);
+            bHit = JungleCollision::RayIntersectsSphere(Ray, Sphere, &HitT);
+        }
+        else if (Shape.IsBox())
+        {
+            FOrientedBox Box = GetWorldOrientedBox(Shape, Transform);
+            bHit = JungleCollision::RayIntersectsOrientedBox(Ray, Box, &HitT);
+        }
+        else if (Shape.IsCapsule())
+        {
+            FCapsule Capsule = GetWorldCapsule(Shape, Transform);
+            bHit = JungleCollision::RayIntersectsCapsule(Ray, Capsule, &HitT);
+        }
+        // 기타 shape 추가 가능
+
+        // t값이 Ray 길이 범위 내에 있고(0 <= t <= 1), t*RayLen이 현재 최근접 거리보다 짧으면
+        if (bHit && HitT >= 0.f && HitT <= 1.f)
+        {
+            float HitDist = HitT * RayLen;
+            if (HitDist < Distance)
+            {
+                Distance = HitDist;
+                OutComponent = Body.Component;
+            }
+        }
+    }
+
+    return OutComponent != nullptr;
+}
 
 bool FPhysicsSolver::IsOverlapping(const FPhysicsBody& BodyA, const FPhysicsBody& BodyB)
 {

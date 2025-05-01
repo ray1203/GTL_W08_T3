@@ -179,13 +179,13 @@ void USpringArmComponent::UpdateCameraTransform(float DeltaTime)
 
     FHitResult Hit;
 	// fixme
-  //  if (GetWorld()->LineTraceSingle(Hit, BaseLocation, TargetLocation))
-  //  {
-		//if (Hit.Component->GetOwner() == Owner)
-		//	return;
-  //      //UE_LOG(ELogLevel::Warning, TEXT("SpringArm Hit Length : %d"), Hit.Distance);
-  //      TargetLocation = Hit.ImpactPoint;
-  //  }
+    if (GetWorld()->LineTraceSingle(Hit, BaseLocation - Camera->GetForwardVector() * 2, TargetLocation))
+    {
+		if (Hit.Component->GetOwner() == Owner)
+			return;
+        //UE_LOG(ELogLevel::Warning, TEXT("SpringArm Hit Length : %d"), Hit.Distance);
+        TargetLocation = Hit.ImpactPoint;
+    }
 
     FVector LookDirection = Owner->GetActorLocation() - TargetLocation;
     LookDirection.Normalize();

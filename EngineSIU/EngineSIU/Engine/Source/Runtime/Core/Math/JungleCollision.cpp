@@ -36,6 +36,68 @@ bool JungleCollision::RayIntersectsCapsule(const FRay& Ray, const FCapsule& Caps
     return RayIntersectsCapsuleSIMD(_Ray, _Capsule, outT);
 }
 
+bool JungleCollision::RayIntersectsOrientedBox(const FRay& Ray, const FOrientedBox& Box, float* outT)
+{
+    // 1. Ray를 Box의 local space로 변환
+    // Box의 축: AxisX, AxisY, AxisZ (모두 정규화 되어있어야 함)
+    // Box의 local center: Box.Center, 반치수: ExtentX, ExtentY, ExtentZ
+
+    // 월드 -> 로컬 변환 매트릭스 구성 (Box의 축을 행으로 하는 3x3 매트릭스의 transpose)
+    FVector d = Ray.Direction;
+    FVector o = Ray.Origin - Box.Center;
+
+    // Box 축 기반으로 ray를 로컬 좌표계로 변환
+    FVector LocalDir(
+        d.Dot(Box.AxisX),
+        d.Dot(Box.AxisY),
+        d.Dot(Box.AxisZ)
+    );
+    FVector LocalOrigin(
+        o.Dot(Box.AxisX),
+        o.Dot(Box.AxisY),
+        o.Dot(Box.AxisZ)
+    );
+
+    // 2. AABB와의 교차로 치환 (로컬 박스는 중심 (0,0,0), 반치수 Extent)
+    // Slab method (https://gdbooks.gitbooks.io/3dcollisions/content/Chapter3/raycast_obb.html)
+    float tMin = -FLT_MAX;
+    float tMax = FLT_MAX;
+
+    float Extents[3] = { Box.ExtentX, Box.ExtentY, Box.ExtentZ };
+    float Origin[3] = { LocalOrigin.X, LocalOrigin.Y, LocalOrigin.Z };
+    float Dir[3] = { LocalDir.X, LocalDir.Y, LocalDir.Z };
+
+    for (int i = 0; i < 3; ++i)
+    {
+        if (fabs(Dir[i]) < KINDA_SMALL_NUMBER)
+        {
+            // Ray가 박스 평면과 평행, 박스 바깥에서 시작하면 교차 없음
+            if (Origin[i] < -Extents[i] || Origin[i] > Extents[i])
+                return false;
+        }
+        else
+        {
+            float InvD = 1.0f / Dir[i];
+            float t1 = (-Extents[i] - Origin[i]) * InvD;
+            float t2 = (Extents[i] - Origin[i]) * InvD;
+            // Swap if needed
+            if (t1 > t2) std::swap(t1, t2);
+            tMin = FMath::Max(tMin, t1);
+            tMax = FMath::Min(tMax, t2);
+
+            if (tMin > tMax)
+                return false;
+        }
+    }
+
+    if (tMax < 0.f)
+        return false; // Box가 ray 뒤에 있음
+
+    float t = (tMin >= 0.f) ? tMin : tMax;
+    if (outT) *outT = t;
+    return true;
+}
+
 bool JungleCollision::Intersects(const FBox& A, const FBox& B)
 {
     AABBSIMD _A;

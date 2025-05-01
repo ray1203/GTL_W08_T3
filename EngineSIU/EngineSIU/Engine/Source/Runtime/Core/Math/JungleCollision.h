@@ -95,6 +95,8 @@ public:
 
     static bool RayIntersectsCapsule(const FRay& Ray, const FCapsule& Capsule, float* outT);
 
+    static bool RayIntersectsOrientedBox(const FRay& Ray, const FOrientedBox& Box, float* outT);
+
     static bool Intersects(const FBox& A, const FBox& B);
 
     static bool Intersects(const FSphere& A, const FSphere& B);

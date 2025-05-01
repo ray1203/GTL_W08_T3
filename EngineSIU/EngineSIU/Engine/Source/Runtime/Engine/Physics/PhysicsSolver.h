@@ -73,6 +73,9 @@ public:
     bool GetSimulatedTransform(UShapeComponent* Component, FTransform& OutTransform) const;
     bool GetOverlappingBodies(const FPhysicsBody& Body, TArray<FPhysicsBody*>& OverlappingBodies);
 
+    // 유틸
+    bool Raycast(const FVector& Start, const FVector& End, float& Distance, UShapeComponent*& OutComponent) const;
+
 private:
     // 시뮬레이션
     void ApplyForces(); // 힘을 계산 (현재는 중력만)
@@ -100,6 +103,15 @@ private:
         float RelativeVelocity = 0.f;
         bool bValid = false;
     };
+
+    // 내부 raycast 계산용
+    struct FRaycastHit
+    {
+        FPhysicsBody* HitBody = nullptr;
+        FVector HitPoint = FVector::ZeroVector;
+        float Distance = 0.f;
+    };
+
     static FContactInfo ComputeContactInfo(const FPhysicsBody& BodyA, const FPhysicsBody& BodyB);
 
 };
